@@ -98,7 +98,7 @@ class DistillTrainer(OCPTrainer):
             name=name,
         )
         self.force_mae =  float('inf')
-        self.is_validating = False
+        # self.is_validating = False
         self.start_time = time.time()
         self.original_fjac_coeff = self.loss_fns[-1][1]['coefficient']
 
@@ -169,14 +169,17 @@ class DistillTrainer(OCPTrainer):
         model_attributes_holder = self.config['model_attributes']
         model_name_holder = self.config['model']
 
-        self.teacher_config = load_config(self.config["dataset"]["teacher_config_path"])[0]
-        
-        self.config['model_attributes'] = self.teacher_config['model_attributes']['value']
-        self.config['model'] =  self.teacher_config['model']['value']
+        # self.teacher_config = load_config(self.config["dataset"]["teacher_config_path"])[0]
+        checkpoint = torch.load(self.config["dataset"]["teacher_checkpoint_path"], map_location=torch.device("cpu"))
+        self.teacher_config = checkpoint["config"]
+        self.config['model_attributes'] = self.teacher_config['model_attributes']
+
+        #Load teacher config from teacher checkpoint
+        self.config['model'] =  self.teacher_config['model']
         self.normalizers = {}  # This SHOULD be okay since it gets overridden later (in tasks, after datasets), but double check
         self.load_task()
         self.load_model()
-        self.load_checkpoint(os.path.join(self.teacher_config["cmd"]["checkpoint_dir"], 'best_checkpoint.pt'))
+        self.load_checkpoint(self.config["dataset"]["teacher_checkpoint_path"])
         self.record_labels(labels_folder)
 
         self.config['model_attributes'] = model_attributes_holder
@@ -184,6 +187,7 @@ class DistillTrainer(OCPTrainer):
 
     def insert_teach_datasets(self, main_dataset, dataset_type):
         #dataset_type either equals 'train' or 'val'
+        self.is_validating = False
         labels_folder = self.config['dataset']['teacher_labels_folder']
         if not os.path.exists(labels_folder):
             # Handle case where it doesn't exist
