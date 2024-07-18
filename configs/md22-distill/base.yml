@@ -1,0 +1,76 @@
+trainer: src.distill_trainer.DistillTrainer
+
+identifier: gemnet-dT-distill-batch4
+run_dir: MODELPATH/
+
+dataset:
+  train:
+    format: lmdb
+    src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/train
+    key_mapping: # Note: Essentially, what this does is if your original dataset has a different name then what your model outputs,
+    #then this will change your dataset's name for these labels when you're computing your loss. doesn't need to be done for 
+    #custom things in your dataset if you name them the same!
+      y: energy
+      force: forces 
+    transforms:
+      normalizer:
+        energy:
+          mean: -26913.953
+          stdev: 0.35547638
+        # forces:
+        #   mean: 0
+        #   stdev: 1.1291506
+    teacher_labels_folder: MODELPATH/md22-ac_Ala3_NHMe_5k_gemnet_t/checkpoints
+    teacher_config_path:  MODELPATH/md22-ac_Ala3_NHMe_5k_gemnet_t/checkpoints/config.yml
+    label_force_batch_size: 30
+    label_jac_batch_size: 1
+  val:
+    src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
+
+outputs:
+  energy:
+    shape: 1
+    level: system
+    prediction_dtype: float32
+  forces:
+    irrep_dim: 1
+    level: atom
+    train_on_free_atoms: True
+    eval_on_free_atoms: True
+    prediction_dtype: float32
+
+loss_functions:
+  - energy:
+      fn: mae
+      coefficient: .25
+  - forces:
+      fn: l2mae
+      coefficient: 250
+  - teacher_forces:
+      fn: l2mae
+      coefficient: 0
+  - force_jacs:
+      fn: l2mae
+      coefficient: 1000
+      reduction: mean_all
+
+
+logger: 
+  name: wandb
+  project: mdbench
+
+evaluation_metrics:
+  metrics:
+    energy:
+      - mae
+    forces:
+      - mae
+      - cosine_similarity
+      - magnitude_error
+    misc:
+      - energy_forces_within_threshold
+  primary_metric: forces_mae
+
+optim:
+  force_jac_sample_size: 30
+  print_memory_usage: False

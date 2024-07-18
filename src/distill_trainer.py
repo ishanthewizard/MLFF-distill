@@ -17,7 +17,7 @@ from itertools import chain
 from typing import TYPE_CHECKING
 import time
 from fairchem.core.common.utils import load_config
-from fairchem.core.datasets.distill_datasets import CombinedDataset, SimpleDataset
+from src.distill_datasets import CombinedDataset, SimpleDataset
 import numpy as np
 import numpy.typing as npt
 import torch
@@ -42,7 +42,7 @@ from fairchem.core.modules.scaling.compat import load_scales_compat
 from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.modules.scheduler import LRScheduler
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
-from fairchem.core.common.distill_utils import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_jacobian_old
+from src.distill_utils import get_jacobian, get_force_jac_loss, print_cuda_memory_usage
 from fairchem.core.modules.loss import L2MAELoss
 if TYPE_CHECKING:
     from collections.abc import Sequence
