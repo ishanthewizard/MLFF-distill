@@ -17,7 +17,6 @@ from itertools import chain
 from typing import TYPE_CHECKING
 import time
 from fairchem.core.common.utils import load_config
-from src.distill_datasets import CombinedDataset, SimpleDataset
 import numpy as np
 import numpy.typing as npt
 import torch
@@ -42,7 +41,8 @@ from fairchem.core.modules.scaling.compat import load_scales_compat
 from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.modules.scheduler import LRScheduler
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
-from src.distill_utils import get_jacobian, get_force_jac_loss, print_cuda_memory_usage
+from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_jacobian_old, get_teacher_jacobian
+from . import CombinedDataset, SimpleDataset
 from fairchem.core.modules.loss import L2MAELoss
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -57,8 +57,8 @@ class DistillTrainer(OCPTrainer):
         outputs,
         dataset,
         optimizer,
-        loss_fns,
-        eval_metrics,
+        loss_functions,
+        evaluation_metrics,
         identifier,
         timestamp_id=None,
         run_dir=None,
@@ -72,6 +72,7 @@ class DistillTrainer(OCPTrainer):
         slurm=None,
         noddp=False,
         name="ocp",
+        gp_gpus=None,
     ):
         if slurm is None:
             slurm = {}
@@ -81,8 +82,8 @@ class DistillTrainer(OCPTrainer):
             outputs=outputs,
             dataset=dataset,
             optimizer=optimizer,
-            loss_fns=loss_fns,
-            eval_metrics=eval_metrics,
+            loss_functions=loss_functions,
+            evaluation_metrics=evaluation_metrics,
             identifier=identifier,
             timestamp_id=timestamp_id,
             run_dir=run_dir,
@@ -96,11 +97,19 @@ class DistillTrainer(OCPTrainer):
             slurm=slurm,
             noddp=noddp,
             name=name,
+            gp_gpus=gp_gpus,
         )
         self.force_mae =  float('inf')
         # self.is_validating = False
         self.start_time = time.time()
-        self.original_fjac_coeff = self.loss_fns[-1][1]['coefficient']
+        self.original_fjac_coeff = self.loss_functions[-1][1]['coefficient']
+        # Compute teacher MAE
+        self.teacher_force_mae = 0
+        for datapoint in self.val_dataset:
+            true_label = self.normalizers['forces'].norm(datapoint['forces'])
+            self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - true_label).mean().item()
+        self.teacher_force_mae /= len(self.val_dataset)
+        print("TEACHER FORCE MAE:", self.teacher_force_mae)
 
     def record_and_save(self, dataloader, file_path, fn):
         # Assuming train_loader is your DataLoader
@@ -117,10 +126,10 @@ class DistillTrainer(OCPTrainer):
             for batch in tqdm(dataloader):
                 batch_ids = [str(int(i)) for i in batch.id]
                 batch_output = fn(batch)  # this function needs to output an array where each element correponds to the label for an entire molecule
+                print_cuda_memory_usage()
                 # Convert tensor to bytes and write to LMDB
                 for i in range(len(batch_ids)):
                     txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
-
         env.close()
         print("All tensors saved to LMDB:", file_path)
 
@@ -131,11 +140,12 @@ class DistillTrainer(OCPTrainer):
             all_forces = self._forward(batch)['forces']
             natoms = batch.natoms
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
-        def get_seperated_force_jacs(batch):
-            all_forces = self._forward(batch)['forces']
-            natoms = batch.natoms
-            jacs = get_jacobian(all_forces, batch.pos)
-            return [jacs[sum(natoms[:i]):sum(natoms[:i+1]), :, sum(natoms[:i]):sum(natoms[:i+1]), :] for i in range(len(natoms))]
+        get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"])
+        # def get_seperated_force_jacs(batch):
+        #     all_forces = self._forward(batch)['forces']
+        #     natoms = batch.natoms
+        #     jacs = get_jacobian_old(all_forces, batch.pos)
+        #     return [jacs[sum(natoms[:i]):sum(natoms[:i+1]), :, sum(natoms[:i]):sum(natoms[:i+1]), :] for i in range(len(natoms))]
         temp_train_loader = self.get_dataloader(
                 self.train_dataset,
                 self.get_sampler(
@@ -160,9 +170,9 @@ class DistillTrainer(OCPTrainer):
                 shuffle=False,
             )
         )
-        self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
+        # self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
         self.record_and_save(temp_jac_loader, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_seperated_force_jacs )
-        self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
+        # self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
 
     def load_teacher_model_and_record(self, labels_folder):
         os.mkdir(labels_folder)
@@ -172,8 +182,9 @@ class DistillTrainer(OCPTrainer):
         # self.teacher_config = load_config(self.config["dataset"]["teacher_config_path"])[0]
         checkpoint = torch.load(self.config["dataset"]["teacher_checkpoint_path"], map_location=torch.device("cpu"))
         self.teacher_config = checkpoint["config"]
+        # if self.teacher_config['model'].endswith('EfficientGraphAttentionPotential'):
+        #     self.teacher_config['model_attributes']['atten_name'] = 'scaled_dot_product'
         self.config['model_attributes'] = self.teacher_config['model_attributes']
-
         #Load teacher config from teacher checkpoint
         self.config['model'] =  self.teacher_config['model']
         self.normalizers = {}  # This SHOULD be okay since it gets overridden later (in tasks, after datasets), but double check
@@ -247,12 +258,6 @@ class DistillTrainer(OCPTrainer):
             if self.config.get("val_dataset", None):
                 ## START ISHAN CODE
                 self.val_dataset = self.insert_teach_datasets(self.val_dataset, 'val')
-                # Compute teacher MAE
-                self.teacher_force_mae = 0
-                for datapoint in self.val_dataset:
-                    self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - datapoint['forces']).mean().item()
-                self.teacher_force_mae /= len(self.val_dataset)
-                print("TEACHER FORCE MAE:", self.teacher_force_mae)
                 # END ISHAN CODE
                 self.val_sampler = self.get_sampler(
                     self.val_dataset,
@@ -309,12 +314,12 @@ class DistillTrainer(OCPTrainer):
         # self.force_mae, self.teacher_force_mae are good to go
         if self.step % 20 == 0:
             if self.force_mae < self.teacher_force_mae:
-                self.loss_fns[-1][1]['coefficient'] = 0
+                self.loss_functions[-1][1]['coefficient'] = 0
             else:
                 percent_higher = ((self.force_mae - self.teacher_force_mae) / self.teacher_force_mae) *100
                 threshold = 5
                 if percent_higher < threshold: 
-                    self.loss_fns[-1][1]['coefficient'] = custom_sigmoid(percent_higher, threshold) * self.original_fjac_coeff
+                    self.loss_functions[-1][1]['coefficient'] = custom_sigmoid(percent_higher, threshold) * self.original_fjac_coeff
                 
 
 
@@ -348,12 +353,12 @@ class DistillTrainer(OCPTrainer):
         out['teacher_forces'] = out['forces']
         self.update_loss_coefficients()
         should_mask = self.output_targets['forces']["train_on_free_atoms"]
-        if self.loss_fns[-1][1]['coefficient'] != 0:
-            force_jac_loss = get_force_jac_loss(out, batch, self.config['optim']['force_jac_sample_size'], mask, should_mask)
+        if self.loss_functions[-1][1]['coefficient'] != 0:
+            force_jac_loss = get_force_jac_loss(out, batch, self.config['optim']['force_jac_sample_size'], mask, should_mask, looped=(not self.config['optim']["vectorize_jacs"]))
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
         ## FINISH ISHAN ADDED CODE
-        for loss_fn in self.loss_fns:
+        for loss_fn in self.loss_functions:
             target_name, loss_info = loss_fn
             if loss_info['coefficient'] == 0: #Added this, don't bother
                 continue
