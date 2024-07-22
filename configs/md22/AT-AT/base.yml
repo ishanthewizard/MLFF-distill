@@ -1,9 +1,6 @@
-trainer:  ocp
 
-identifier: painn-small-more-patient
-run_dir: MODELPATH/
-
-
+logger: wandb
+# USE THIS 
 dataset:
   train:
     format: lmdb
@@ -14,38 +11,32 @@ dataset:
     transforms:
       normalizer:
         energy:
-          mean: -26913.953
-          stdev: 0.35547638
-        # forces:
-        #   mean: 0
-        #   stdev: 1.1291506
+          mean: -50080.08
+          stdev: 0.47309175
+        forces:
+          mean: 0
+          stdev: 1.2109985
   val:
     src: /data/shared/MLFF/MD22/95_lmdb/AT-AT/val/
+
 
 outputs:
   energy:
     shape: 1
     level: system
-    prediction_dtype: float32
   forces:
     irrep_dim: 1
     level: atom
     train_on_free_atoms: True
     eval_on_free_atoms: True
-    prediction_dtype: float32
 
 loss_functions:
   - energy:
       fn: mae
-      coefficient: .25
+      coefficient: 1
   - forces:
       fn: l2mae
-      coefficient: 250
-
-logger: 
-  name: wandb
-  project: EGAP
-
+      coefficient: 100
 evaluation_metrics:
   metrics:
     energy:
