@@ -7,7 +7,7 @@ dataset:
   train:
     teacher_checkpoint_path: checkpoints/ac_Ala3_5k_gemnet_t/best_checkpoint.pt
     teacher_labels_folder: labels/ac_Ala3_5k_gemnet_t_SAND
-    label_force_batch_size: 30
+    label_force_batch_size: 32
     label_jac_batch_size: 64
     vectorize_teach_jacs: False
 

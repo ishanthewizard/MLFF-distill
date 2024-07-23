@@ -41,7 +41,7 @@ from fairchem.core.modules.scaling.compat import load_scales_compat
 from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.modules.scheduler import LRScheduler
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
-from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_jacobian_old, get_teacher_jacobian
+from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian
 from . import CombinedDataset, SimpleDataset
 from fairchem.core.modules.loss import L2MAELoss
 if TYPE_CHECKING:
@@ -172,9 +172,9 @@ class DistillTrainer(OCPTrainer):
                 shuffle=False,
             )
         )
-        # self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
+        self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
         self.record_and_save(temp_jac_loader, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_seperated_force_jacs )
-        # self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
+        self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
 
     def load_teacher_model_and_record(self, labels_folder):
         os.mkdir(labels_folder)

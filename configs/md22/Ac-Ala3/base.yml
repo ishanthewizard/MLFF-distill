@@ -1,7 +1,7 @@
 
 logger: 
   name: wandb
-  project: EGAP
+  project: mdbench
 
 trainer: ocp
 
