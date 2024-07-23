@@ -1,0 +1,32 @@
+includes:
+- configs/md22/AT-AT/gemnet-dT-smaller.yml
+
+trainer: src.distill_trainer.DistillTrainer
+
+dataset:
+  train:
+    teacher_checkpoint_path: /home/ishan-amin/MDsim-distill/MODELPATH/md22-ac_Ala3_NHMe_5k_gemnet_t/checkpoints/best_checkpoint.pt
+    teacher_labels_folder: labels/
+    label_force_batch_size: 30
+    label_jac_batch_size: 1
+
+loss_functions:
+  - energy:
+      fn: mae
+      coefficient: .25
+  - forces:
+      fn: l2mae
+      coefficient: 250
+  - teacher_forces:
+      fn: l2mae
+      coefficient: 0
+  - force_jacs:
+      fn: l2mae
+      coefficient: 1000
+      reduction: mean_all
+
+optim:
+  batch_size: 1
+  eval_batch_size: 32
+  force_jac_sample_size: 30
+  print_memory_usage: False

@@ -1,8 +1,8 @@
 wandb
 /data
-checkpoints
+checkpoints/
 results
-labels
+labels/
 MODELPATH
 logs
 *.traj

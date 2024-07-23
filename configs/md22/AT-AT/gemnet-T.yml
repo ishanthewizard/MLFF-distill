@@ -1,5 +1,5 @@
 includes:
-- distill-submoduled/configs/md22/AT-AT/base.yml
+- configs/md22/AT-AT/base.yml
 
 model:
   name: gemnet_t

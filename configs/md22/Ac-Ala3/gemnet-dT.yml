@@ -1,5 +1,5 @@
 includes:
-- configs/md22-distill/base.yml
+- configs/md22/AT-AT/base.yml
 
 model:
   name: gemnet_t
@@ -34,17 +34,19 @@ model:
   direct_forces: True
 
 optim:
-  # eval_every: 
-  batch_size: 1
+  batch_size: 32
   eval_batch_size: 32
   num_workers: 4
   lr_initial: 0.001
   optimizer: AdamW
   optimizer_params: {"eps": 1.e-7, "weight_decay": 0.000002, "amsgrad": True}
+  
   scheduler: ReduceLROnPlateau
   patience: 5
   factor: 0.8
   min_lr: 0.000001  
+  
   max_epochs: 10000
   ema_decay: 0.999
   clip_grad_norm: 10
+
