@@ -9,6 +9,7 @@ dataset:
     teacher_labels_folder: labels/ethanol_50k_gemnet_t_1k_labels
     label_force_batch_size: 30
     label_jac_batch_size: 1
+    vectorize_teach_jacs: True
 
 loss_functions:
   - energy:
@@ -30,3 +31,4 @@ optim:
   eval_batch_size: 32
   force_jac_sample_size: 30
   print_memory_usage: False
+  vectorize_jacs: True

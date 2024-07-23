@@ -63,7 +63,6 @@ def main():
     override_args: list[str]
     args, override_args = parser.parse_known_args()
     config = build_config(args, override_args)
-    breakpoint()
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id
 

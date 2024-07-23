@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from fairchem.core.modules.loss import L2MAELoss
 import time
-# BEGIN ISHAN CODE
+
 def print_cuda_memory_usage():
     allocated = torch.cuda.memory_allocated() / (1024 ** 3)  # Convert bytes to GB
     reserved = torch.cuda.memory_reserved() / (1024 ** 3)    # Convert bytes to GB
@@ -33,23 +33,6 @@ def get_teacher_jacobian(forces, batch, vectorize=True):
     
     jacs_per_mol = [jac[:nat, :,  cum_sum:cum_sum + nat, :] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
     return jacs_per_mol
-
-def get_jacobian_old(forces, pos, create_graph=False):
-    # This function should: take the derivatives of forces with respect to positions. 
-    # Grad_outputs should be supplied. if it's none, then 
-    num_atoms = forces.shape[0]
-    def compute_grad(grad_output):
-        return torch.autograd.grad(
-                outputs=forces,
-                inputs=pos,
-                grad_outputs=grad_output,
-                create_graph=create_graph,
-                retain_graph=True
-            )[0]
-
-    grad_outputs = torch.eye(num_atoms*3).reshape(num_atoms,3,num_atoms,3).to(forces.device)
-    compute_jacobian = torch.vmap(torch.vmap(compute_grad))
-    return compute_jacobian(grad_outputs)
 
 def sample_with_mask(n, num_samples, mask):
     if mask.shape[0] != n:
@@ -95,14 +78,18 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
         return compute_jacobian(grad_outputs)
     else:
         num_atoms = forces.shape[0]
-        full_jac = torch.zeros(grad_outputs.shape[0], num_atoms, 3).to(forces.device)
-        for i in range(grad_outputs.shape[0]):
-                full_jac[i] = compute_grad(grad_outputs[i])
+        if len(grad_outputs.shape) == 4:
+            full_jac = torch.zeros(grad_outputs.shape[0], 3, num_atoms, 3).to(forces.device)
+            for i in range(grad_outputs.shape[0]):
+                for j in range(3):
+                    full_jac[i, j] = compute_grad(grad_outputs[i, j])
+        else:
+            full_jac = torch.zeros(grad_outputs.shape[0], num_atoms, 3).to(forces.device)
+            for i in range(grad_outputs.shape[0]):
+                    full_jac[i] = compute_grad(grad_outputs[i])
         return full_jac
 
-
-
-def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=True):
+def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False):
     forces = out['forces']
     natoms = batch.natoms
     total_num_atoms = forces.shape[0]
