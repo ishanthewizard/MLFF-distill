@@ -1,28 +1,24 @@
-
-logger: 
-  name: wandb
-  project: mdbench
-
 trainer: ocp
 
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/train
+    src: data/s2ef/2M/train/
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
         energy:
-          mean: -26913.953
-          stdev: 0.35547638
-        # forces:
-        #   mean: 0
-        #   stdev: 1.1291506
+          mean: -0.7554450631141663
+          stdev: 2.887317180633545
+        forces:
+          mean: 0
+          stdev: 2.887317180633545
   val:
-    src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
+    src: data/s2ef/all/val_id/
 
+logger: wandb
 
 outputs:
   energy:
@@ -37,10 +33,11 @@ outputs:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 1
+      coefficient: 2
   - forces:
       fn: l2mae
       coefficient: 100
+
 evaluation_metrics:
   metrics:
     energy:
