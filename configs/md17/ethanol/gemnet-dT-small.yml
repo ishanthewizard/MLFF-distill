@@ -1,13 +1,11 @@
 includes:
-- configs/md22/base.yml
-
-identifier: dT
+- configs/md17/ethanol/base.yml
 
 model:
   name: gemnet_t
   num_spherical: 7
   num_radial: 6
-  num_blocks: 4
+  num_blocks: 4 
   emb_size_atom: 64 #smaller
   emb_size_edge: 64 #smaller
   emb_size_trip: 32 #smaller
@@ -36,28 +34,18 @@ model:
   direct_forces: True
 
 optim:
-  use_force_jacs: True
-  curl: False
-  curl_sample_size: 10
-  force_jac_sample_size: 10
   batch_size: 1
-  eval_batch_size: 1
+  eval_batch_size: 32
   num_workers: 4
   lr_initial: 0.001
   optimizer: AdamW
   optimizer_params: {"eps": 1.e-7, "weight_decay": 0.000002, "amsgrad": True}
-
+  
   scheduler: ReduceLROnPlateau
   patience: 5
   factor: 0.8
   min_lr: 0.000001  
-
+  
   max_epochs: 10000
-  force_coefficient: 1000
-  energy_coefficient: 1
-  curl_coefficient: 100
-  force_jac_coefficient: 1000
   ema_decay: 0.999
   clip_grad_norm: 10
-  loss_energy: mae
-  loss_force: l2mae

@@ -1,12 +1,12 @@
 includes:
-- configs/md22/Ac-Ala3/gemnet-dT-smaller.yml
+- /home/ishan-amin/MLFF-distill/configs/md17/ethanol/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_checkpoint_path: checkpoints/ac_Ala3_5k_gemnet_t/best_checkpoint.pt
-    teacher_labels_folder: labels/ac_Ala3_5k_gemnet_t
+    teacher_checkpoint_path: checkpoints/ethanol_50k_gemnet_t/best_checkpoint.pt
+    teacher_labels_folder: labels/ethanol_50k_gemnet_t_1k_labels
     label_force_batch_size: 30
     label_jac_batch_size: 1
 

@@ -1,6 +1,6 @@
 # Make sure to run without AMP.
 includes:
-  - configs/md22/base.yml
+  - configs/md22/Ac-Ala3/base.yml
 
 model:
   name: painn
@@ -9,7 +9,7 @@ model:
   num_rbf: 128
   cutoff: 12.0
   max_neighbors: 50
-  scale_file: configs/md22/painn/nb6_h512_n50_c12_oc22.pt
+  scale_file: configs/md22/Ac-Ala3/painn/nb6_h512_n50_c12_oc22.pt
   regress_forces: True
   direct_forces: True
   use_pbc: True
@@ -20,7 +20,7 @@ optim:
   eval_batch_size: 32
   load_balancing: atoms
   eval_every: 1000
-  num_workers: 2
+  num_workers: 4
   optimizer: AdamW
   optimizer_params:
     amsgrad: True

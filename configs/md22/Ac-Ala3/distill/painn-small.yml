@@ -1,5 +1,5 @@
 includes:
-- configs/md22/Ac-Ala3/gemnet-dT-smaller.yml
+- configs/md22/Ac-Ala3/painn/painn-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
@@ -26,7 +26,7 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 1
+  batch_size: 16
   eval_batch_size: 32
-  force_jac_sample_size: 30
+  force_jac_sample_size: 20
   print_memory_usage: False

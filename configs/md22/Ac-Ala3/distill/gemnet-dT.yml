@@ -1,5 +1,5 @@
 includes:
-- configs/md22/Ac-Ala3/gemnet-dT-smaller.yml
+- configs/md22/Ac-Ala3/gemnet-dT.yml
 
 trainer: src.distill_trainer.DistillTrainer
 

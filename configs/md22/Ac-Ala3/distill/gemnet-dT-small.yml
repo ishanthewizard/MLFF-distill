@@ -1,12 +1,12 @@
 includes:
-- configs/md22/AT-AT/gemnet-dT-small.yml
+- configs/md22/Ac-Ala3/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_checkpoint_path: /home/ishan-amin/MDsim-distill/MODELPATH/md22-ac_Ala3_NHMe_5k_gemnet_t/checkpoints/best_checkpoint.pt
-    teacher_labels_folder: labels/
+    teacher_checkpoint_path: checkpoints/ac_Ala3_5k_gemnet_t/best_checkpoint.pt
+    teacher_labels_folder: labels/ac_Ala3_5k_gemnet_t
     label_force_batch_size: 30
     label_jac_batch_size: 1
 

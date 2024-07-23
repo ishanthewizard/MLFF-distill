@@ -8,20 +8,20 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/shared/MLFF/MD22/95_lmdb/AT-AT/train/
+    src: /data/ishan-amin/post_data/md17/ethanol/1k/train
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
         energy:
-          mean: -50080.08
-          stdev: 0.47309175
+          mean: -26913.953
+          stdev: 0.35547638
         forces:
           mean: 0
-          stdev: 1.2109985
+          stdev: 1.1291506
   val:
-    src: /data/shared/MLFF/MD22/95_lmdb/AT-AT/val/
+    src: /data/ishan-amin/post_data/md17/ethanol/1k/val
 
 
 outputs:
