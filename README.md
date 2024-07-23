@@ -50,4 +50,4 @@ python main.py --mode train configs/md22/Ac-Ala3/distill/gemnet-dT.yml
 ```
 
 ## Distributed Trainig
-For distributed training on NERSC, please see [Link Text](NERSC_dist_train.md) (adapted from the EGAP repository)
+For distributed training on NERSC, please see the [Nersc Distributed Training README](NERSC_dist_train.md) (adapted from the EGAP repository)

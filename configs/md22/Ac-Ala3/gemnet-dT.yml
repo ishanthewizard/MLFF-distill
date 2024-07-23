@@ -34,7 +34,7 @@ model:
   direct_forces: True
 
 optim:
-  batch_size: 32
+  batch_size: 64
   eval_batch_size: 32
   num_workers: 4
   lr_initial: 0.001
