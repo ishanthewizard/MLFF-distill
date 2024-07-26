@@ -101,7 +101,6 @@ class DistillTrainer(OCPTrainer):
             gp_gpus=gp_gpus,
         )
         self.force_mae =  float('inf')
-        # self.is_validating = False
         self.start_time = time.time()
         self.original_fjac_coeff = self.loss_functions[-1][1]['coefficient']
         # Compute teacher MAE
