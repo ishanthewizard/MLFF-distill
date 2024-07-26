@@ -1,4 +1,6 @@
-
+includes:
+  # - configs/slurm/regular.yml
+  - configs/slurm/debug.yml
 logger: 
   name: wandb
   project: mdbench
@@ -8,7 +10,8 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/train
+    # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/train
+    src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/train
     key_mapping:
       y: energy
       force: forces
@@ -21,7 +24,8 @@ dataset:
         #   mean: 0
         #   stdev: 1.1291506
   val:
-    src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
+    # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
+    src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/val
 
 
 outputs:

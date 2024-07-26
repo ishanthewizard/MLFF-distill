@@ -1,0 +1,6 @@
+slurm:
+  account: m4319_g
+  constraint: gpu
+  gpu_bind: none
+  mail_type: begin,end,fail
+  mail_user: ishanthewizard@berkeley.edu

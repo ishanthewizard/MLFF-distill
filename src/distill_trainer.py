@@ -43,6 +43,7 @@ from fairchem.core.modules.scheduler import LRScheduler
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
 from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian
 from . import CombinedDataset, SimpleDataset
+from fairchem.core.common import distutils
 from fairchem.core.modules.loss import L2MAELoss
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -133,7 +134,7 @@ class DistillTrainer(OCPTrainer):
                 for i in range(len(batch_ids)):
                     txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
         env.close()
-        print("All tensors saved to LMDB:", file_path)
+        logging.info("All tensors saved to LMDB:", file_path)
 
     def record_labels(self, labels_folder):
         self.model.eval()
@@ -177,7 +178,6 @@ class DistillTrainer(OCPTrainer):
         self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
 
     def load_teacher_model_and_record(self, labels_folder):
-        os.mkdir(labels_folder)
         model_attributes_holder = self.config['model_attributes']
         model_name_holder = self.config['model']
 
@@ -202,16 +202,18 @@ class DistillTrainer(OCPTrainer):
         #dataset_type either equals 'train' or 'val'
         self.is_validating = False
         labels_folder = self.config['dataset']['teacher_labels_folder']
-        if not os.path.exists(labels_folder):
-            # Handle case where it doesn't exist
-            response = input("Teacher label folder not found. Would you like to create new teacher labels at this location? [y/n]: ").strip().lower()
-            if response == 'y' or response=='yes':
-                self.load_teacher_model_and_record(labels_folder)
-            else:
-                print("Exiting program gracefully.")
-                exit(0)
+        needs_setup = not os.path.exists(labels_folder)
+        if distutils.get_rank() == 0:
+            folder_exists = torch.tensor(os.path.exists(labels_folder), dtype=torch.bool).to(self.device)
+            distutils.broadcast(folder_exists, src=0)
+        else:
+            folder_exists = torch.tensor(False, dtype=torch.bool).to(self.device)
+            distutils.broadcast(folder_exists, src=0)
+        if not folder_exists.item():
+            os.makedirs(labels_folder, exist_ok=True)
+            self.load_teacher_model_and_record(labels_folder)
+        distutils.synchronize()
             
-
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces.lmdb'  ))
         if dataset_type == 'train':
             force_jac_dataset = SimpleDataset(os.path.join(labels_folder, 'force_jacobians.lmdb'))
