@@ -19,20 +19,47 @@ def custom_sigmoid(x, threshold):
     sum_e = e_z1 + e_z2
     return e_z2 / sum_e
 
-def get_teacher_jacobian(forces, batch, vectorize=True):
+# def get_teacher_jacobian(forces, batch, vectorize=True):
+#     natoms = batch.natoms
+#     total_num_atoms = sum(batch.natoms)
+#     max_atom_per_mol = max(batch.natoms)
+#     cumulative_sums = [0] + torch.cumsum(natoms, 0).tolist()
+#     grad_outputs = torch.zeros((max_atom_per_mol, 3, total_num_atoms, 3)).to(forces.device)
+#     for i, atoms_in_mol in enumerate(batch.natoms):
+#         indices = torch.arange(atoms_in_mol)
+#         offset_indices = indices + cumulative_sums[i]
+#         grad_outputs[indices, :, offset_indices, :] = torch.eye(3)[None, :, :].to(forces.device)
+#     jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_atom_per_mol x 3 x total_num_atoms x 3 matrix. 
+    
+#     jacs_per_mol = [jac[:nat, :,  cum_sum:cum_sum + nat, :] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
+#     return jacs_per_mol
+
+def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True):
     natoms = batch.natoms
     total_num_atoms = sum(batch.natoms)
-    max_atom_per_mol = max(batch.natoms)
     cumulative_sums = [0] + torch.cumsum(natoms, 0).tolist()
-    grad_outputs = torch.zeros((max_atom_per_mol, 3, total_num_atoms, 3)).to(forces.device)
-    for i, atoms_in_mol in enumerate(batch.natoms):
-        indices = torch.arange(atoms_in_mol)
-        offset_indices = indices + cumulative_sums[i]
-        grad_outputs[indices, :, offset_indices, :] = torch.eye(3)[None, :, :].to(forces.device)
-    jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_atom_per_mol x 3 x total_num_atoms x 3 matrix. 
+    mask = batch.fixed == 0
+    if not should_mask:
+        mask = torch.ones(total_num_atoms, dtype=torch.bool)
     
-    jacs_per_mol = [jac[:nat, :,  cum_sum:cum_sum + nat, :] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
+    mask_per_mol = [mask[cum_sum:cum_sum + nat] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
+    num_free_atoms_per_mol = [sum(sub_mask) for sub_mask in mask_per_mol]
+    max_free_atom_per_mol = max(num_free_atoms_per_mol)
+    grad_outputs = torch.zeros((max_free_atom_per_mol, 3, total_num_atoms, 3)).to(forces.device)
+    for i, free_atoms_in_mol in enumerate(num_free_atoms_per_mol):
+        indices = torch.arange(free_atoms_in_mol)
+        offset_indices = torch.nonzero(mask_per_mol[i]).flatten() + cumulative_sums[i]
+        assert len(offset_indices) == free_atoms_in_mol
+        grad_outputs[indices, :, offset_indices, :] = torch.eye(3)[None, :, :].to(forces.device)
+    jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
+
+    jacs_per_mol = [jac[:n_fr_at, :,  cum_sum:cum_sum + nat, :] for cum_sum, n_fr_at, nat in zip(cumulative_sums[:-1], num_free_atoms_per_mol, natoms)]
+
     return jacs_per_mol
+
+    # If it is masked: 
+
+
 
 def sample_with_mask(n, num_samples, mask):
     if mask.shape[0] != n:

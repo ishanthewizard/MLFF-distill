@@ -6,8 +6,8 @@ model:
   num_spherical: 7
   num_radial: 128
   num_blocks: 3
-  emb_size_atom: 512
-  emb_size_edge: 512
+  emb_size_atom: 128 # changed from 512
+  emb_size_edge: 128 # changed from 512
   emb_size_trip: 64
   emb_size_rbf: 16
   emb_size_cbf: 16
@@ -29,7 +29,7 @@ model:
   otf_graph: False
   output_init: HeOrthogonal
   activation: silu
-  scale_file: configs/s2ef/all/gemnet/scaling_factors/gemnet-dT.json
+  scale_file: configs/md22/AT-AT/gemnet-dT-scale.json
 
   regress_forces: True
   direct_forces: True
@@ -37,7 +37,7 @@ model:
 optim:
   batch_size: 32
   eval_batch_size: 32
-  eval_every: 5000
+  # eval_every: 5000
   num_workers: 2
   lr_initial: 5.e-4
   optimizer: AdamW

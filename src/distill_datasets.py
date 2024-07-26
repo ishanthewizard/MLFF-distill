@@ -18,9 +18,13 @@ class CombinedDataset(Dataset):
     def __getitem__(self, idx):
         main_batch = self.main_dataset[idx]
         num_atoms = main_batch.natoms
-        teacher_forces = self.teach_force_dataset[idx].reshape(num_atoms, 3)
-        force_jacs  = self.force_jac_dataset[idx].reshape(num_atoms, 3, num_atoms, 3) if self.force_jac_dataset else None
         
+        teacher_forces = self.teach_force_dataset[idx].reshape(num_atoms, 3)
+        if self.force_jac_dataset:
+            num_free_atoms = (main_batch.fixed == 0).sum().item()
+            force_jacs  = self.force_jac_dataset[idx].reshape(num_free_atoms, 3, num_atoms, 3) 
+        else: 
+            force_jacs = None
         main_batch.teacher_forces = teacher_forces
         main_batch.force_jacs = force_jacs
         return main_batch

@@ -3,6 +3,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
+    split: 10000
     src: /data/shared/MLFF/OC20/s2ef/200k/train
     key_mapping:
       y: energy
@@ -17,6 +18,7 @@ dataset:
           stdev: 2.887317180633545
   val:
     src: /data/shared/MLFF/OC20/s2ef/all/val_id
+    split: 1000
 
 logger: wandb
 

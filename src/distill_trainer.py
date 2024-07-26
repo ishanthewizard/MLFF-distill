@@ -23,7 +23,7 @@ import torch
 import torch.nn as nn
 import yaml
 from torch.nn.parallel.distributed import DistributedDataParallel
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 import lmdb
 
@@ -142,7 +142,8 @@ class DistillTrainer(OCPTrainer):
             all_forces = self._forward(batch)['forces']
             natoms = batch.natoms
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
-        get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"])
+        should_mask = self.output_targets['forces']["train_on_free_atoms"]
+        get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
         # def get_seperated_force_jacs(batch):
         #     all_forces = self._forward(batch)['forces']
         #     natoms = batch.natoms
@@ -172,7 +173,7 @@ class DistillTrainer(OCPTrainer):
                 shuffle=False,
             )
         )
-        self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
+        # self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
         self.record_and_save(temp_jac_loader, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_seperated_force_jacs )
         self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
 
@@ -240,9 +241,27 @@ class DistillTrainer(OCPTrainer):
             self.train_dataset = registry.get_dataset_class(
                 self.config["dataset"].get("format", "lmdb")
             )(self.config["dataset"])
+            
+            # RYAN'S CODE:
+            if "split" in self.config["dataset"]:
+                # to make sampling deterministic, seed rng
+                logging.info(f"original size {len(self.train_dataset)}, target size {self.config['dataset']['split']}")
+                if len(self.train_dataset) >= self.config["dataset"]["split"]:
+                    indx = np.random.default_rng(seed=0).choice(
+                        len(self.train_dataset), 
+                        self.config["dataset"]["split"], 
+                        replace=False
+                    )
+                    self.train_dataset = Subset(self.train_dataset, torch.tensor(indx))
+                    logging.info("Subsetted train set.")
+                else:
+                    logging.info("Original size must be greater than target size!")
+            # END RYAN's CODE
+
             #LOAD IN VAL EARLIER:
             if self.config["val_dataset"].get("use_train_settings", True):
                 val_config = self.config["dataset"].copy()
+                val_config.pop("split", None) # Aded
                 val_config.update(self.config["val_dataset"])
             else:
                 val_config = self.config["val_dataset"]
@@ -251,6 +270,21 @@ class DistillTrainer(OCPTrainer):
                 val_config.get("format", "lmdb")
             )(val_config)
             # END LOAD IN VAL
+            # Ryan's code
+            if "split" in val_config:
+                    logging.info(f"original size {len(self.val_dataset)}, target size {val_config['split']}")
+                    # to make sampling deterministic, seed rng
+                    if len(self.val_dataset) >= val_config["split"]:
+                        indx = np.random.default_rng(seed=0).choice(
+                            len(self.val_dataset), 
+                            val_config["split"], 
+                            replace=False
+                        )
+                        self.val_dataset = Subset(self.val_dataset, torch.tensor(indx))
+                        logging.info("Subsetted validation set.")
+                    else:
+                        logging.info("Original size must be greater than target size!")
+            # END RYAN's CODE
             self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train') # ADDED LINE
             self.train_sampler = self.get_sampler(
                 self.train_dataset,
@@ -415,7 +449,8 @@ class DistillTrainer(OCPTrainer):
     def _compute_metrics(self, out, batch, evaluator, metrics=None):
         metrics = super()._compute_metrics(out, batch, evaluator, metrics)
         if not self.is_validating:
+            avg_force_jac_loss = distutils.all_reduce(batch["force_jac_loss"], average=True )
             metrics['force_jac_loss'] = {}
-            metrics['force_jac_loss']['metric'] = batch['force_jac_loss']
-            metrics['force_jac_loss']['total'] = batch['force_jac_loss']
+            metrics['force_jac_loss']['metric'] = avg_force_jac_loss
+            metrics['force_jac_loss']['total'] = avg_force_jac_loss
         return metrics
