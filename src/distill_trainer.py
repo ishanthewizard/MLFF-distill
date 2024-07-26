@@ -404,7 +404,7 @@ class DistillTrainer(OCPTrainer):
                 continue
             if target_name == 'force_jacs':
                 loss.append(loss_info["coefficient"] * force_jac_loss)
-                batch['force_jac_loss'] = force_jac_loss.item()
+                batch['force_jac_loss'] = force_jac_loss
                 continue
             target = batch[target_name]
             pred = out[target_name]
@@ -451,6 +451,6 @@ class DistillTrainer(OCPTrainer):
         if not self.is_validating:
             avg_force_jac_loss = distutils.all_reduce(batch["force_jac_loss"], average=True )
             metrics['force_jac_loss'] = {}
-            metrics['force_jac_loss']['metric'] = avg_force_jac_loss
-            metrics['force_jac_loss']['total'] = avg_force_jac_loss
+            metrics['force_jac_loss']['metric'] = avg_force_jac_loss.item()
+            metrics['force_jac_loss']['total'] = avg_force_jac_loss.item()
         return metrics
