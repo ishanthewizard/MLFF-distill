@@ -133,7 +133,7 @@ class DistillTrainer(OCPTrainer):
                 for i in range(len(batch_ids)):
                     txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
         env.close()
-        logging.info("All tensors saved to LMDB:", file_path)
+        logging.info(f"All tensors saved to LMDB:{file_path}")
 
     def record_labels(self, labels_folder):
         self.model.eval()
@@ -180,11 +180,14 @@ class DistillTrainer(OCPTrainer):
         model_attributes_holder = self.config['model_attributes']
         model_name_holder = self.config['model']
 
-        # self.teacher_config = load_config(self.config["dataset"]["teacher_config_path"])[0]
         checkpoint = torch.load(self.config["dataset"]["teacher_checkpoint_path"], map_location=torch.device("cpu"))
         self.teacher_config = checkpoint["config"]
+
         # if self.teacher_config['model'].endswith('EfficientGraphAttentionPotential'):
         #     self.teacher_config['model_attributes']['atten_name'] = 'scaled_dot_product'
+        if self.config["dataset"].get("teacher_scale_file", None):
+            self.teacher_config["model_attributes"]["scale_file"] = self.config["dataset"]["teacher_scale_file"]
+
         self.config['model_attributes'] = self.teacher_config['model_attributes']
         #Load teacher config from teacher checkpoint
         self.config['model'] =  self.teacher_config['model']

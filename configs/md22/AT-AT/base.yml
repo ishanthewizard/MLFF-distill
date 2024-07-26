@@ -1,6 +1,8 @@
 
-logger: wandb
-# USE THIS 
+logger: 
+  name: wandb
+  project: EGAP
+  
 dataset:
   train:
     format: lmdb
