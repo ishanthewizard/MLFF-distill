@@ -1,22 +1,20 @@
 includes:
-- configs/md22/AT-AT/gemnet-dT-small.yml
+- configs/md22/AT-AT/painn/painn-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_checkpoint_path: checkpoints/2024-07-22-13-18-08-AT-AT-gemnet-T_best/best_checkpoint.pt
-    # teacher_labels_folder: labels/AT_AT_all_gemnet_t
+    teacher_checkpoint_path: /home/ishan-amin/MDsim-distill/MODELPATH/md22-ac_Ala3_NHMe_5k_gemnet_t/checkpoints/best_checkpoint.pt
     teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/AT_AT_all_gemnet_t
-    teacher_scale_file: configs/md22/AT-AT/gemnet-T-scale.json
-    label_force_batch_size: 32
-    label_jac_batch_size: 64
-    vectorize_teach_jacs: False
+    label_force_batch_size: 30
+    label_jac_batch_size: 1
+    vectorize_teach_jacs: True
 
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 1
+      coefficient: 0
   - forces:
       fn: l2mae
       coefficient: 100
@@ -29,7 +27,7 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 4
+  batch_size: 8
   eval_batch_size: 32
   force_jac_sample_size: 30
   print_memory_usage: False
