@@ -19,6 +19,7 @@ import time
 from fairchem.core.common.utils import load_config
 import numpy as np
 import numpy.typing as npt
+from src.distill_utils import custom_sigmoid
 import torch
 import torch.nn as nn
 import yaml
@@ -173,7 +174,7 @@ class DistillTrainer(OCPTrainer):
                 shuffle=False,
             )
         )
-        # self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
+        self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
         self.record_and_save(temp_jac_loader, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_seperated_force_jacs )
         self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
 
@@ -359,6 +360,7 @@ class DistillTrainer(OCPTrainer):
                 percent_higher = ((self.force_mae - self.teacher_force_mae) / self.teacher_force_mae) *100
                 threshold = 5
                 if percent_higher < threshold: 
+                    raise Exception("WE GOT REALLY CLOSE!!")
                     self.loss_functions[-1][1]['coefficient'] = custom_sigmoid(percent_higher, threshold) * self.original_fjac_coeff
                 
 

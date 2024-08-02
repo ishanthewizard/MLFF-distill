@@ -1,7 +1,7 @@
 
 logger: 
   name: wandb
-  project: EGAP
+  project: mdbench
 
 trainer: ocp
 
@@ -17,9 +17,9 @@ dataset:
         energy:
           mean: -26913.953
           stdev: 0.35547638
-        forces:
-          mean: 0
-          stdev: 1.1291506
+        # forces:
+        #   mean: 0
+        #   stdev: 1.1291506
   val:
     src: /data/ishan-amin/post_data/md17/ethanol/1k/val
 

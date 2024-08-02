@@ -12,7 +12,7 @@ model:
   scale_file: configs/md22/AT-AT/painn/nb6_h512_n50_c12_oc22.pt
   regress_forces: True
   direct_forces: True
-  use_pbc: True
+  use_pbc: False
   otf_graph: True
 
 optim:
