@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_checkpoint_path: checkpoints/2024-07-22-13-18-08-AT-AT-gemnet-T_best/best_checkpoint.pt
+    teacher_checkpoint_path: teacher_checkpoints/2024-07-22-13-18-08-AT-AT-gemnet-T_best/best_checkpoint.pt
     teacher_labels_folder: labels/AT_AT_all_gemnet_t
     teacher_scale_file: configs/md22/AT-AT/gemnet-T-scale.json
     label_force_batch_size: 32
@@ -15,19 +15,20 @@ dataset:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: .25
+      coefficient: .1
   - forces:
       fn: l2mae
-      coefficient: 250
+      coefficient: 100
   - teacher_forces:
       fn: l2mae
       coefficient: 0
   - force_jacs:
       fn: l2mae
-      coefficient: 1000
+      coefficient: 50
       reduction: mean_all
 
 optim:
+  eval_every: 1000
   batch_size: 4
   eval_batch_size: 32
   force_jac_sample_size: 30

@@ -15,8 +15,8 @@ dataset:
     transforms:
       normalizer:
         energy:
-          mean: -26913.953
-          stdev: 0.35547638
+          # mean: -26913.953
+          # stdev: 0.35547638
         # forces:
         #   mean: 0
         #   stdev: 1.1291506

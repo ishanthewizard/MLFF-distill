@@ -17,12 +17,18 @@ dataset:
       force: forces
     transforms:
       normalizer:
-        energy:
-          mean: -26913.953
-          stdev: 0.35547638
+        # energy:
+        #   mean: -26913.953
+        #   stdev: 0.35547638
         # forces:
         #   mean: 0
         #   stdev: 1.1291506
+        energy: 
+            mean:  -26913.953
+            stdev: 1
+        forces: 
+            mean: 0
+            stdev: 1
   val:
     # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
     src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/val
