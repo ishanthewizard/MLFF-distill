@@ -9,7 +9,7 @@ import torch
 from tqdm import tqdm
 
 def calculate_l2mae(true, predicted):
-    return np.mean((true - predicted) ** 2)
+    return np.mean(np.abs(true - predicted))
 
 def convert_to_lmdb(hessians, lmdb_path):
     env = lmdb.open(lmdb_path, map_size=int(1e9))
@@ -39,7 +39,7 @@ def process_xyz(xyz_path, lmdb_path, model="large", dispersion=False, default_dt
     # 
     for sample in tqdm(dataset):
         true_energies.append(sample.y.item())
-        true_forces.append(sample.force.numpy())
+        true_forces.append(sample.force.numpy() * 1.21099)
 
         atomic_numbers = sample.atomic_numbers.numpy()
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy())
