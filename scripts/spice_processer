@@ -1,0 +1,4 @@
+import h5py
+file = h5py.File('/data/ishan-amin/SPICE-2.0.1.hdf5', 'r')
+group = file["water"]
+breakpoint()

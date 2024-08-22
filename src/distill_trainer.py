@@ -193,6 +193,7 @@ class DistillTrainer(OCPTrainer):
         self.config['model_attributes'] = self.teacher_config['model_attributes']
         #Load teacher config from teacher checkpoint
         self.config['model'] =  self.teacher_config['model']
+        self.config['model_attributes'].pop('scale_file', None)
         self.normalizers = {}  # This SHOULD be okay since it gets overridden later (in tasks, after datasets), but double check
         self.load_task()
         self.load_model()
@@ -360,7 +361,6 @@ class DistillTrainer(OCPTrainer):
                 percent_higher = ((self.force_mae - self.teacher_force_mae) / self.teacher_force_mae) *100
                 threshold = 5
                 if percent_higher < threshold: 
-                    raise Exception("WE GOT REALLY CLOSE!!")
                     self.loss_functions[-1][1]['coefficient'] = custom_sigmoid(percent_higher, threshold) * self.original_fjac_coeff
                 
 

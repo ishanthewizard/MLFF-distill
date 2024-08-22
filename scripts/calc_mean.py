@@ -3,7 +3,7 @@ from fairchem.src.fairchem.core.common.data_parallel import BalancedBatchSampler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 # dataset_path = '/data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train/'
-dataset_path = '/data/shared/MLFF/MD22/95_lmdb/AT-AT/train/'
+dataset_path = '/data/ishan-amin/post_data/md17/ethanol/50k/train'
 print(registry)
 config = {"src": dataset_path}
 dataset = registry.get_dataset_class("lmdb")(config)

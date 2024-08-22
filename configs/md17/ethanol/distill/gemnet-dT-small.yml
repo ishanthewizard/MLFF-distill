@@ -6,7 +6,8 @@ trainer: src.distill_trainer.DistillTrainer
 dataset:
   train:
     teacher_checkpoint_path: teacher_checkpoints/ethanol_50k_gemnet_t/best_checkpoint.pt
-    teacher_labels_folder: labels/ethanol_50k_gemnet_t_1k_labels
+    # teacher_labels_folder: labels/ethanol_50k_gemnet_t_1k_labels
+    teacher_labels_folder: labels/mace_mp0_large_ethonal1k
     label_force_batch_size: 32
     label_jac_batch_size: 64
     vectorize_teach_jacs: True

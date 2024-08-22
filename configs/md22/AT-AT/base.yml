@@ -18,9 +18,9 @@ dataset:
         energy:
           mean: -50080.08
           stdev: 0.47309175
-        forces:
-          mean: 0
-          stdev: 1.2109985
+        # forces:
+        #   mean: 0
+        #   stdev: 1.2109985
   val:
     src: /data/shared/MLFF/MD22/95_lmdb/AT-AT/val/
     # src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/AT-AT/val/

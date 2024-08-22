@@ -11,7 +11,8 @@ dataset:
   train:
     format: lmdb
     # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/train
-    src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/train
+    # src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/train
+    src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train
     key_mapping:
       y: energy
       force: forces
@@ -25,13 +26,14 @@ dataset:
         #   stdev: 1.1291506
         energy: 
             mean:  -26913.953
-            stdev: 1
+            stdev: 0.35547638
         forces: 
             mean: 0
             stdev: 1
   val:
     # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
-    src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/val
+    # src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/val
+    src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/val
 
 
 outputs:

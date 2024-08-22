@@ -37,7 +37,7 @@ class CombinedDataset(Dataset):
 
 
 class SimpleDataset(Dataset):
-    def __init__(self, file_path):
+    def __init__(self, file_path, dtype=np.float32):
         self.file_path = file_path
         self.env = lmdb.open(file_path, readonly=True, lock=False)  # Optimize LMDB by disabling lock for readonly
         with self.env.begin() as txn:
@@ -51,7 +51,8 @@ class SimpleDataset(Dataset):
         with self.env.begin() as txn:
             byte_data = txn.get(str(index).encode())
             if byte_data:
-                tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float32))
+                # tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float64)).to(torch.float32)
+                tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float32)) 
                 return tensor
             else:
                 raise Exception('blah blah blah')
