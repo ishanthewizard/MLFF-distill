@@ -134,6 +134,7 @@ class DistillTrainer(OCPTrainer):
                 for i in range(len(batch_ids)):
                     txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
         env.close()
+        breakpoint()
         logging.info(f"All tensors saved to LMDB:{file_path}")
 
     def record_labels(self, labels_folder):

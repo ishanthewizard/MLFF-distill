@@ -6,7 +6,7 @@ trainer: src.distill_trainer.DistillTrainer
 dataset:
   train:
     teacher_checkpoint_path: checkpoints/2024-08-23-10-04-00-MonomersGemSmaller/best_checkpoint.pt
-    teacher_labels_folder: labels/mace_off_medium_SpiceMonomers1k
+    teacher_labels_folder: labels/mace_off_large_SpiceMonomersNEW
     # teacher_labels_folder: labels/mace_off_large_SpiceMonomers
     # teacher_labels_folder: labels/MonomersgemSmaller
     label_force_batch_size: 32
@@ -29,7 +29,7 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 8
+  batch_size: 1
   eval_batch_size: 32
   force_jac_sample_size: 30
   print_memory_usage: False

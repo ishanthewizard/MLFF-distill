@@ -48,12 +48,13 @@ def get_accuracy(dataset_path, model='large'):
 
     # Print all unique dataset names
     print(len(train_dataset))
-    
+    num_atoms = []
     for sample in tqdm(train_dataset):
         true_energies.append(sample.y.item())
         true_forces.append(sample.force.numpy())
 
         atomic_numbers = sample.atomic_numbers.numpy()
+        num_atoms.append(len(atomic_numbers))
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy())
         atoms.calc = calc
 
@@ -62,6 +63,8 @@ def get_accuracy(dataset_path, model='large'):
     
     l2mae_energy = calculate_l2mae(np.array(true_energies), np.array(predicted_energies))
     l2mae_forces = calculate_l2mae_forces(true_forces, predicted_forces)
+    num_atoms = np.array(num_atoms)
+    print("MEAN:", np.mean(num_atoms), "MIN:", min(num_atoms), "MAX:", max(num_atoms))
     
     print(f"L2MAE Energy: {l2mae_energy}")
     print(f"L2MAE Forces: {l2mae_forces}")
@@ -72,7 +75,7 @@ if __name__ == "__main__":
     # dataset_path = '/data/ishan-amin/WATER/1k'
     # dataset_path = '/data/ishan-amin/dipeptides/all/train'
     # dataset_path = '/data/ishan-amin/lmdb_w_ref2/'
-    dataset_path = '/data/ishan-amin/spice_separated/DES370K_Monomers/val'
+    dataset_path = '/data/ishan-amin/spice_separated/Solvated_Amino_Acids/train'
     # dataset_path = '/data/ishan-amin/post_data/md17/aspirin/1k/'
     # dataset_path = '/data/ishan-amin/post_data/md22/AT_AT/1k/'
 

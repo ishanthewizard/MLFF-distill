@@ -59,7 +59,7 @@ class SimpleDataset(Dataset):
                 tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float32))  # FOR EVERYTHING ELSE
                 return tensor
             else:
-                breakpoint()
+                print("UH OH: ", index)
                 raise Exception('blah blah blah')
 
     def close_db(self):
