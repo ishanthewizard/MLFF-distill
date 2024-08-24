@@ -2,12 +2,13 @@ from torch.utils.data import Dataset, DataLoader
 import lmdb
 import torch
 import numpy as np
-
+import logging 
 class CombinedDataset(Dataset):
     def __init__(self, main_dataset, teach_force_dataset, force_jac_dataset=None):
-        assert len(main_dataset) == len(teach_force_dataset), "Datasets must be of the same size"
-        if force_jac_dataset:
-            assert len(main_dataset) == len(force_jac_dataset), "Datasets must be of the same size"
+        if  len(main_dataset) != len(teach_force_dataset):
+            logging.info("WARNING: TEACH FORCE DATASET DIFFERENT SIZE")
+        if force_jac_dataset and len(main_dataset) != len(force_jac_dataset):
+            logging.info("WARNING: FORCE JACOBIAN DIFFERENT SIZE")
         self.main_dataset = main_dataset
         self.teach_force_dataset = teach_force_dataset
         self.force_jac_dataset = force_jac_dataset 
@@ -22,7 +23,8 @@ class CombinedDataset(Dataset):
         teacher_forces = self.teach_force_dataset[idx].reshape(num_atoms, 3)
         if self.force_jac_dataset:
             num_free_atoms = (main_batch.fixed == 0).sum().item()
-            force_jacs  = self.force_jac_dataset[idx].reshape(num_free_atoms, 3, num_atoms, 3) 
+            # force_jacs  = self.force_jac_dataset[idx].reshape(num_free_atoms, 3, num_atoms, 3) 
+            force_jacs = self.force_jac_dataset[idx] # DON'T RESHAPE! We'll do it later, easier for atoms of different lengths
         else: 
             force_jacs = None
         main_batch.teacher_forces = teacher_forces
@@ -48,13 +50,16 @@ class SimpleDataset(Dataset):
         return self.length
 
     def __getitem__(self, index):
+        if isinstance(index, torch.Tensor):
+            index = index.item()  # Convert the single-element tensor to an int
         with self.env.begin() as txn:
             byte_data = txn.get(str(index).encode())
             if byte_data:
-                # tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float64)).to(torch.float32)
-                tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float32)) 
+                # tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float64)).to(torch.float32) # FOR MACE
+                tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float32))  # FOR EVERYTHING ELSE
                 return tensor
             else:
+                breakpoint()
                 raise Exception('blah blah blah')
 
     def close_db(self):

@@ -203,7 +203,7 @@ class DistillTrainer(OCPTrainer):
         self.config['model_attributes'] = model_attributes_holder
         self.config['model'] = model_name_holder
 
-    def insert_teach_datasets(self, main_dataset, dataset_type):
+    def insert_teach_datasets(self, main_dataset, dataset_type, indxs=None):
         #dataset_type either equals 'train' or 'val'
         self.is_validating = False
         labels_folder = self.config['dataset']['teacher_labels_folder']
@@ -220,8 +220,12 @@ class DistillTrainer(OCPTrainer):
         distutils.synchronize()
             
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces.lmdb'  ))
+        if indxs is not None:
+            teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
         if dataset_type == 'train':
             force_jac_dataset = SimpleDataset(os.path.join(labels_folder, 'force_jacobians.lmdb'))
+            if indxs is not None:
+                force_jac_dataset = Subset(force_jac_dataset, torch.tensor(indxs))
         else: 
             force_jac_dataset = None
         return CombinedDataset(main_dataset,  teacher_force_dataset, force_jac_dataset)
@@ -244,21 +248,6 @@ class DistillTrainer(OCPTrainer):
                 self.config["dataset"].get("format", "lmdb")
             )(self.config["dataset"])
             
-            # RYAN'S CODE:
-            if "split" in self.config["dataset"]:
-                # to make sampling deterministic, seed rng
-                logging.info(f"original size {len(self.train_dataset)}, target size {self.config['dataset']['split']}")
-                if len(self.train_dataset) >= self.config["dataset"]["split"]:
-                    indx = np.random.default_rng(seed=0).choice(
-                        len(self.train_dataset), 
-                        self.config["dataset"]["split"], 
-                        replace=False
-                    )
-                    self.train_dataset = Subset(self.train_dataset, torch.tensor(indx))
-                    logging.info("Subsetted train set.")
-                else:
-                    logging.info("Original size must be greater than target size!")
-            # END RYAN's CODE
 
             #LOAD IN VAL EARLIER:
             if self.config["val_dataset"].get("use_train_settings", True):
@@ -273,21 +262,38 @@ class DistillTrainer(OCPTrainer):
             )(val_config)
             # END LOAD IN VAL
             # Ryan's code
+            train_indxs = val_indxs = None
             if "split" in val_config:
                     logging.info(f"original size {len(self.val_dataset)}, target size {val_config['split']}")
                     # to make sampling deterministic, seed rng
                     if len(self.val_dataset) >= val_config["split"]:
-                        indx = np.random.default_rng(seed=0).choice(
+                        val_indxs = np.random.default_rng(seed=0).choice(
                             len(self.val_dataset), 
                             val_config["split"], 
                             replace=False
                         )
-                        self.val_dataset = Subset(self.val_dataset, torch.tensor(indx))
+                        self.val_dataset = Subset(self.val_dataset, torch.tensor(val_indxs))
                         logging.info("Subsetted validation set.")
                     else:
                         logging.info("Original size must be greater than target size!")
             # END RYAN's CODE
-            self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train') # ADDED LINE
+            # RYAN'S CODE:
+            if "split" in self.config["dataset"]:
+                # to make sampling deterministic, seed rng
+                logging.info(f"original size {len(self.train_dataset)}, target size {self.config['dataset']['split']}")
+                if len(self.train_dataset) >= self.config["dataset"]["split"]:
+                    train_indxs = np.random.default_rng(seed=0).choice(
+                        len(self.train_dataset), 
+                        self.config["dataset"]["split"], 
+                        replace=False
+                    )
+                    self.train_dataset = Subset(self.train_dataset, torch.tensor(train_indxs))
+                    logging.info("Subsetted train set.")
+                else:
+                    logging.info("Original size must be greater than target size!")
+            # END RYAN's CODE
+            self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train', train_indxs ) # ADDED LINE
+
             self.train_sampler = self.get_sampler(
                 self.train_dataset,
                 self.config["optim"]["batch_size"],
@@ -299,7 +305,7 @@ class DistillTrainer(OCPTrainer):
             )
             if self.config.get("val_dataset", None):
                 ## START ISHAN CODE
-                self.val_dataset = self.insert_teach_datasets(self.val_dataset, 'val')
+                self.val_dataset = self.insert_teach_datasets(self.val_dataset, 'val', val_indxs)
                 # END ISHAN CODE
                 self.val_sampler = self.get_sampler(
                     self.val_dataset,

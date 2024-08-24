@@ -1,11 +1,11 @@
 includes:
-- configs/md22/Ac-Ala3/base.yml
+- configs/SPICE/monomers/base.yml
 
 model:
   name: gemnet_t
   num_spherical: 7
   num_radial: 6
-  num_blocks: 4
+  num_blocks: 3 # even smaller!
   emb_size_atom: 64 #smaller
   emb_size_edge: 64 #smaller
   emb_size_trip: 32 #smaller
@@ -34,7 +34,7 @@ model:
   direct_forces: True
 
 optim:
-  batch_size: 4
+  batch_size: 32
   eval_batch_size: 32
   num_workers: 4
   lr_initial: 0.001

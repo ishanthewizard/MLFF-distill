@@ -3,38 +3,30 @@ includes:
   # - configs/slurm/debug.yml
 logger: 
   name: wandb
-  project: mdbench
+  project: spice
 
 trainer: ocp
 
 dataset:
   train:
     format: lmdb
-    # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/train
-    # src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/train
-    src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train
-    # split: 5000
+    src: /data/ishan-amin/spice_separated/DES370K_Monomers/train
+    split: 1000
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
-        # energy:
-        #   mean: -26913.953
-        #   stdev: 0.35547638
-        # forces:
-        #   mean: 0
-        #   stdev: 1.1291506
         energy: 
-            mean:  -26913.953
-            stdev: 0.35547638
+            mean: -15358.563880754844
+            stdev: 1
         forces: 
             mean: 0
             stdev: 1
   val:
     # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
     # src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/val
-    src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/val
+    src: /data/ishan-amin/spice_separated/DES370K_Monomers/val
 
 
 outputs:
@@ -50,7 +42,7 @@ outputs:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 1
+      coefficient: 0
   - forces:
       fn: l2mae
       coefficient: 100

@@ -129,11 +129,11 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False)
     for i, atoms_in_mol in enumerate(batch.natoms):
         submask = mask[cumulative_sums[i]:cumulative_sums[i+1]]
         samples = sample_with_mask(atoms_in_mol, num_samples, submask)
-        samples[:, 0] += cumulative_sums[i]  # offset to the correct molecule
-        by_molecule.append(samples)
-        
+        by_molecule.append(samples) # swap below and above line, crucial
+        offset_samples = samples.clone()  # Create a copy of the samples array to avoid modifying the original
+        offset_samples[:, 0] += cumulative_sums[i]
         # Vectorized assignment to grad_outputs
-        grad_outputs[torch.arange(min(num_samples, atoms_in_mol*3)), samples[:, 0], samples[:, 1]] = 1
+        grad_outputs[torch.arange(min(num_samples, atoms_in_mol*3)), offset_samples[:, 0], offset_samples[:, 1]] = 1
     # Compute the jacobian using grad_outputs
     jac = get_jacobian(forces, batch.pos, grad_outputs, create_graph=True, looped=looped)
     
@@ -141,7 +141,12 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False)
     jacs_per_mol = [jac[:len(mol_samps), cum_sum:cum_sum + nat, :] for mol_samps, cum_sum, nat in zip(by_molecule, cumulative_sums[:-1], natoms)]
     
     # Preparing the true jacobians in batch (we're gonna have to change this later most likely)
-    true_jacs_per_mol = [batch['force_jacs'][samples[:, 0], samples[:, 1]] for samples in by_molecule]
+    # true_jacs_per_mol = [batch['force_jacs'][samples[:, 0], samples[:, 1]] for samples in by_molecule]
+    cum_jac_indexes = [0] + torch.cumsum((natoms**2) * 9, dim=0).tolist()
+    true_jacs_per_mol = []
+    for i, samples in enumerate(by_molecule):
+        curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(natoms[i], 3, natoms[i], 3)
+        true_jacs_per_mol.append(curr[samples[:,0], samples[:, 1]])
 
     loss_fn = L2MAELoss()
     total_loss = sum(loss_fn(jac, true_jac) for jac, true_jac in zip(jacs_per_mol, true_jacs_per_mol)) / len(jacs_per_mol)

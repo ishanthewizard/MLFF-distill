@@ -1,29 +1,34 @@
 from fairchem.core.common.registry import registry
-from fairchem.src.fairchem.core.common.data_parallel import BalancedBatchSampler, OCPCollater
-from torch.utils.data import DataLoader
 from tqdm import tqdm
+import numpy as np
+
 # dataset_path = '/data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train/'
-dataset_path = '/data/ishan-amin/post_data/md17/ethanol/50k/train'
+dataset_path = '/data/ishan-amin/spice_separated/DES370K_Monomers/train'
 print(registry)
 config = {"src": dataset_path}
 dataset = registry.get_dataset_class("lmdb")(config)
 
-# Initialize sums and counts
-y_sum = 0.0
-forces_sum = 0.0
-y_count = 0
-forces_count = 0
+# Initialize lists to store the values
+y_values = []
+forces_values = []
 
-# Iterate over all batches
+# Iterate over all samples to gather data
 for sample in tqdm(dataset):
-    y_sum += sample.y.sum().item()
-    forces_sum += sample['force'].sum().item()
-    y_count += sample.y.numel()
-    forces_count += sample['force'].numel()
+    y_values.append(sample.y.numpy().flatten())
+    forces_values.append(sample['force'].numpy().flatten())
 
-# Calculate means
-y_mean = y_sum / y_count
-forces_mean = forces_sum / forces_count
+# Convert lists to numpy arrays
+y_values = np.concatenate(y_values)
+forces_values = np.concatenate(forces_values)
+
+# Calculate means and standard deviations
+y_mean = np.mean(y_values)
+y_std = np.std(y_values)
+
+forces_mean = np.mean(forces_values)
+forces_std = np.std(forces_values)
 
 print(f"Mean of dataset.y: {y_mean}")
+print(f"Standard Deviation of dataset.y: {y_std}")
 print(f"Mean of dataset['forces']: {forces_mean}")
+print(f"Standard Deviation of dataset['forces']: {forces_std}")

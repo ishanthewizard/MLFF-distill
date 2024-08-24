@@ -23,7 +23,6 @@ def get_accuracy(xyz_file_path, model='large'):
     predicted_forces = []
     
     for atoms in tqdm(conformations):
-        breakpoint()
         true_energies.append(atoms.info['TotEnergy'])
         true_forces.append(atoms.arrays['dft_total_gradient'])
 

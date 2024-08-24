@@ -5,7 +5,7 @@ model:
   name: gemnet_t
   num_spherical: 7
   num_radial: 6
-  num_blocks: 3 # even smaller!
+  num_blocks: 2 # smallest!
   emb_size_atom: 64 #smaller
   emb_size_edge: 64 #smaller
   emb_size_trip: 32 #smaller
