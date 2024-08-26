@@ -46,6 +46,6 @@ optim:
   factor: 0.8
   min_lr: 0.000001  
   
-  max_epochs: 10000
+  max_epochs: 500
   ema_decay: 0.999
   clip_grad_norm: 10

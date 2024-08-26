@@ -136,47 +136,92 @@ class DistillTrainer(OCPTrainer):
         env.close()
         logging.info(f"All tensors saved to LMDB:{file_path}")
 
-    def record_labels(self, labels_folder):
-        self.model.eval()
+
+    def launch_record_tasks(self, labels_folder, dataset_type):
+        """
+        This function launches the recording tasks across distributed workers without
+        the need for manually spawning processes since they are already distributed.
+        """
+        rank = distutils.get_rank()
+        world_size = distutils.get_world_size()
+
+        dataset_size = len(self.train_dataset if dataset_type == 'train' else self.val_dataset)
+        indices_per_worker = dataset_size // world_size
+        start_idx = rank * indices_per_worker
+        end_idx = start_idx + indices_per_worker if rank < world_size - 1 else dataset_size
+
+        # Each worker calls the record_labels_parallel function with its assigned indices
+        self.record_labels_parallel(labels_folder, dataset_type, start_idx, end_idx)
+    
+
+    def record_labels_parallel(self, labels_folder, dataset_type, start_idx, end_idx):
+        """
+        This function records labels and saves them in separate LMDB files for parallel processing.
+        Each worker handles its segment of the dataset.
+        """
+        # Subset the datasets based on the provided indices
+        if dataset_type == 'train':
+            dataset = self.train_dataset
+        elif dataset_type == 'val':
+            dataset = self.val_dataset
+        else:
+            raise ValueError("Invalid dataset type provided")
+
+        subset_dataset = Subset(dataset, range(start_idx, end_idx))
+        dataloader = DataLoader(subset_dataset, batch_size=self.config["dataset"]["label_force_batch_size"], shuffle=False)
+
+        # Define LMDB file path for this particular worker
+        lmdb_path = os.path.join(labels_folder, f"{dataset_type}_forces", f"data.{distutils.get_rank():04d}.lmdb")
+
+        # Function to calculate forces
         get_forces = lambda data_point: self._forward(data_point)['forces']
-        def get_seperated_forces(batch):
-            all_forces = self._forward(batch)['forces']
-            natoms = batch.natoms
-            return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
-        should_mask = self.output_targets['forces']["train_on_free_atoms"]
-        get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
-        # def get_seperated_force_jacs(batch):
-        #     all_forces = self._forward(batch)['forces']
-        #     natoms = batch.natoms
-        #     jacs = get_jacobian_old(all_forces, batch.pos)
-        #     return [jacs[sum(natoms[:i]):sum(natoms[:i+1]), :, sum(natoms[:i]):sum(natoms[:i+1]), :] for i in range(len(natoms))]
-        temp_train_loader = self.get_dataloader(
-                self.train_dataset,
-                self.get_sampler(
-                self.train_dataset,
-                self.config["dataset"]["label_force_batch_size"],
-                shuffle=False,
-            )
-        )
-        temp_jac_loader = self.get_dataloader(
-                self.train_dataset,
-                self.get_sampler(
-                self.train_dataset,
-                self.config["dataset"]["label_jac_batch_size"],
-                shuffle=False,
-            )
-        )
-        temp_val_loader = self.get_dataloader(
-                self.val_dataset,
-                self.get_sampler(
-                self.val_dataset,
-                self.config["dataset"]["label_force_batch_size"],
-                shuffle=False,
-            )
-        )
-        self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
-        self.record_and_save(temp_jac_loader, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_seperated_force_jacs )
-        self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
+        
+        # Record and save the data
+        self.record_and_save(dataloader, lmdb_path, get_forces)
+
+        if dataset_type == 'train':
+            # Only for training dataset, save jacobians as well
+            jac_dataloader = DataLoader(subset_dataset, batch_size=self.config["dataset"]["label_jac_batch_size"], shuffle=False)
+            jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
+            get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=self.output_targets['forces']["train_on_free_atoms"])
+            self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
+
+    # def record_labels(self, labels_folder):
+    #     self.model.eval()
+    #     get_forces = lambda data_point: self._forward(data_point)['forces']
+    #     def get_seperated_forces(batch):
+    #         all_forces = self._forward(batch)['forces']
+    #         natoms = batch.natoms
+    #         return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
+    #     should_mask = self.output_targets['forces']["train_on_free_atoms"]
+    #     get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
+    #     temp_train_loader = self.get_dataloader(
+    #             self.train_dataset,
+    #             self.get_sampler(
+    #             self.train_dataset,
+    #             self.config["dataset"]["label_force_batch_size"],
+    #             shuffle=False,
+    #         )
+    #     )
+    #     temp_jac_loader = self.get_dataloader(
+    #             self.train_dataset,
+    #             self.get_sampler(
+    #             self.train_dataset,
+    #             self.config["dataset"]["label_jac_batch_size"],
+    #             shuffle=False,
+    #         )
+    #     )
+    #     temp_val_loader = self.get_dataloader(
+    #             self.val_dataset,
+    #             self.get_sampler(
+    #             self.val_dataset,
+    #             self.config["dataset"]["label_force_batch_size"],
+    #             shuffle=False,
+    #         )
+    #     )
+    #     self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
+    #     self.record_and_save(temp_jac_loader, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_seperated_force_jacs )
+    #     self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
 
     def load_teacher_model_and_record(self, labels_folder):
         model_attributes_holder = self.config['model_attributes']
@@ -198,7 +243,8 @@ class DistillTrainer(OCPTrainer):
         self.load_task()
         self.load_model()
         self.load_checkpoint(self.config["dataset"]["teacher_checkpoint_path"])
-        self.record_labels(labels_folder)
+        self.launch_record_tasks(labels_folder, 'train')
+        self.launch_record_tasks(labels_folder, 'val')
 
         self.config['model_attributes'] = model_attributes_holder
         self.config['model'] = model_name_holder
@@ -215,15 +261,17 @@ class DistillTrainer(OCPTrainer):
             folder_exists = torch.tensor(False, dtype=torch.bool).to(self.device)
             distutils.broadcast(folder_exists, src=0)
         if not folder_exists.item():
-            os.makedirs(labels_folder, exist_ok=True)
+            os.makedirs(os.path.join(labels_folder, "train_forces"), exist_ok=True)
+            os.makedirs(os.path.join(labels_folder, "val_forces"), exist_ok=True)
+            os.makedirs(os.path.join(labels_folder, "force_jacobians"), exist_ok=True)
             self.load_teacher_model_and_record(labels_folder)
         distutils.synchronize()
             
-        teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces.lmdb'  ))
+        teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
         if indxs is not None:
             teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
         if dataset_type == 'train':
-            force_jac_dataset = SimpleDataset(os.path.join(labels_folder, 'force_jacobians.lmdb'))
+            force_jac_dataset = SimpleDataset(os.path.join(labels_folder, 'force_jacobians'))
             if indxs is not None:
                 force_jac_dataset = Subset(force_jac_dataset, torch.tensor(indxs))
         else: 

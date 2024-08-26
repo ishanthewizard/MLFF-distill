@@ -11,8 +11,8 @@ dataset:
   train:
     format: lmdb
     # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/train
-    # src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/train
-    src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train
+    src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/Ac-Ala3-NHMe/train
+    # src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train
     # split: 5000
     key_mapping:
       y: energy
@@ -33,8 +33,8 @@ dataset:
             stdev: 1
   val:
     # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
-    # src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/val
-    src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/val
+    src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/Ac-Ala3-NHMe/train
+    # src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/val
 
 
 outputs:

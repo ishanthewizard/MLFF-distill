@@ -1,3 +1,5 @@
+import bisect
+import os
 from torch.utils.data import Dataset, DataLoader
 import lmdb
 import torch
@@ -39,28 +41,46 @@ class CombinedDataset(Dataset):
 
 
 class SimpleDataset(Dataset):
-    def __init__(self, file_path, dtype=np.float32):
-        self.file_path = file_path
-        self.env = lmdb.open(file_path, readonly=True, lock=False)  # Optimize LMDB by disabling lock for readonly
-        with self.env.begin() as txn:
-            stat = txn.stat()  # Get statistics of the database
-            self.length  =  stat['entries']  # Number of entries in the databas
+    def __init__(self, folder_path, dtype=np.float32):
+        self.folder_path = folder_path
+        self.dtype = dtype
+        
+        # List all LMDB files in the folder
+        db_paths = sorted([os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.lmdb')])
+        assert len(db_paths) > 0, "No LMDB files found in the specified folder."
+
+        self.envs = []
+        self._keys = []
+        self._keylen_cumulative = []
+
+        total_entries = 0
+        for db_path in db_paths:
+            env = lmdb.open(db_path, readonly=True, lock=False)
+            self.envs.append(env)
+            with env.begin() as txn:
+                num_entries = txn.stat()['entries']
+                total_entries += num_entries
+                self._keylen_cumulative.append(total_entries)
 
     def __len__(self):
-        return self.length
+        return self._keylen_cumulative[-1] if self._keylen_cumulative else 0
 
     def __getitem__(self, index):
         if isinstance(index, torch.Tensor):
-            index = index.item()  # Convert the single-element tensor to an int
-        with self.env.begin() as txn:
-            byte_data = txn.get(str(index).encode())
+            index = index.item()  # Convert tensor to integer
+
+        # Find which database to access
+        db_idx = bisect.bisect_right(self._keylen_cumulative, index)
+        el_idx = index - (self._keylen_cumulative[db_idx - 1] if db_idx > 0 else 0)
+
+        with self.envs[db_idx].begin() as txn:
+            byte_data = txn.get(str(el_idx).encode())
             if byte_data:
-                # tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float64)).to(torch.float32) # FOR MACE
-                tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=np.float32))  # FOR EVERYTHING ELSE
+                tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=self.dtype))
                 return tensor
             else:
-                print("UH OH: ", index)
-                raise Exception('blah blah blah')
+                raise Exception(f"Data not found for index {index} in LMDB file.")
 
     def close_db(self):
-        self.env.close()
+        for env in self.envs:
+            env.close()
