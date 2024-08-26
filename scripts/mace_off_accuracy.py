@@ -23,33 +23,21 @@ def get_accuracy(dataset_path, model='large'):
     
     # Load the dataset
     index = 0
-    train_dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
-    # train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, 'train')})
-    # val_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, 'val')})
-    # test_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, 'test')})
-    # Create a subset of 200 samples with a fixed seed
-    print(len(train_dataset))
+    dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
+    print(len(dataset))
     # indx = np.random.default_rng(seed=0).choice(
     #     len(train_dataset), 
-    #     500, 
+    #     1000, 
     #     replace=False
     # )
-    # train_dataset = Subset(train_dataset, torch.tensor(indx))
+    # dataset = Subset(train_dataset, torch.tensor(indx))
+    print(len(dataset))
     true_energies = []
     true_forces = []
     predicted_energies = []
     predicted_forces = []
-
-    unique_dataset_names = set()
-    #     # Iterate through the dataset and collect 'dataset_name' keys
-    # for sample in tqdm(train_dataset, desc="Processing samples"):
-    #     dataset_name = sample['dataset_name']
-    #     unique_dataset_names.add(dataset_name)
-
-    # Print all unique dataset names
-    print(len(train_dataset))
     num_atoms = []
-    for sample in tqdm(train_dataset):
+    for sample in tqdm(dataset):
         true_energies.append(sample.y.item())
         true_forces.append(sample.force.numpy())
 
@@ -70,13 +58,6 @@ def get_accuracy(dataset_path, model='large'):
     print(f"L2MAE Forces: {l2mae_forces}")
 
 if __name__ == "__main__":
-
-    # dataset_path = '/data/ishan-amin/post_data/md17/ethanol/1k/' 
-    # dataset_path = '/data/ishan-amin/WATER/1k'
-    # dataset_path = '/data/ishan-amin/dipeptides/all/train'
-    # dataset_path = '/data/ishan-amin/lmdb_w_ref2/'
-    dataset_path = '/data/ishan-amin/spice_separated/Solvated_Amino_Acids/train'
-    # dataset_path = '/data/ishan-amin/post_data/md17/aspirin/1k/'
-    # dataset_path = '/data/ishan-amin/post_data/md22/AT_AT/1k/'
+    dataset_path = '/data/ishan-amin/spice_separated/DES370K_Monomers/test'
 
     get_accuracy(dataset_path)

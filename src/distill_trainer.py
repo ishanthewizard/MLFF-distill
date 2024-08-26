@@ -101,12 +101,12 @@ class DistillTrainer(OCPTrainer):
             name=name,
             gp_gpus=gp_gpus,
         )
-        self.force_mae =  float('inf')
+        self.force_mae =  None
         self.start_time = time.time()
         self.original_fjac_coeff = self.loss_functions[-1][1]['coefficient']
         # Compute teacher MAE
         self.teacher_force_mae = 0
-        for datapoint in self.val_dataset:
+        for datapoint in tqdm(self.val_dataset):
             true_label = datapoint['forces']
             if 'forces' in self.normalizers:
                 true_label = self.normalizers['forces'].norm(true_label)
@@ -134,7 +134,6 @@ class DistillTrainer(OCPTrainer):
                 for i in range(len(batch_ids)):
                     txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
         env.close()
-        breakpoint()
         logging.info(f"All tensors saved to LMDB:{file_path}")
 
     def record_labels(self, labels_folder):
@@ -361,14 +360,19 @@ class DistillTrainer(OCPTrainer):
 
     def update_loss_coefficients(self):
         # self.force_mae, self.teacher_force_mae are good to go
+        if self.force_mae == None:
+            self.validate()
+            print("STUDENT MAE:", self.force_mae)
         if self.step % 20 == 0:
             if self.force_mae < self.teacher_force_mae:
-                self.loss_functions[-1][1]['coefficient'] = 0
-            else:
-                percent_higher = ((self.force_mae - self.teacher_force_mae) / self.teacher_force_mae) *100
-                threshold = 5
-                if percent_higher < threshold: 
-                    self.loss_functions[-1][1]['coefficient'] = custom_sigmoid(percent_higher, threshold) * self.original_fjac_coeff
+                logging.info("EXCEEDED TEACHER ACCURACY!!")
+                # self.loss_functions[-1][1]['coefficient'] = 0
+
+            percent_higher = ((self.force_mae - self.teacher_force_mae) / self.teacher_force_mae) *100
+            threshold = 5
+            if percent_higher < threshold: 
+                self.loss_functions[-1][1]['coefficient'] = 0.25 * self.original_fjac_coeff
+                # self.loss_functions[-1][1]['coefficient'] = custom_sigmoid(percent_higher, threshold) * self.original_fjac_coeff
                 
 
 
@@ -406,6 +410,8 @@ class DistillTrainer(OCPTrainer):
             force_jac_loss = get_force_jac_loss(out, batch, self.config['optim']['force_jac_sample_size'], mask, should_mask, looped=(not self.config['optim']["vectorize_jacs"]))
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
+        else:
+            batch['force_jac_loss'] = torch.tensor(0)
         ## FINISH ISHAN ADDED CODE
         for loss_fn in self.loss_functions:
             target_name, loss_info = loss_fn

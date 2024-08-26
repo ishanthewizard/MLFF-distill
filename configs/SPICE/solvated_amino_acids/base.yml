@@ -1,0 +1,58 @@
+includes:
+  - configs/slurm/regular.yml
+  # - configs/slurm/debug.yml
+logger: 
+  name: wandb
+  project: spice
+
+trainer: ocp
+
+dataset:
+  train:
+    format: lmdb
+    src: /data/ishan-amin/spice_separated/DES370K_Monomers/train
+    key_mapping:
+      y: energy
+      force: forces
+    transforms:
+      normalizer:
+        energy: 
+            mean: -60224.1484375
+            stdev: 1
+        forces: 
+            mean: 0
+            stdev: 1
+  val:
+    # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
+    # src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/val
+    src: /data/ishan-amin/spice_separated/DES370K_Monomers/val
+
+
+outputs:
+  energy:
+    shape: 1
+    level: system
+  forces:
+    irrep_dim: 1
+    level: atom
+    train_on_free_atoms: True
+    eval_on_free_atoms: True
+
+loss_functions:
+  - energy:
+      fn: mae
+      coefficient: 0
+  - forces:
+      fn: l2mae
+      coefficient: 100
+evaluation_metrics:
+  metrics:
+    energy:
+      - mae
+    forces:
+      - mae
+      - cosine_similarity
+      - magnitude_error
+    misc:
+      - energy_forces_within_threshold
+  primary_metric: forces_mae

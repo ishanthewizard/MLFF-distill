@@ -3,7 +3,7 @@ from tqdm import tqdm
 import numpy as np
 
 # dataset_path = '/data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train/'
-dataset_path = '/data/ishan-amin/spice_separated/DES370K_Monomers/train'
+dataset_path = '/data/ishan-amin/spice_separated/Solvated_Amino_Acids/train'
 print(registry)
 config = {"src": dataset_path}
 dataset = registry.get_dataset_class("lmdb")(config)
