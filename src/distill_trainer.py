@@ -118,10 +118,7 @@ class DistillTrainer(OCPTrainer):
         # Assuming train_loader is your DataLoader
         data0 = next(iter(dataloader))
         avg_num_atoms = int(sum(data0.natoms) / len(data0.natoms)) # This will hopefully give a good estimate of average atom # for datasets with different sized atoms
-        if file_path.endswith('force_jacobians.lmdb'):
-            map_size= int((len(dataloader.dataset) * (avg_num_atoms * 3* avg_num_atoms * 3) * 4) * 2 + 1_000_000)
-        else:
-            map_size = int((len(dataloader.dataset) * (avg_num_atoms * 3) * 4) * 2 + 1_000_000)
+        map_size= 1099511627776 * 2
 
         env = lmdb.open(file_path, map_size=map_size)
         env_info = env.info()
@@ -181,10 +178,13 @@ class DistillTrainer(OCPTrainer):
         lmdb_path = os.path.join(labels_folder, f"{dataset_type}_forces", f"data.{distutils.get_rank():04d}.lmdb")
 
         # Function to calculate forces
-        get_forces = lambda data_point: self._forward(data_point)['forces']
+        def get_seperated_forces(batch):
+            all_forces = self._forward(batch)['forces']
+            natoms = batch.natoms
+            return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
-        self.record_and_save(dataloader, lmdb_path, get_forces)
+        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
         if dataset_type == 'train':
             # Only for training dataset, save jacobians as well
@@ -195,7 +195,8 @@ class DistillTrainer(OCPTrainer):
                 )
             )
             jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
-            get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=self.output_targets['forces']["train_on_free_atoms"])
+            should_mask = self.output_targets['forces']["train_on_free_atoms"]
+            get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
             self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
 
     # def record_labels(self, labels_folder):
