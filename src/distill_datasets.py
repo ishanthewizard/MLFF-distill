@@ -5,6 +5,8 @@ import lmdb
 import torch
 import numpy as np
 import logging 
+from torch.utils.data import Sampler
+
 class CombinedDataset(Dataset):
     def __init__(self, main_dataset, teach_force_dataset, force_jac_dataset=None):
         if  len(main_dataset) != len(teach_force_dataset):
@@ -71,10 +73,9 @@ class SimpleDataset(Dataset):
 
         # Find which database to access
         db_idx = bisect.bisect_right(self._keylen_cumulative, index)
-        el_idx = index - (self._keylen_cumulative[db_idx - 1] if db_idx > 0 else 0)
 
         with self.envs[db_idx].begin() as txn:
-            byte_data = txn.get(str(el_idx).encode())
+            byte_data = txn.get(str(index).encode())
             if byte_data:
                 tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=self.dtype))
                 return tensor
@@ -84,3 +85,14 @@ class SimpleDataset(Dataset):
     def close_db(self):
         for env in self.envs:
             env.close()
+
+class SubsetDistributedSampler(Sampler):
+    def __init__(self, dataset, indices):
+        self.dataset = dataset
+        self.indices = indices
+
+    def __iter__(self):
+        return iter(self.indices)
+
+    def __len__(self):
+        return len(self.indices)

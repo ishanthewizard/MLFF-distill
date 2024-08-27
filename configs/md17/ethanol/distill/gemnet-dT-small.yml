@@ -1,15 +1,14 @@
 includes:
-- /home/ishan-amin/MLFF-distill/configs/md17/ethanol/gemnet-dT-small.yml
+- configs/md17/ethanol/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
     teacher_checkpoint_path: teacher_checkpoints/ethanol_50k_gemnet_t/best_checkpoint.pt
-    # teacher_labels_folder: labels/ethanol_50k_gemnet_t_1k_labels
-    teacher_labels_folder: labels/mace_mp0_large_ethonal1k
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/ethanol_1k_distributed_test
     label_force_batch_size: 32
-    label_jac_batch_size: 64
+    label_jac_batch_size: 16
     vectorize_teach_jacs: True
 
 loss_functions:
@@ -28,7 +27,7 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 8
+  batch_size: 1
   eval_batch_size: 32
   force_jac_sample_size: 30
   print_memory_usage: False

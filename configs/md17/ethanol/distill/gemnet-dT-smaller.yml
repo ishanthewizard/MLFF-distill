@@ -6,7 +6,7 @@ trainer: src.distill_trainer.DistillTrainer
 dataset:
   train:
     teacher_checkpoint_path: teacher_checkpoints/ethanol_50k_gemnet_t/best_checkpoint.pt
-    teacher_labels_folder: labels/ethanol_1k_distributed_test
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/ethanol_1k_distributed_test
     label_force_batch_size: 32
     label_jac_batch_size: 16
     vectorize_teach_jacs: True
@@ -14,16 +14,16 @@ dataset:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 0
+      coefficient: .25
   - forces:
       fn: l2mae
-      coefficient: 100
+      coefficient: 250
   - teacher_forces:
       fn: l2mae
       coefficient: 0
   - force_jacs:
       fn: l2mae
-      coefficient: 400
+      coefficient: 100
       reduction: mean_all
 
 optim:
