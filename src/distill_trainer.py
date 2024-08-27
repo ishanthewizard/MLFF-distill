@@ -168,7 +168,14 @@ class DistillTrainer(OCPTrainer):
             raise ValueError("Invalid dataset type provided")
 
         subset_dataset = Subset(dataset, range(start_idx, end_idx))
-        dataloader = DataLoader(subset_dataset, batch_size=self.config["dataset"]["label_force_batch_size"], shuffle=False)
+        dataloader = self.get_dataloader(
+                subset_dataset,
+                self.get_sampler(
+                subset_dataset,
+                self.config["dataset"]["label_force_batch_size"],
+                shuffle=False,
+            )
+        )
 
         # Define LMDB file path for this particular worker
         lmdb_path = os.path.join(labels_folder, f"{dataset_type}_forces", f"data.{distutils.get_rank():04d}.lmdb")
@@ -181,7 +188,12 @@ class DistillTrainer(OCPTrainer):
 
         if dataset_type == 'train':
             # Only for training dataset, save jacobians as well
-            jac_dataloader = DataLoader(subset_dataset, batch_size=self.config["dataset"]["label_jac_batch_size"], shuffle=False)
+            jac_dataloader = self.get_dataloader(subset_dataset, self.get_sampler(
+                subset_dataset,
+                self.config["dataset"]["label_jac_batch_size"],
+                shuffle=False,
+                )
+            )
             jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
             get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=self.output_targets['forces']["train_on_free_atoms"])
             self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
