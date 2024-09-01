@@ -17,20 +17,25 @@ def calculate_l2mae_forces(true_forces, predicted_forces):
         l2mae_forces.append(np.mean(np.abs(true - pred)))
     return np.mean(l2mae_forces)
 
-def get_accuracy(dataset_path, model='large'):
+def get_accuracy(dataset_path, model='small'):
     # Load model
+    breakpoint()
     calc = mace_off(model=model, dispersion=False,  default_dtype="float32", device="cuda")
+    # Counting parameters
+    total_params = sum(p.numel() for p in calc.parameters())
+    print(f"Total trainable parameters: {total_params}")
+    # print("TOTAL_PARAMS:", calc.parameters)
     
     # Load the dataset
     index = 0
     dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
     print(len(dataset))
-    # indx = np.random.default_rng(seed=0).choice(
-    #     len(train_dataset), 
-    #     1000, 
-    #     replace=False
-    # )
-    # dataset = Subset(train_dataset, torch.tensor(indx))
+    indx = np.random.default_rng(seed=0).choice(
+        len(dataset), 
+        500, 
+        replace=False
+    )
+    dataset = Subset(dataset, torch.tensor(indx))
     print(len(dataset))
     true_energies = []
     true_forces = []
@@ -53,11 +58,11 @@ def get_accuracy(dataset_path, model='large'):
     l2mae_forces = calculate_l2mae_forces(true_forces, predicted_forces)
     num_atoms = np.array(num_atoms)
     print("MEAN:", np.mean(num_atoms), "MIN:", min(num_atoms), "MAX:", max(num_atoms))
-    
-    print(f"L2MAE Energy: {l2mae_energy}")
-    print(f"L2MAE Forces: {l2mae_forces}")
 
+    print(f"L2MAE Energy: {l2mae_energy * 1000:.2f}")
+    print(f"L2MAE Forces: {l2mae_forces * 1000:.2f} meV")
 if __name__ == "__main__":
     dataset_path = '/data/ishan-amin/spice_separated/DES370K_Monomers/test'
+    # dataset_path = '/data/ishan-amin/dipeptides/all/test'
 
     get_accuracy(dataset_path)

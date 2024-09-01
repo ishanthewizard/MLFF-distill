@@ -27,7 +27,7 @@ model:
     name: spherical_harmonics
   output_init: HeOrthogonal
   activation: silu
-  scale_file: configs/md17/gemnet-dT-scale.json
+  scale_file: configs/md17/ethanol/gemnet-dT-scale.json
   extensive: True
   otf_graph: True
   regress_forces: True

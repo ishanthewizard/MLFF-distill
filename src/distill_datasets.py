@@ -46,15 +46,15 @@ class SimpleDataset(Dataset):
         self.dtype = dtype
         
         # List all LMDB files in the folder
-        db_paths = sorted([os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.lmdb')])
-        assert len(db_paths) > 0, "No LMDB files found in the specified folder."
+        self.db_paths = sorted([os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.lmdb')])
+        assert len(self.db_paths) > 0, "No LMDB files found in the specified folder."
 
         self.envs = []
         self._keys = []
         self._keylen_cumulative = []
 
         total_entries = 0
-        for db_path in db_paths:
+        for db_path in self.db_paths:
             env = lmdb.open(db_path, readonly=True, lock=False)
             self.envs.append(env)
             with env.begin() as txn:
@@ -71,10 +71,9 @@ class SimpleDataset(Dataset):
 
         # Find which database to access
         db_idx = bisect.bisect_right(self._keylen_cumulative, index)
-        el_idx = index - (self._keylen_cumulative[db_idx - 1] if db_idx > 0 else 0)
 
         with self.envs[db_idx].begin() as txn:
-            byte_data = txn.get(str(el_idx).encode())
+            byte_data = txn.get(str(index).encode())
             if byte_data:
                 tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=self.dtype))
                 return tensor

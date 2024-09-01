@@ -36,6 +36,7 @@ class Runner(Checkpointable):
         self.distributed = distributed
 
     def __call__(self, config: dict) -> None:
+        breakpoint()
         with new_trainer_context(config=config, distributed=self.distributed) as ctx:
             self.config = ctx.config
             self.task = ctx.task

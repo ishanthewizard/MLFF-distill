@@ -35,7 +35,6 @@ def convert_labels(labels_folder, new_labels_folder, model="medium"):
     array = [1,2,3]
     for item in array:
         print(item)
-    breakpoint()
     identity = lambda x: x.numpy()
     flip = lambda x: -x.numpy()
     record_and_save(force_jac_dataset, os.path.join(new_labels_folder, 'force_jacobians.lmdb'), flip)

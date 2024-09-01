@@ -86,9 +86,9 @@ def sample_with_mask(n, num_samples, mask):
     
     return samples
 
-def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
+def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False, finite_difference=False, forward=None):
     # This function should: take the derivatives of forces with respect to positions. 
-    # Grad_outputs should be supplied. if it's none, then 
+    # Grad_outputs should be supplied. if it's none, then
     def compute_grad(grad_output):
         return torch.autograd.grad(
                 outputs=forces,
@@ -116,7 +116,47 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
                     full_jac[i] = compute_grad(grad_outputs[i])
         return full_jac
 
-def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False):
+def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, h=0.001):
+    # Store original positions
+    original_pos = batch.pos.clone()
+
+    # Create a list to store all perturbed batches
+    perturbed_batches = []
+
+    # Total number of atoms
+    total_num_atoms = batch.pos.shape[0]
+
+    for output in grad_outputs:
+        # Create forward perturbation
+        perturbed_batch_forward = batch.clone()
+        perturbed_batch_forward.pos = (original_pos.reshape(-1) + h * output).reshape(total_num_atoms, 3)
+
+        # Create backward perturbation
+        perturbed_batch_backward = batch.clone()
+        perturbed_batch_backward.pos = (original_pos.reshape(-1) - h * output).reshape(total_num_atoms, 3)
+
+        # Append both perturbed batches to the list
+        perturbed_batches.append(perturbed_batch_forward)
+        perturbed_batches.append(perturbed_batch_backward)
+
+    breakpoint()
+    # Combine all perturbed batches into one large batch
+    large_batch = torch.utils.data.dataloader.default_collate(perturbed_batches)
+
+    # Perform forward pass for all perturbed batches at once
+    perturbed_forces = forward(large_batch)['forces']
+
+    # Split the large batch's forces into individual forward and backward forces
+    hessian_columns = []
+    for i in range(0, len(perturbed_batches), 2):
+        forward_force = perturbed_forces[i]
+        backward_force = perturbed_forces[i+1]
+        hessian_col = (forward_force - backward_force) / (2 * h)
+        hessian_columns.append(hessian_row)
+
+    return hessian_columns
+
+def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False, finite_difference=False, forward=None,):
     forces = out['forces']
     natoms = batch.natoms
     total_num_atoms = forces.shape[0]
@@ -135,8 +175,10 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False)
         # Vectorized assignment to grad_outputs
         grad_outputs[torch.arange(min(num_samples, atoms_in_mol*3)), offset_samples[:, 0], offset_samples[:, 1]] = 1
     # Compute the jacobian using grad_outputs
-    jac = get_jacobian(forces, batch.pos, grad_outputs, create_graph=True, looped=looped)
-    
+    if finite_difference:
+        jac = get_jacobian(forces, batch.pos, grad_outputs, create_graph=True, looped=looped)
+    else:
+        jac = get_jacobian_finite_difference(forces, batch, grad_outputs, forward, looped=looped)
     # Decomposing the Jacobian tensor by molecule in a batch
     jacs_per_mol = [jac[:len(mol_samps), cum_sum:cum_sum + nat, :] for mol_samps, cum_sum, nat in zip(by_molecule, cumulative_sums[:-1], natoms)]
     

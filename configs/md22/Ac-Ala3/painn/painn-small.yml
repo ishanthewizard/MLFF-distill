@@ -1,6 +1,6 @@
 # # Make sure to run without AMP.
 includes:
-  - configs/md22/base.yml
+  - configs/md22/Ac-Ala3/base.yml
 
 model:
   name: painn
@@ -9,7 +9,7 @@ model:
   num_rbf: 128
   cutoff: 12.0
   max_neighbors: 50
-  scale_file: configs/md22-distill/painn/painn-small-scale.pt
+  scale_file: configs/md22/Ac-Ala3/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
   use_pbc: False
@@ -30,5 +30,6 @@ optim:
   max_epochs: 10000
   ema_decay: 0.999
   clip_grad_norm: 10
+  eval_every: 100
 
 

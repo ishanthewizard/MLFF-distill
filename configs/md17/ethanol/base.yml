@@ -10,7 +10,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/post_data/md17/ethanol/1k/train
+    src: /data/ishan-amin/post_data/md17/ethanol/50k/train
     # src: /pscratch/sd/i/ishan_a/md17/ethanol/1k/train
     key_mapping:
       y: energy
@@ -24,7 +24,7 @@ dataset:
         #   mean: 0
         #   stdev: 1.1291506
   val:
-    src: /data/ishan-amin/post_data/md17/ethanol/1k/val
+    src: /data/ishan-amin/post_data/md17/ethanol/50k/val
     # src: /pscratch/sd/i/ishan_a/md17/ethanol/1k/val
 
 
