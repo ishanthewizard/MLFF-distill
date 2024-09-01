@@ -19,6 +19,7 @@ import time
 from fairchem.core.common.utils import load_config
 import numpy as np
 import numpy.typing as npt
+from src.distill_datasets import SubsetDistributedSampler
 from src.distill_utils import custom_sigmoid
 import torch
 import torch.nn as nn
@@ -125,6 +126,7 @@ class DistillTrainer(OCPTrainer):
         with env.begin(write=True) as txn:
             for batch in tqdm(dataloader):
                 batch_ids = [str(int(i)) for i in batch.id]
+                logging.info(f"BATCH IDS: {batch.id}")
                 batch_output = fn(batch)  # this function needs to output an array where each element correponds to the label for an entire molecule
                 print_cuda_memory_usage()
                 # Convert tensor to bytes and write to LMDB
@@ -164,16 +166,17 @@ class DistillTrainer(OCPTrainer):
         else:
             raise ValueError("Invalid dataset type provided")
 
-        subset_dataset = Subset(dataset, range(start_idx, end_idx))
-        dataloader = self.get_dataloader(
-                subset_dataset,
-                self.get_sampler(
-                subset_dataset,
-                self.config["dataset"]["label_force_batch_size"],
-                shuffle=False,
-            )
+        # Indices for the subset this process will handle
+        subset_indices = list(range(start_idx, end_idx))
+        subset_dataset = Subset(dataset, subset_indices)
+        dataloader = DataLoader(
+            subset_dataset,
+            collate_fn=self.ocp_collater,
+            num_workers=self.config["optim"]["num_workers"],
+            pin_memory=True,
+            batch_size=self.config["dataset"]["label_force_batch_size"],
         )
-
+        
         # Define LMDB file path for this particular worker
         lmdb_path = os.path.join(labels_folder, f"{dataset_type}_forces", f"data.{distutils.get_rank():04d}.lmdb")
 
@@ -188,12 +191,14 @@ class DistillTrainer(OCPTrainer):
 
         if dataset_type == 'train':
             # Only for training dataset, save jacobians as well
-            jac_dataloader = self.get_dataloader(subset_dataset, self.get_sampler(
-                subset_dataset,
-                self.config["dataset"]["label_jac_batch_size"],
-                shuffle=False,
-                )
+            jac_dataloader = DataLoader(
+            subset_dataset,
+            collate_fn=self.ocp_collater,
+            num_workers=self.config["optim"]["num_workers"],
+            pin_memory=True,
+            batch_size=self.config["dataset"]["label_jac_batch_size"],
             )
+            
             jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
             should_mask = self.output_targets['forces']["train_on_free_atoms"]
             get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)

@@ -5,6 +5,8 @@ import lmdb
 import torch
 import numpy as np
 import logging 
+from torch.utils.data import Sampler
+
 class CombinedDataset(Dataset):
     def __init__(self, main_dataset, teach_force_dataset, force_jac_dataset=None):
         if  len(main_dataset) != len(teach_force_dataset):
@@ -83,3 +85,14 @@ class SimpleDataset(Dataset):
     def close_db(self):
         for env in self.envs:
             env.close()
+
+class SubsetDistributedSampler(Sampler):
+    def __init__(self, dataset, indices):
+        self.dataset = dataset
+        self.indices = indices
+
+    def __iter__(self):
+        return iter(self.indices)
+
+    def __len__(self):
+        return len(self.indices)
