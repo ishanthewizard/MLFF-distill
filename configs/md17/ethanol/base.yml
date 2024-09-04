@@ -3,20 +3,15 @@ includes:
   - configs/slurm/debug.yml
 logger: 
   name: wandb
-  project: mdbench
+  project: ethanol
 
 trainer: ocp
 
 dataset:
   train:
     format: lmdb
-<<<<<<< HEAD
     src: /data/ishan-amin/post_data/md17/ethanol/50k/train
-    # src: /pscratch/sd/i/ishan_a/md17/ethanol/1k/train
-=======
-    # src: /data/ishan-amin/post_data/md17/ethanol/1k/train
-    src: /pscratch/sd/i/ishan_a/md17/ethanol/1k/train
->>>>>>> cdab42d01178dd0e2a09d73c8c804358de170427
+    # src: /pscratch/sd/i/ishan_a/md17/ethanol/50k/train
     key_mapping:
       y: energy
       force: forces
@@ -29,13 +24,8 @@ dataset:
         #   mean: 0
         #   stdev: 1.1291506
   val:
-<<<<<<< HEAD
     src: /data/ishan-amin/post_data/md17/ethanol/50k/val
-    # src: /pscratch/sd/i/ishan_a/md17/ethanol/1k/val
-=======
-    # src: /data/ishan-amin/post_data/md17/ethanol/1k/val
-    src: /pscratch/sd/i/ishan_a/md17/ethanol/1k/val
->>>>>>> cdab42d01178dd0e2a09d73c8c804358de170427
+    # src: /pscratch/sd/i/ishan_a/md17/ethanol/50k/val
 
 
 outputs:

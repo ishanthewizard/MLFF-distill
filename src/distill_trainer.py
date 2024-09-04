@@ -473,7 +473,17 @@ class DistillTrainer(OCPTrainer):
         self.update_loss_coefficients()
         should_mask = self.output_targets['forces']["train_on_free_atoms"]
         if self.loss_functions[-1][1]['coefficient'] != 0:
-            force_jac_loss = get_force_jac_loss(out, batch, self.config['optim']['force_jac_sample_size'], mask, should_mask, looped=(not self.config['optim']["vectorize_jacs"]))
+            force_jac_loss = get_force_jac_loss(
+                out=out, 
+                batch=batch, 
+                num_samples=self.config['optim']['force_jac_sample_size'], 
+                mask= mask, 
+                should_mask=should_mask, 
+                finite_differences= self.config['optim'].get('finite_differences', False),
+                looped=(not self.config['optim']["vectorize_jacs"]),
+                collater = self.ocp_collater,
+                forward = self._forward
+                )
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
         else:
