@@ -19,8 +19,6 @@ import time
 from fairchem.core.common.utils import load_config
 import numpy as np
 import numpy.typing as npt
-from src.distill_datasets import SubsetDistributedSampler
-from src.distill_utils import custom_sigmoid
 import torch
 import torch.nn as nn
 import yaml
@@ -43,7 +41,7 @@ from fairchem.core.modules.scaling.compat import load_scales_compat
 from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.modules.scheduler import LRScheduler
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
-from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian
+from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian, custom_sigmoid 
 from . import CombinedDataset, SimpleDataset
 from fairchem.core.common import distutils
 from fairchem.core.modules.loss import L2MAELoss

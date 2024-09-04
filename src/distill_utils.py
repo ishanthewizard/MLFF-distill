@@ -127,11 +127,15 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
         perturbed_batches.append(perturbed_batch_backward)
 
     # Combine all perturbed batches into one large batch
-    large_batch = collater(perturbed_batches)
-
-    # Perform forward pass for all perturbed batches at once
-    perturbed_forces = forward(large_batch)['forces']
-
+    if not looped:
+        large_batch = collater(perturbed_batches)
+        # Perform forward pass for all perturbed batches at once
+        perturbed_forces = forward(large_batch)['forces']
+    else:
+        perturbed_forces = []
+        for batch in perturbed_batches:
+            perturbed_forces.append(forward(batch)['forces'])
+        perturbed_forces = torch.cat(perturbed_forces, dim=0)
     # Split the large batch's forces into individual forward and backward forces
     hessian_columns = []
     for i in range(0, len(perturbed_batches), 2):
