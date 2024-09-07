@@ -10,20 +10,20 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/spice_separated/DES370K_Monomers/train
+    src: /data/ishan-amin/spice_separated/Iodine/train
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
         energy: 
-            mean: -15358.563880754844
+            mean: -60224.1484375
             stdev: 1
         forces: 
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/spice_separated/DES370K_Monomers/val
+    src: /data/ishan-amin/spice_separated/Iodine/val
 
 
 outputs:

@@ -10,7 +10,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/spice_separated/DES370K_Monomers/train
+    src: /data/ishan-amin/spice_separated/Solvated_Amino_Acids/train
     key_mapping:
       y: energy
       force: forces
@@ -23,9 +23,7 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/val
-    # src: /pscratch/sd/i/ishan_a/MD22/ac_Ala3_NHMe/10percent/val
-    src: /data/ishan-amin/spice_separated/DES370K_Monomers/val
+    src: /data/ishan-amin/spice_separated/Solvated_Amino_Acids/val
 
 
 outputs:

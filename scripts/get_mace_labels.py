@@ -24,7 +24,7 @@ def record_and_save(dataset, file_path, fn):
     env.close()
     print(f"All tensors saved to LMDB:{file_path}")
 
-def record_labels(labels_folder, dataset_path, model="medium"):
+def record_labels(labels_folder, dataset_path, model="large"):
     os.makedirs(labels_folder, exist_ok=True)
     # Load the dataset
     train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, 'train')})
@@ -58,12 +58,12 @@ def record_labels(labels_folder, dataset_path, model="medium"):
     record_and_save(val_dataset, os.path.join(labels_folder, 'val_forces.lmdb'), get_forces)
 
 if __name__ == "__main__":
-    labels_folder = 'labels/mace_off_large_SpiceSolvatedAmino'
+    labels_folder = 'labels/mace_off_large_SpiceIodine'
     if os.path.isdir(labels_folder):
         raise Exception('folder already exists')
     # dataset_path = '/data/ishan-amin/post_data/md17/ethanol/1k/' 
     # dataset_path = '/data/ishan-amin/post_data/md17/aspirin/1k/'
     # dataset_path = '/data/ishan-amin/post_data/md22/AT_AT/1k/'
-    dataset_path = '/data/ishan-amin/spice_separated/Solvated_Amino_Acids'
+    dataset_path = '/data/ishan-amin/spice_separated/Iodine'
 
     record_labels(labels_folder, dataset_path)

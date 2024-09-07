@@ -1,11 +1,11 @@
 includes:
-- configs/SPICE/solvated_amino_acids/base.yml
+- configs/SPICE/monomers/base.yml
 
 model:
   name: gemnet_t
   num_spherical: 7
   num_radial: 6
-  num_blocks: 3 # even smaller!
+  num_blocks: 4 # normal!
   emb_size_atom: 64 #smaller
   emb_size_edge: 64 #smaller
   emb_size_trip: 32 #smaller
@@ -35,7 +35,7 @@ model:
 
 optim:
   batch_size: 32
-  eval_batch_size: 32
+  eval_batch_size: 
   num_workers: 4
   lr_initial: 0.001
   optimizer: AdamW
@@ -46,6 +46,6 @@ optim:
   factor: 0.8
   min_lr: 0.000001  
   
-  max_epochs: 10000
+  max_epochs: 1000
   ema_decay: 0.999
   clip_grad_norm: 10

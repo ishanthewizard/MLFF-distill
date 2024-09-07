@@ -1,14 +1,11 @@
 includes:
-- configs/SPICE/monomers/gemnet-dT-smaller.yml
+- configs/SPICE/monomers/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_checkpoint_path: checkpoints/2024-08-23-10-04-00-MonomersGemSmaller/best_checkpoint.pt
-    teacher_labels_folder: labels/mace_off_large_SpiceMonomersNEW
-    # teacher_labels_folder: labels/mace_off_large_SpiceMonomers
-    # teacher_labels_folder: labels/MonomersgemSmaller
+    teacher_labels_folder: labels/mace_off_large_SpiceMonomers
     label_force_batch_size: 32
     label_jac_batch_size: 4
     vectorize_teach_jacs: True
@@ -29,8 +26,8 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 1
+  batch_size: 4
   eval_batch_size: 32
-  force_jac_sample_size: 30
+  force_jac_sample_size: 10
   print_memory_usage: False
   vectorize_jacs: True

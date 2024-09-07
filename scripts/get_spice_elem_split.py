@@ -10,15 +10,13 @@ from torch.utils.data import Subset
 import torch
 
 def categorize_samples_by_name(dataset, output_dir, test=False):
-    categorized_samples = {}
+    categorized_samples = {"Iodine": []}
 
     # Iterate through the dataset and categorize samples by 'dataset_name'
+    atomic_num_set = set()
     for sample in tqdm(dataset, desc="Processing samples"):
-        dataset_name = sample.dataset_name
-        if dataset_name not in categorized_samples:
-            categorized_samples[dataset_name] = []
-        categorized_samples[dataset_name].append(sample)
-
+        if 53 in sample.atomic_numbers:
+            categorized_samples["Iodine"].append(sample)
     # Create separate LMDB datasets for each category
     for dataset_name, samples in categorized_samples.items():
         if test:
@@ -77,13 +75,8 @@ def _save_to_lmdb(samples, db_path):
 # Example usage:
 # save_samples_to_lmdb(samples, output_dir, dataset_name)
 # Usage
-dataset_path = "/data/ishan-amin/lmdb_w_ref2"  # Update this with your actual path
+dataset_path = "/data/ishan-amin/maceoff_split"  # Update this with your actual path
 output_dir = "/data/ishan-amin/spice_separated"   # Update this with your desired output directory
-train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, 'test')})
-# indx = np.random.default_rng(seed=0).choice(
-#     len(train_dataset), 
-#     5000, 
-#     replace=False
-# )
-# train_dataset = Subset(train_dataset, torch.tensor(indx))
-categorize_samples_by_name(train_dataset, output_dir, test=True)
+dataset_type = "train"
+train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, dataset_type)})
+categorize_samples_by_name(train_dataset, output_dir, test=(dataset_type == "test"))

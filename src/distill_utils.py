@@ -9,6 +9,8 @@ def print_cuda_memory_usage():
     reserved = torch.cuda.memory_reserved() / (1024 ** 3)    # Convert bytes to GB
     logging.info(f"CUDA memory allocated: {allocated:.2f} GB")
     logging.info(f"CUDA memory reserved: {reserved:.2f} GB")
+    print(f"CUDA memory allocated: {allocated:.2f} GB")
+    print((f"CUDA memory reserved: {reserved:.2f} GB"))
 
 def custom_sigmoid(x, threshold):
     # Shift and scale the input to create a steep transition
