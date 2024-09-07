@@ -1,31 +1,31 @@
 includes:
-  # - configs/slurm/regular.yml
-  - configs/slurm/debug.yml
+  - configs/slurm/regular.yml
+  # - configs/slurm/debug.yml
 logger: 
   name: wandb
-  project: ethanol-rMD17
+  project: stachyose
 
 trainer: ocp
 
 dataset:
   train:
     format: lmdb
-    # src: /data/ishan-amin/rMD17/ethanol/50k/train
-    src: /pscratch/sd/i/ishan_a/rMD17/95_lmdb/ethanol/50k/train
+    src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/stachyose/train
+    # split: 5000
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
         energy:
-          mean: -4214.819279645197 
-          # stdev: 0.35547638
+          mean: -68463.59
+        #   stdev: 0.5940788
         # forces:
         #   mean: 0
-        #   stdev: 1.1291506
+        #   stdev: 1.1104717
   val:
-    # src: /data/ishan-amin/rMD17/95_lmdb/ethanol/50k/train
-    src: /pscratch/sd/i/ishan_a/rMD17/95_lmdb/ethanol/50k/val
+    src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/stachyose/train
+
 
 
 outputs:

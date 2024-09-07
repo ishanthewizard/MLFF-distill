@@ -1,11 +1,5 @@
 includes:
-- configs/md17/ethanol/base.yml
-
-dataset:
-  train:
-    src: /data/ishan-amin/post_data/md17/ethanol/50k/train
-  val:
-    src: /data/ishan-amin/post_data/md17/ethanol/50k/val
+- configs/md22/stachyose/base.yml
 
 model:
   name: gemnet_t
@@ -33,7 +27,7 @@ model:
     name: spherical_harmonics
   output_init: HeOrthogonal
   activation: silu
-  scale_file: configs/md17/gemnet-T-scale.json
+  scale_file: configs/md22/Ac-Ala3/gemnet-T-scale.json
   extensive: True
   otf_graph: True
   regress_forces: True

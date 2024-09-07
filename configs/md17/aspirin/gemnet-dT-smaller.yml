@@ -1,20 +1,14 @@
 includes:
 - configs/md17/ethanol/base.yml
 
-dataset:
-  train:
-    src: /data/ishan-amin/post_data/md17/ethanol/50k/train
-  val:
-    src: /data/ishan-amin/post_data/md17/ethanol/50k/val
-
 model:
   name: gemnet_t
   num_spherical: 7
   num_radial: 6
-  num_blocks: 4
-  emb_size_atom: 128
-  emb_size_edge: 128
-  emb_size_trip: 64
+  num_blocks: 2 # smallest!
+  emb_size_atom: 64 #smaller
+  emb_size_edge: 64 #smaller
+  emb_size_trip: 32 #smaller
   emb_size_rbf: 16
   emb_size_cbf: 16
   emb_size_bil_trip: 64
@@ -33,11 +27,11 @@ model:
     name: spherical_harmonics
   output_init: HeOrthogonal
   activation: silu
-  scale_file: configs/md17/gemnet-T-scale.json
+  scale_file: configs/md22/AT-AT/gemnet-dT-scale.json
   extensive: True
   otf_graph: True
   regress_forces: True
-  direct_forces: False
+  direct_forces: True
 
 optim:
   batch_size: 32
