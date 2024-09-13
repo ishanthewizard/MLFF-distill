@@ -1,0 +1,58 @@
+includes:
+  - configs/slurm/regular.yml
+  # - configs/slurm/debug.yml
+logger: 
+  name: wandb
+  project: MPTraj
+
+trainer: ocp
+
+dataset:
+  train:
+    format: lmdb
+    # src: /data/ishan-amin/MPtraj/mptraj_seperated_noIons/Perovskites/train
+    src: /data/shared/MPTrj/lmdb/train
+    key_mapping:
+      corrected_total_energy: energy
+      force: forces
+    transforms:
+      normalizer:
+        energy: 
+            mean: -15358.563880754844
+            stdev: 1
+        forces: 
+            mean: 0
+            stdev: 1
+  val:
+    # src: /data/ishan-amin/MPtraj/mptraj_seperated_noIons/Perovskites/val
+    src: /data/shared/MPTrj/lmdb/val
+
+
+outputs:
+  energy:
+    shape: 1
+    level: system
+  forces:
+    irrep_dim: 1
+    level: atom
+    train_on_free_atoms: True
+    eval_on_free_atoms: True
+
+loss_functions:
+  - energy:
+      fn: mae
+      coefficient: 0
+  - forces:
+      fn: l2mae
+      coefficient: 100
+evaluation_metrics:
+  metrics:
+    energy:
+      - mae
+    forces:
+      - mae
+      - cosine_similarity
+      - magnitude_error
+    misc:
+      - energy_forces_within_threshold
+  primary_metric: forces_mae

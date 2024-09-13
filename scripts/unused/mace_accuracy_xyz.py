@@ -33,7 +33,7 @@ def get_accuracy(xyz_file_path, model='large'):
         true_energies.append(atoms.info['MACE_energy'])
         true_forces.append(atoms.get_forces())
 
-        # atoms.calc = calc
+        atoms.calc = calc
 
         predicted_energies.append(atoms.get_potential_energy())
         predicted_forces.append(atoms.get_forces())

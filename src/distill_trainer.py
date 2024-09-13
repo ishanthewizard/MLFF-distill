@@ -113,6 +113,15 @@ class DistillTrainer(OCPTrainer):
         self.teacher_force_mae /= len(self.val_dataset)
         print("TEACHER FORCE MAE:", self.teacher_force_mae)
 
+        # for datapoint in tqdm(self.train_dataset):
+        #     true_label = datapoint['forces']
+        #     if 'forces' in self.normalizers:
+        #         true_label = self.normalizers['forces'].norm(true_label)
+        #     self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - true_label).mean().item()
+        # self.teacher_force_mae /= len(self.val_dataset)
+        # print("TEACHER FORCE MAE:", self.teacher_force_mae)
+        # breakpoint()
+
     def record_and_save(self, dataloader, file_path, fn):
         # Assuming train_loader is your DataLoader
         data0 = next(iter(dataloader))
@@ -124,7 +133,7 @@ class DistillTrainer(OCPTrainer):
         with env.begin(write=True) as txn:
             for batch in tqdm(dataloader):
                 batch_ids = [str(int(i)) for i in batch.id]
-                logging.info(f"BATCH IDS: {batch.id}")
+                # logging.info(f"BATCH IDS: {batch.id}")
                 batch_output = fn(batch)  # this function needs to output an array where each element correponds to the label for an entire molecule
                 print_cuda_memory_usage()
                 # Convert tensor to bytes and write to LMDB
@@ -482,10 +491,25 @@ class DistillTrainer(OCPTrainer):
                 collater = self.ocp_collater,
                 forward = self._forward
                 )
+            if torch.any(torch.isnan(force_jac_loss)):
+                breakpoint()
+                raise Exception("FORCE JAC LOSS IS NAN")
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
         else:
             batch['force_jac_loss'] = torch.tensor(0)
+        # if self.step == 108:
+        #     breakpoint()
+        #     # Assuming force_jac_loss is your loss tensor
+        #     force_jac_loss.backward()
+
+        #     # Now the gradients with respect to model parameters have been computed
+        #     for name, param in self.model.named_parameters():
+        #         if param.grad is not None:
+        #             print(f"Gradient for {name}: {param.grad}")
+        #         else:
+        #             print(f"No gradient for {name}")
+        #     breakpoint()
         ## FINISH ISHAN ADDED CODE
         for loss_fn in self.loss_functions:
             target_name, loss_info = loss_fn
@@ -532,6 +556,9 @@ class DistillTrainer(OCPTrainer):
             )
         # Sanity check to make sure the compute graph is correct.
         for lc in loss:
+            if torch.any(torch.isnan(lc)):
+                breakpoint()
+                raise Exception("loss is nan")
             assert hasattr(lc, "grad_fn")
         return sum(loss)
     

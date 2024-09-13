@@ -3,7 +3,7 @@ includes:
 
 logger: 
   name: wandb
-  project: EGAP
+  project: AT-AT
   
 dataset:
   train:

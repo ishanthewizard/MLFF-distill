@@ -5,28 +5,30 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_checkpoint_path: checkpoints/ac_Ala3_5k_gemnet_t/best_checkpoint.pt
-    teacher_labels_folder: labels/ac_Ala3_5k_gemnet_t
-    label_force_batch_size: 30
-    label_jac_batch_size: 1
+    teacher_checkpoint_path: teacher_checkpoints/Ac-Ala3-all-gemT-normOFF-570epochs/best_checkpoint.pt
+    teacher_labels_folder: labels/Ac-Ala3-gemT-570epochs
+    label_force_batch_size: 32
+    label_jac_batch_size: 64
+    vectorize_teach_jacs: False
 
 loss_functions:
   - energy:
       fn: mae
-      coefficient: .25
+      coefficient: 1
   - forces:
       fn: l2mae
-      coefficient: 250
+      coefficient: 100
   - teacher_forces:
       fn: l2mae
       coefficient: 0
   - force_jacs:
       fn: l2mae
-      coefficient: 1000
+      coefficient: 400
       reduction: mean_all
 
 optim:
   batch_size: 16
   eval_batch_size: 32
-  force_jac_sample_size: 20
+  force_jac_sample_size: 4
   print_memory_usage: False
+  vectorize_jacs: True

@@ -37,18 +37,18 @@ def record_labels(labels_folder, dataset_path, model="large"):
     val_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, 'val')})
     
     # Load the model
-    calc = mace_off(model=model, dispersion=False, default_dtype="float32", device='cuda')
+    calc = mace_mp(model=model, dispersion=False, default_dtype="float32", device='cuda')
 
     # calc = mace_mp(model=model, dispersion=dispersion, default_dtype=default_dtype, device=device)
     def get_forces(sample):
         atomic_numbers = sample.atomic_numbers.numpy()
-        atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy())
+        atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy(), cell=sample.cell.numpy()[0], pbc=True)
         atoms.calc = calc
         return atoms.get_forces()
     def get_hessians(sample):
         atomic_numbers = sample.atomic_numbers.numpy()
         natoms = sample.natoms
-        atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy())
+        atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy(), cell=sample.cell.numpy()[0], pbc=True)
         atoms.calc = calc
         hessian = calc.get_hessian(atoms=atoms)
         return - 1 * hessian.reshape(natoms, 3, natoms, 3) # this is SUPER IMPORTANT!!! multiply by -1
@@ -58,12 +58,12 @@ def record_labels(labels_folder, dataset_path, model="large"):
     record_and_save(val_dataset, os.path.join(labels_folder, 'val_forces.lmdb'), get_forces)
 
 if __name__ == "__main__":
-    labels_folder = 'labels/mace_off_large_SpiceIodine'
+    labels_folder = 'labels/mace_off_large_Perovskites_noIons_fr'
     if os.path.isdir(labels_folder):
         raise Exception('folder already exists')
     # dataset_path = '/data/ishan-amin/post_data/md17/ethanol/1k/' 
     # dataset_path = '/data/ishan-amin/post_data/md17/aspirin/1k/'
     # dataset_path = '/data/ishan-amin/post_data/md22/AT_AT/1k/'
-    dataset_path = '/data/ishan-amin/spice_separated/Iodine'
+    dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_noIons/Perovskites'
 
     record_labels(labels_folder, dataset_path)

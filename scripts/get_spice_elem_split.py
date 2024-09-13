@@ -9,14 +9,13 @@ import numpy as np
 from torch.utils.data import Subset
 import torch
 
-def categorize_samples_by_name(dataset, output_dir, test=False):
-    categorized_samples = {"Iodine": []}
-
+def categorize_samples_by_name(dataset, output_dir, element, test=False):
+    categorized_samples = {element['name']: []}
     # Iterate through the dataset and categorize samples by 'dataset_name'
     atomic_num_set = set()
     for sample in tqdm(dataset, desc="Processing samples"):
-        if 53 in sample.atomic_numbers:
-            categorized_samples["Iodine"].append(sample)
+        if element['atomic_num'] in sample.atomic_numbers:
+            categorized_samples[element["name"]].append(sample)
     # Create separate LMDB datasets for each category
     for dataset_name, samples in categorized_samples.items():
         if test:
@@ -75,8 +74,14 @@ def _save_to_lmdb(samples, db_path):
 # Example usage:
 # save_samples_to_lmdb(samples, output_dir, dataset_name)
 # Usage
-dataset_path = "/data/ishan-amin/maceoff_split"  # Update this with your actual path
-output_dir = "/data/ishan-amin/spice_separated"   # Update this with your desired output directory
+# dataset_path = "/data/ishan-amin/maceoff_split"  # Update this with your actual path
+# output_dir = "/data/ishan-amin/spice_separated"   # Update this with your desired output directory
+# dataset_path = "/data/ishan-amin/MPtraj/mace_mp_split/train"  # Update this with your actual path
+dataset_path = "/data/shared/MPTrj/lmdb/train/"
+output_dir = "/data/ishan-amin/mptraj_eric_seperated"   # Update this with your desired output directory
 dataset_type = "train"
-train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, dataset_type)})
-categorize_samples_by_name(train_dataset, output_dir, test=(dataset_type == "test"))
+# element = {"name": "Yttrium", "atomic_num": 39}
+element = {"name": "Sulfides", "atomic_num": 16}
+# train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, dataset_type)})
+train_dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
+categorize_samples_by_name(train_dataset, output_dir, test=(dataset_type == "test"), element = element)

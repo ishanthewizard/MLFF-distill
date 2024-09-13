@@ -4,3 +4,4 @@ includes:
 slurm:
   qos: debug
   time: 00:20:00
+ 

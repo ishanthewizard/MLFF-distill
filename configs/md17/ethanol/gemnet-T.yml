@@ -1,12 +1,6 @@
 includes:
 - configs/md17/ethanol/base.yml
 
-dataset:
-  train:
-    src: /data/ishan-amin/post_data/md17/ethanol/50k/train
-  val:
-    src: /data/ishan-amin/post_data/md17/ethanol/50k/val
-
 model:
   name: gemnet_t
   num_spherical: 7

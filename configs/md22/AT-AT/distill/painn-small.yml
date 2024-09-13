@@ -5,13 +5,11 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    # teacher_checkpoint_path: /home/ishan-amin/MDsim-distill/MODELPATH/md22-ac_Ala3_NHMe_5k_gemnet_t/checkpoints/best_checkpoint.pt
-    teacher_checkpoint_path: checkpoints/2024-07-22-13-18-08-AT-AT-gemnet-T_best/best_checkpoint.pt
-    # teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/AT_AT_all_gemnet_t
-    teacher_labels_folder: labels/AT_AT_all_gemnet_t
-    label_force_batch_size: 30
-    label_jac_batch_size: 1
-    vectorize_teach_jacs: True
+    teacher_checkpoint_path: teacher_checkpoints/AT-AT_all-gemT-normOFF-1094epochs/best_checkpoint.pt
+    teacher_labels_folder: labels/AT-AT-gemT-1094epochs
+    label_force_batch_size: 32
+    label_jac_batch_size: 32
+    vectorize_teach_jacs: False
 
 loss_functions:
   - energy:
@@ -31,6 +29,6 @@ loss_functions:
 optim:
   batch_size: 16
   eval_batch_size: 32
-  force_jac_sample_size: 20
+  force_jac_sample_size: 4
   print_memory_usage: False
   vectorize_jacs: True

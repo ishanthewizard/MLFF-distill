@@ -1,0 +1,30 @@
+includes:
+- configs/MPTraj/Perovskites/gemnet-dT-small.yml
+
+trainer: src.distill_trainer.DistillTrainer
+
+dataset:
+  train:
+    teacher_labels_folder: labels/mace_off_large_Perovskites_noIons
+
+loss_functions:
+  - energy:
+      fn: mae
+      coefficient: 0
+  - forces:
+      fn: l2mae
+      coefficient: 100
+  - teacher_forces:
+      fn: l2mae
+      coefficient: 0
+  - force_jacs:
+      fn: l2mae
+      coefficient: 400
+      reduction: mean_all
+
+optim:
+  batch_size: 4
+  eval_batch_size: 32
+  force_jac_sample_size: 10
+  print_memory_usage: False
+  vectorize_jacs: True

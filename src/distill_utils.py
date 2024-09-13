@@ -186,6 +186,9 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
     # true_jacs_per_mol = [batch['force_jacs'][samples[:, 0], samples[:, 1]] for samples in by_molecule]
     cum_jac_indexes = [0] + torch.cumsum((natoms**2) * 9, dim=0).tolist()
     true_jacs_per_mol = []
+    if torch.any(torch.isnan(jac)):
+        breakpoint()
+        raise Exception("PAINN FORCE JAC IS NAN")
     for i, samples in enumerate(by_molecule):
         curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(natoms[i], 3, natoms[i], 3)
         true_jacs_per_mol.append(curr[samples[:,0], samples[:, 1]])
