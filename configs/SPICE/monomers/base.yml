@@ -25,6 +25,8 @@ dataset:
             stdev: 1
   val:
     src: /data/ishan-amin/SPICE/spice_separated/DES370K_Monomers/val
+  test:
+    src: /data/ishan-amin/SPICE/spice_separated/DES370K_Monomers/test
 
 
 outputs:

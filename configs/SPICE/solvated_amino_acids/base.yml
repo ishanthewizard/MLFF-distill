@@ -3,6 +3,7 @@ includes:
   - configs/slurm/debug.yml
 logger: 
   name: wandb
+  entity: ishan-amin
   project: spice
 
 trainer: ocp
@@ -10,7 +11,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/spice_separated/Solvated_Amino_Acids/train
+    src: /data/ishan-amin/SPICE/spice_separated/Solvated_Amino_Acids/train
     key_mapping:
       y: energy
       force: forces
@@ -23,7 +24,9 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/spice_separated/Solvated_Amino_Acids/val
+    src: /data/ishan-amin/SPICE/spice_separated/Solvated_Amino_Acids/val
+  test:
+    src: /data/ishan-amin/SPICE/spice_separated/Solvated_Amino_Acids/test
 
 
 outputs:
