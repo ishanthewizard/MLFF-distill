@@ -11,6 +11,7 @@ dataset:
   train:
     format: lmdb
     src: /data/shared/MLFF/MD22/95_lmdb/stachyose/train
+    # src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/stachyose/train
     # split: 5000
     key_mapping:
       y: energy
@@ -25,6 +26,7 @@ dataset:
         #   stdev: 1.1104717
   val:
     src: /data/shared/MLFF/MD22/95_lmdb/stachyose/val
+    # src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/stachyose/train
 
 
 
