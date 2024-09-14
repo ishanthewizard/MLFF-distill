@@ -1,11 +1,11 @@
 includes:
-- configs/SPICE/solvated_amino_acids/painn/painn-small.yml
+- configs/SPICE/monomers/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: /data/shared/ishan_stuff/labels/mace_off_large_SpiceAminos
+    teacher_labels_folder: /data/shared/ishan_stuff/labels/mace_off_large_SpiceMonomers
     label_force_batch_size: 32
     label_jac_batch_size: 4
     vectorize_teach_jacs: True
@@ -32,10 +32,10 @@ loss_functions:
       coefficient: 0
   - final_node_features:
       fn: mse
-      coefficient: 0
+      coefficient: 1000
   - force_jacs:
       fn: l2mae
-      coefficient: 400
+      coefficient: 0
       reduction: mean_all
 
 
@@ -55,7 +55,7 @@ evaluation_metrics:
   
 
 optim:
-  batch_size: 4
+  batch_size: 32
   eval_batch_size: 32
   force_jac_sample_size: 10
   print_memory_usage: False
