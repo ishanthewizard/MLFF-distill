@@ -1,6 +1,6 @@
 # # Make sure to run without AMP.
 includes:
-  - configs/md22/Ac-Ala3/base.yml
+  - configs/md17/aspirin/base.yml
 
 model:
   name: painn
@@ -16,7 +16,7 @@ model:
   otf_graph: True
 
 optim:
-  batch_size: 16
+  batch_size: 32
   eval_batch_size: 32
   load_balancing: atoms
   num_workers: 4

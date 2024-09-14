@@ -1,5 +1,5 @@
 includes:
-- configs/md22/Ac-Ala3/base.yml
+- configs/md22/stachyose/base.yml
 
 model:
   name: gemnet_t
@@ -34,7 +34,7 @@ model:
   direct_forces: True
 
 optim:
-  batch_size: 4
+  batch_size: 16
   eval_batch_size: 32
   num_workers: 4
   lr_initial: 0.001
