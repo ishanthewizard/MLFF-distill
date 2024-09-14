@@ -42,6 +42,21 @@ loss_functions:
       fn: l2mae
       coefficient: 0
       reduction: mean_all
+
+
+evaluation_metrics:
+  metrics:
+    energy:
+      - mae
+    forces:
+      - mae
+      - cosine_similarity
+      - magnitude_error
+    final_node_features:
+      - mae
+    misc:
+      - energy_forces_within_threshold
+  primary_metric: forces_mae
   
 
 optim:
