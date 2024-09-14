@@ -10,15 +10,10 @@ dataset:
     label_jac_batch_size: 4
     vectorize_teach_jacs: True
 
+model:
+  use_teacher_atom_embeddings: True
+
 outputs:
-  energy:
-    shape: 1
-    level: system
-  forces:
-    irrep_dim: 1
-    level: atom
-    train_on_free_atoms: True
-    eval_on_free_atoms: True
   final_node_features:
     irrep_dim: 1
     level: atom
@@ -37,7 +32,7 @@ loss_functions:
       coefficient: 0
   - final_node_features:
       fn: mse
-      coefficient: 1000
+      coefficient: 0
   - force_jacs:
       fn: l2mae
       coefficient: 0
@@ -60,7 +55,7 @@ evaluation_metrics:
   
 
 optim:
-  batch_size: 4
+  batch_size: 32
   eval_batch_size: 32
   force_jac_sample_size: 10
   print_memory_usage: False

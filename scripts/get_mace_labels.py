@@ -53,16 +53,16 @@ def record_labels(labels_folder, dataset_path, model="large"):
         natoms = sample.natoms
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy(), cell=sample.cell.numpy()[0], pbc=True)
         atoms.calc = calc
-
         return calc.get_final_node_features(atoms=atoms)
 
 
     def get_atom_embeddings():
         return calc.get_atom_embeddings()
     
+    atom_embeddings = get_atom_embeddings()
     np.save(os.path.join(labels_folder, 'atom_embeddings.npy'), get_atom_embeddings())
     # record_and_save(train_dataset, os.path.join(labels_folder, 'final_node_features.lmdb'), get_final_node_features)
-    record_and_save(val_dataset, os.path.join(labels_folder, 'final_node_features.lmdb'), get_final_node_features)
+    # record_and_save(val_dataset, os.path.join(labels_folder, 'final_node_features.lmdb'), get_final_node_features)
     # record_and_save(train_dataset, os.path.join(labels_folder, 'train_forces.lmdb'), get_forces)
     # record_and_save(train_dataset, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_hessians)
     # record_and_save(val_dataset, os.path.join(labels_folder, 'val_forces.lmdb'), get_forces)
