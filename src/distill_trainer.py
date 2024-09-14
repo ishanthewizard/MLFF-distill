@@ -293,15 +293,17 @@ class DistillTrainer(OCPTrainer):
         distutils.synchronize()
             
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
+        final_node_feature_dataset = SimpleDataset(os.path.join(labels_folder, f'{dataset_type}_final_node_features'))
         if indxs is not None:
             teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
+            final_node_feature_dataset = Subset(final_node_feature_dataset, torch.tensor(indxs))
         if dataset_type == 'train':
             force_jac_dataset = SimpleDataset(os.path.join(labels_folder, 'force_jacobians'))
             if indxs is not None:
                 force_jac_dataset = Subset(force_jac_dataset, torch.tensor(indxs))
         else: 
             force_jac_dataset = None
-        return CombinedDataset(main_dataset,  teacher_force_dataset, force_jac_dataset)
+        return CombinedDataset(main_dataset,  teacher_force_dataset, force_jac_dataset, final_node_feature_dataset)
 
     def load_datasets(self) -> None:
         self.ocp_collater = OCPCollater(
@@ -498,18 +500,7 @@ class DistillTrainer(OCPTrainer):
                 print_cuda_memory_usage()
         else:
             batch['force_jac_loss'] = torch.tensor(0)
-        # if self.step == 108:
-        #     breakpoint()
-        #     # Assuming force_jac_loss is your loss tensor
-        #     force_jac_loss.backward()
-
-        #     # Now the gradients with respect to model parameters have been computed
-        #     for name, param in self.model.named_parameters():
-        #         if param.grad is not None:
-        #             print(f"Gradient for {name}: {param.grad}")
-        #         else:
-        #             print(f"No gradient for {name}")
-        #     breakpoint()
+        
         ## FINISH ISHAN ADDED CODE
         for loss_fn in self.loss_functions:
             target_name, loss_info = loss_fn
@@ -565,7 +556,7 @@ class DistillTrainer(OCPTrainer):
     def _compute_metrics(self, out, batch, evaluator, metrics=None):
         metrics = super()._compute_metrics(out, batch, evaluator, metrics)
         if not self.is_validating:
-            avg_force_jac_loss = distutils.all_reduce(batch["force_jac_loss"], average=True )
+            avg_force_jac_loss = distutils.all_reduce(batch["force_jac_loss"], average=True)
             metrics['force_jac_loss'] = {}
             metrics['force_jac_loss']['metric'] = avg_force_jac_loss.item()
             metrics['force_jac_loss']['total'] = avg_force_jac_loss.item()

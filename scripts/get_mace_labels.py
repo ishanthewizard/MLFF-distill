@@ -61,7 +61,8 @@ def record_labels(labels_folder, dataset_path, model="large"):
         return calc.get_atom_embeddings()
     
     np.save(os.path.join(labels_folder, 'atom_embeddings.npy'), get_atom_embeddings())
-    record_and_save(train_dataset, os.path.join(labels_folder, 'final_node_features.lmdb'), get_final_node_features)
+    # record_and_save(train_dataset, os.path.join(labels_folder, 'final_node_features.lmdb'), get_final_node_features)
+    record_and_save(val_dataset, os.path.join(labels_folder, 'final_node_features.lmdb'), get_final_node_features)
     # record_and_save(train_dataset, os.path.join(labels_folder, 'train_forces.lmdb'), get_forces)
     # record_and_save(train_dataset, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_hessians)
     # record_and_save(val_dataset, os.path.join(labels_folder, 'val_forces.lmdb'), get_forces)
