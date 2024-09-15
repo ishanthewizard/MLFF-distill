@@ -11,7 +11,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/SPICE/spice_separated/Iodine/train
+    src: /pscratch/sd/i/ishan_a/spice_separated/Iodine/train
     key_mapping:
       y: energy
       force: forces
@@ -24,9 +24,9 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/SPICE/spice_separated/Iodine/val
+    src: /pscratch/sd/i/ishan_a/spice_separated/Iodine/val
   test:
-    src: /data/ishan-amin/SPICE/spice_separated/Iodine/test
+    src: /pscratch/sd/i/ishan_a/spice_separated/Iodine/test
 
 outputs:
   energy:

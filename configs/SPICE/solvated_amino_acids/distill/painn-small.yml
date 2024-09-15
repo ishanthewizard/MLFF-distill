@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: /data/shared/ishan_stuff/labels/mace_off_large_SpiceAminos
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/mace_off_large_SpiceAminos
     label_force_batch_size: 32
     label_jac_batch_size: 4
     vectorize_teach_jacs: True
