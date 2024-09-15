@@ -10,7 +10,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/MPtraj/mptraj_seperated_noIons/Perovskites/train
+    src: /data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/train
     # src: /data/shared/MPTrj/lmdb/train
     key_mapping:
       corrected_total_energy: energy
@@ -22,9 +22,9 @@ dataset:
             stdev: 1
         forces: 
             mean: 0
-            stdev: 1
+            stdev: 0.26273304
   val:
-    src: /data/ishan-amin/MPtraj/mptraj_seperated_noIons/Perovskites/val
+    src:/data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/val
     # src: /data/shared/MPTrj/lmdb/val
 
 

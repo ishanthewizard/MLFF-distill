@@ -91,7 +91,5 @@ def write_to_lmdb(xyz_path, db_path, split_name='train'):
     txn.commit()
     db.sync()
     db.close()
-#write_to_lmdb(db_path='/data/shared/spice/lmdb_w_ref2', xyz_path='/data/shared/spice/test_large_neut_all.xyz', split_name='test')
-#write_to_lmdb(db_path='/data/shared/spice/lmdb_w_ref2', xyz_path='/data/shared/spice/train_large_neut_no_bad_clean.xyz', split_name='train')
-#write_to_lmdb(db_path='/data/shared/spice/maceoff_split', xyz_path='/data/shared/spice/train_large_neut_no_bad_clean.xyz', split_name='train')
+write_to_lmdb(db_path='/data/shared/spice/maceoff_split', xyz_path='/data/shared/spice/train_large_neut_no_bad_clean.xyz', split_name='train')
 write_to_lmdb(db_path='/data/shared/spice/maceoff_split', xyz_path='/data/shared/spice/test_large_neut_all.xyz', split_name='test')

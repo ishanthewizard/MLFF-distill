@@ -1,5 +1,5 @@
 includes:
-- configs/MPTraj/Perovskites/gemnet-dT-small.yml
+- configs/MPTraj/Bangap_greater_5/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 

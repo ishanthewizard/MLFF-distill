@@ -93,11 +93,13 @@ def mptrj_dict_to_pyg_data(atoms, sid):
     cell = torch.tensor(atoms.cell, dtype=torch.float).unsqueeze(
         dim=0
     )  # 1 3 3
-    # breakpoint() # make sure it's 1 3 3 
 
     pos = torch.tensor(
         atoms.get_positions()
-    )  # natoms 3
+    ).float()  # natoms 3
+
+    natoms = torch.tensor(len(atomic_numbers)).unsqueeze(0)
+    fixed = torch.zeros(len(atomic_numbers))
 
     # Output
     uncorrected_total_energy = torch.tensor(atoms.get_potential_energy(), dtype=torch.float)
@@ -112,6 +114,8 @@ def mptrj_dict_to_pyg_data(atoms, sid):
         atomic_numbers=atomic_numbers,
         pos=pos,
         cell=cell,
+        natoms=natoms,
+        fixed=fixed,
         uncorrected_total_energy=uncorrected_total_energy,
         force=force,
         corrected_total_energy=corrected_total_energy,

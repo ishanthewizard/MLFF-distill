@@ -53,17 +53,18 @@ def record_labels(labels_folder, dataset_path, model="large"):
         hessian = calc.get_hessian(atoms=atoms)
         return - 1 * hessian.reshape(natoms, 3, natoms, 3) # this is SUPER IMPORTANT!!! multiply by -1
         
-    record_and_save(train_dataset, os.path.join(labels_folder, 'train_forces.lmdb'), get_forces)
     record_and_save(train_dataset, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_hessians)
+    record_and_save(train_dataset, os.path.join(labels_folder, 'train_forces.lmdb'), get_forces)
     record_and_save(val_dataset, os.path.join(labels_folder, 'val_forces.lmdb'), get_forces)
 
 if __name__ == "__main__":
-    labels_folder = 'labels/mace_off_large_Perovskites_noIons_fr'
+    labels_folder = 'labels/mace_off_large_Bandgap_greater_5'
     if os.path.isdir(labels_folder):
         raise Exception('folder already exists')
     # dataset_path = '/data/ishan-amin/post_data/md17/ethanol/1k/' 
     # dataset_path = '/data/ishan-amin/post_data/md17/aspirin/1k/'
     # dataset_path = '/data/ishan-amin/post_data/md22/AT_AT/1k/'
-    dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_noIons/Perovskites'
+    # dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated/Yttrium'
+    dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5'
 
     record_labels(labels_folder, dataset_path)

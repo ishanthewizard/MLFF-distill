@@ -33,7 +33,7 @@ def get_accuracy(dataset_path, model='large'):
     
 
     indxs = np.random.default_rng(seed=123).choice(len(dataset), 1000, replace=False)
-    dataset = Subset(dataset, torch.tensor(indxs))
+    # dataset = Subset(dataset, torch.tensor(indxs))
         
 
     print(len(dataset))

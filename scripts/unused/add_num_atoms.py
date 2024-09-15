@@ -23,9 +23,9 @@ def record_and_save(dataset, new_file_path):
     num_ions = 0
     for sample in tqdm(dataset):
         # Convert tensor to bytes and write to LMDB
-        if len(sample.atomic_numbers) < 3:
-            num_ions += 1
-            continue
+        # if len(sample.atomic_numbers) < 3:
+        #     num_ions += 1
+        #     continue
         sample.natoms = torch.tensor(len(sample.atomic_numbers)).unsqueeze(0)
 
         sample.fixed = torch.zeros(len(sample.atomic_numbers))
@@ -49,14 +49,14 @@ def record_and_save(dataset, new_file_path):
 
 if __name__ == "__main__":
     # new_dataset_path= '/data/ishan-amin/maceoff_split/train'
-    new_dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_noIons/Perovskites/val'
+    new_dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated/Sulfides/val'
     # new_dataset_path = '/data/ishan-amin/MPtraj/mace_mp_split_natoms/train'
     os.makedirs(new_dataset_path)
 
     # dataset_path = '/data/ishan-amin/post_data/md17/ethanol/1k/' 
     # dataset_path = '/data/ishan-amin/post_data/md17/aspirin/1k/'
     # dataset_path = '/data/ishan-amin/post_data/md22/AT_AT/1k/train'
-    dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_old/Perovskites/val'
+    dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_old/Sulfides/val'
     # dataset_path = '/data/ishan-amin/MPtraj/mace_mp_split_old/train'
     # dataset_path = '/data/shared/MPTrj/lmdb/train'
     dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
