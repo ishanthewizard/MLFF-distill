@@ -1,9 +1,5 @@
 includes:
-<<<<<<< HEAD
   - configs/slurm/premium.yml
-=======
-  - configs/slurm/regular.yml
->>>>>>> f2ac073 (Commiting config changes)
   # - configs/slurm/debug.yml
 logger: 
   name: wandb

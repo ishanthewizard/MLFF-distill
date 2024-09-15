@@ -10,14 +10,8 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-<<<<<<< HEAD
     # src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/Ac-Ala3-NHMe/train
     src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train
-=======
-    # src: /data/ishan-amin/post_data/md22/ac_Ala3_NHMe/5k/train
-    src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/Ac-Ala3-NHMe/train
-    # src: /data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train
->>>>>>> f2ac073 (Commiting config changes)
     # split: 5000
     key_mapping:
       y: energy
