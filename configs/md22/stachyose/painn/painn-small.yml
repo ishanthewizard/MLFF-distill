@@ -1,6 +1,6 @@
 # # Make sure to run without AMP.
 includes:
-  - configs/md22/base.yml
+  - configs/md22/stachyose/base.yml
 
 model:
   name: painn
@@ -9,7 +9,7 @@ model:
   num_rbf: 128
   cutoff: 12.0
   max_neighbors: 50
-  scale_file: configs/md22-distill/painn/painn-small-scale.pt
+  scale_file: configs/md22/stachyose/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
   use_pbc: False
@@ -24,11 +24,9 @@ optim:
   optimizer_params: {"eps": 1.e-7, "weight_decay": 0.000002, "amsgrad": True}
   lr_initial: 5.e-4
   scheduler: ReduceLROnPlateau
-  patience: 30
+  patience: 5
   factor: 0.8
   min_lr: 0.000005
-  max_epochs: 10000
+  max_epochs: 1000
   ema_decay: 0.999
   clip_grad_norm: 10
-
-
