@@ -18,13 +18,13 @@ dataset:
     transforms:
       normalizer:
         energy: 
-            mean: -15358.563880754844
+            mean: 0
             stdev: 1
         forces: 
             mean: 0
-            stdev: 0.26273304
+            stdev: 1
   val:
-    src:/data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/val
+    src: /data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/val
     # src: /data/shared/MPTrj/lmdb/val
 
 

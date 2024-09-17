@@ -18,7 +18,7 @@ def evaluate_model(trainer, eval_loss):
     losses = []
     trainer.model.eval()
     start = None
-    start_record_idx = 10
+    start_record_idx = 15
     batch_size = trainer.config["optim"].get("eval_batch_size", trainer.config["optim"]["batch_size"])
     print(f"BATCH SIZE: {batch_size}")
     print(f"TRAINER EPOCH: {trainer.epoch}")
@@ -40,9 +40,11 @@ def evaluate_model(trainer, eval_loss):
     print(f"THROUGHPUT PER SECOND: {iter_per_s * batch_size}")
     if eval_loss:
         print(f"FORCE MAE: {np.mean(np.array(losses)) * 1000} meV")
+        # print(f"FORCE MAE MEDIAN: {np.median(np.array(losses)) * 1000} meV")
+        # print(f"FORCE MAE MAX: {np.max(np.array(losses)) * 1000} meV")
 if __name__ == "__main__":
     # config_path = 'configs/SPICE/solvated_amino_acids/painn/painn-small.yml' # you need to supply this at the command line
-    checkpoint_path = 'checkpoints/2024-09-08-10-29-36-solvated-PaiNN-DIST/best_checkpoint.pt'
+    # checkpoint_path = 'checkpoints/2024-09-08-10-29-36-solvated-PaiNN-DIST/best_checkpoint.pt'
     # test_dataset  = '/data/ishan-amin/spice_separated/Iodine/test'
     batch_size = 32
     parser: argparse.ArgumentParser = flags.get_parser()

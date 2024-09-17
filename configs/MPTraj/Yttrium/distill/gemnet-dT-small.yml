@@ -1,11 +1,11 @@
 includes:
-- configs/MPTraj/Perovskites/gemnet-dT-small.yml
+- configs/MPTraj/Yttrium/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/mace_off_large_Perovskites_noIons
+    teacher_labels_folder: labels/mace_mp_all_splits_Yttrium
 
 loss_functions:
   - energy:
@@ -25,6 +25,6 @@ loss_functions:
 optim:
   batch_size: 16
   eval_batch_size: 32
-  force_jac_sample_size: 4
+  force_jac_sample_size: 1
   print_memory_usage: False
   vectorize_jacs: True

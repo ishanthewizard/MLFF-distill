@@ -9,7 +9,7 @@ model:
   num_rbf: 128
   cutoff: 6
   max_neighbors: 50
-  scale_file: configs/SPICE/solvated_amino_acids/painn/painn-small-scale.pt
+  scale_file: configs/MPTraj/Yttrium/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
   use_pbc: True # IMPORTANT

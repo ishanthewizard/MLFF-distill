@@ -10,21 +10,18 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/MPtraj/mptraj_seperated/Yttrium/train
+    src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium/train
     # src: /data/shared/MPTrj/lmdb/train
     key_mapping:
       corrected_total_energy: energy
       force: forces
     transforms:
       normalizer:
-        energy: 
-            mean: -15358.563880754844
-            stdev: 1
         forces: 
             mean: 0
-            stdev: 0.26273304
+            stdev: 1
   val:
-    src: /data/ishan-amin/MPtraj/mptraj_seperated/Yttrium/val
+    src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium/val
     # src: /data/shared/MPTrj/lmdb/val
 
 

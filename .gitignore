@@ -2,6 +2,7 @@ wandb
 /data
 checkpoints/
 teacher_checkpoints/
+student_checkpoints/
 results
 labels/
 MODELPATH

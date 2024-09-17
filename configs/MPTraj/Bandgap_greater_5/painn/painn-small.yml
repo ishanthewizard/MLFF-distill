@@ -1,13 +1,13 @@
 # Make sure to run without AMP.
 includes:
-- configs/MPTraj/Bangap_greater_5/base.yml
+- configs/MPTraj/Bandgap_greater_5/base.yml
 
 model:
   name: painn
   hidden_channels: 128
   num_layers: 4
   num_rbf: 128
-  cutoff: 6
+  cutoff: 12
   max_neighbors: 50
   scale_file: configs/SPICE/solvated_amino_acids/painn/painn-small-scale.pt
   regress_forces: True

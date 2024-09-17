@@ -1,8 +1,10 @@
 import os
+import pickle
 from fairchem.core.common.registry import registry
 from mp_api.client import MPRester
 from ase.io import read
 from src.distill_datasets import SimpleDataset
+from tqdm import tqdm
 # with MPRester("PZ6Gx8dJTmeySErT5xuuaGhypYyg86p4") as mpr:
 #     docs = mpr.summary.search(material_ids= ['mp-689577'])
 #     mp_number = 'mp-1120767'
@@ -16,28 +18,41 @@ from src.distill_datasets import SimpleDataset
 #             atom = all_atoms[0]
 #     breakpoint()
 
+# main_path = '/data/shared/MPTrj/lmdb/'
+# train = os.path.join(main_path, 'train')
+# val = os.path.join(main_path, 'val')
+# # test = os.path.join(main_path, 'test')
+
+# train_dataset = registry.get_dataset_class("lmdb")({"src": train})
+# val_dataset = registry.get_dataset_class("lmdb")({"src": val})
+# mace_train_dataset = registry.get_dataset_class("lmdb")({"src": '/data/ishan-amin/MPtraj/mace_mp_split/train'})
+# # test_dataset = registry.get_dataset_class("lmdb")({"src": test})
+# total =  len(train_dataset) + len(val_dataset)
+# print("ERIC TOTAL:", len(train_dataset) + len(val_dataset))
+# print("MACE TOTAL:", len(mace_train_dataset) )
+# print("DIFFERENCE:",total - len(mace_train_dataset))
 
 
-
-# main_path = '/data/ishan-amin/MPtraj/mptraj_seperated_noIons/Perovskites/'
-# main_path = '/data/ishan-amin/SPICE/spice_separated/Iodine'
-# main_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Bandgap_greater_than_5'
-# main_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons'
-main_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium'
+main_path = '/data/shared/MLFF/OC20/s2ef/2M/'
 train = os.path.join(main_path, 'train')
-val = os.path.join(main_path, 'val')
-test = os.path.join(main_path, 'test')
-
+# test = os.path.join(main_path, 'test')
+pickle_file = 'oc20_data_mapping.pkl'
+with open(pickle_file, 'rb') as f:
+    data_dict = pickle.load(f)
 train_dataset = registry.get_dataset_class("lmdb")({"src": train})
-val_dataset = registry.get_dataset_class("lmdb")({"src": val})
-test_dataset = registry.get_dataset_class("lmdb")({"src": test})
-total =  len(train_dataset) + len(val_dataset) + len(test_dataset)
-print(len(train_dataset))
-print(len(val_dataset))
-print(len(test_dataset))
-print(len(test_dataset) / total)
-print(val_dataset[0])
-print(test_dataset[0])
+num = 0
+samples = [0,0,0,0]
+for sample in tqdm(train_dataset):
+    key = "random" + str(sample.sid)
+    samples[data_dict[key]['class']] += 1
+# 0 - intermetallics
+# 1 - metalloids
+# 2 - non-metals
+# 3 - halides
+# test_dataset = registry.get_dataset_class("lmdb")({"src": test})
+total =  len(train_dataset) 
+print(total, samples)
+
 # breakpoint()
 
 # force_jac_dataset = SimpleDataset(os.path.join(labels_folder,  'force_jacobians'))

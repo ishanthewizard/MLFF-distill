@@ -434,8 +434,7 @@ class DistillTrainer(OCPTrainer):
     def update_loss_coefficients(self):
         # self.force_mae, self.teacher_force_mae are good to go
         if self.force_mae == None:
-            self.validate()
-            print("STUDENT MAE:", self.force_mae)
+            self.force_mae = float('inf')
         if self.step % 20 == 0:
             if self.force_mae < self.teacher_force_mae:
                 logging.info("EXCEEDED TEACHER ACCURACY!!")
