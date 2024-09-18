@@ -32,7 +32,7 @@ def get_accuracy(dataset_path, model='large'):
     dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
     
 
-    indxs = np.random.default_rng(seed=123).choice(len(dataset), 1000, replace=False)
+    # indxs = np.random.default_rng(seed=123).choice(len(dataset), 1000, replace=False)
     # dataset = Subset(dataset, torch.tensor(indxs))
         
 
@@ -50,7 +50,7 @@ def get_accuracy(dataset_path, model='large'):
     predicted_forces = []
     num_atoms = []
     for sample in tqdm(dataset):
-        true_energies.append(sample.uncorrected_total_energy.item())
+        true_energies.append(sample.y.item())
         true_forces.append(sample.force.numpy())
         atomic_numbers = sample.atomic_numbers.numpy()
         num_atoms.append(len(atomic_numbers))

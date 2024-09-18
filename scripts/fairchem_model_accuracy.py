@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # config['dataset']['test'] = {'src' : test_dataset}
     config['is_debug'] = True
     config['optim']['eval_batch_size'] = batch_size
-    config['dataset']['test'] = {'src': config['dataset']['val']['src'][:-3] + 'train'}
+    config['dataset']['test'] = {'src': config['dataset']['val']['src'][:-3] + 'test'}
     print(config['dataset']['test'])
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id

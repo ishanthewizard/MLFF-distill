@@ -7,8 +7,8 @@ model:
   hidden_channels: 128
   num_layers: 4
   num_rbf: 128
-  cutoff: 12
-  max_neighbors: 50
+  cutoff: 6.0
+  max_neighbors: 20
   scale_file: configs/SPICE/solvated_amino_acids/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
