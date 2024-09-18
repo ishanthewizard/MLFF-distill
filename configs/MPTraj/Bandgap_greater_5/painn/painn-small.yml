@@ -1,15 +1,15 @@
 # Make sure to run without AMP.
 includes:
-- configs/MPTraj/Perovskites/base.yml
+- configs/MPTraj/Bandgap_greater_5/base.yml
 
 model:
   name: painn
   hidden_channels: 128
   num_layers: 4
   num_rbf: 128
-  cutoff: 14
-  max_neighbors: 50
-  scale_file: configs/MPTraj/Perovskites/painn/painn-small-scale.pt
+  cutoff: 6.0
+  max_neighbors: 20
+  scale_file: configs/SPICE/solvated_amino_acids/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
   use_pbc: True # IMPORTANT

@@ -28,10 +28,10 @@ loss_functions:
       coefficient: 0
   - final_node_features:
       fn: mse
-      coefficient: 0
+      coefficient: 1000
   - force_jacs:
       fn: l2mae
-      coefficient: 400
+      coefficient: 0
       reduction: mean_all
 
 evaluation_metrics:

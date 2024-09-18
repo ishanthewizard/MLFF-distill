@@ -1,11 +1,12 @@
 includes:
-- configs/MPTraj/Perovskites/gemnet-dT-small.yml
+- configs/MPTraj/Bandgap_greater_5/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: /data/shared/ishan_stuff/mptraj_seperated_all_splits/mace_off_large_Perovskites_noIons
+    teacher_labels_folder: /data/shared/ishan_stuff/mptraj_seperated_all_splits/mace_mp_all_splits_Bandgap_greater_5
+
 model:
   use_teacher_atom_embeddings: False
 
@@ -28,11 +29,12 @@ loss_functions:
       coefficient: 0
   - final_node_features:
       fn: mse
-      coefficient: 0
+      coefficient: 1000
   - force_jacs:
       fn: l2mae
-      coefficient: 400
+      coefficient: 0
       reduction: mean_all
+
 
 evaluation_metrics:
   metrics:
@@ -49,8 +51,8 @@ evaluation_metrics:
   primary_metric: forces_mae
 
 optim:
-  batch_size: 16
+  batch_size: 32
   eval_batch_size: 32
-  force_jac_sample_size: 4
+  force_jac_sample_size: 1
   print_memory_usage: False
   vectorize_jacs: True
