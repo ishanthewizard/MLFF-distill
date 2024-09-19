@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: /data/shared/ishan_stuff/mptraj_seperated_all_splits/mace_off_large_Perovskites_noIons
+    teacher_labels_folder: /data/shared/ishan_stuff/labels_unlocked/mace_mp_all_splits_Perovskites_noIons
 model:
   use_teacher_atom_embeddings: False
 

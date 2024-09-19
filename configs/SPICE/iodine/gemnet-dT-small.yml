@@ -32,6 +32,9 @@ model:
   otf_graph: True
   regress_forces: True
   direct_forces: True
+  emb_size_teacher: 224
+  teacher_atom_embedding_path: /data/shared/ishan_stuff/labels_unlocked/mace_off_large_atom_embeddings.npy
+
 
 optim:
   batch_size: 4

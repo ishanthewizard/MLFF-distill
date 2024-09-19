@@ -10,8 +10,9 @@ trainer: ocp
 
 dataset:
   train:
+    teacher_labels_folder: /data/shared/ishan_stuff/labels_unlocked/mace_off_large_SpiceIodine
     format: lmdb
-    src: /pscratch/sd/i/ishan_a/spice_separated/Iodine/train
+    src: /data/shared/ishan_stuff/spice_separated/Iodine/train
     key_mapping:
       y: energy
       force: forces
@@ -24,9 +25,9 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /pscratch/sd/i/ishan_a/spice_separated/Iodine/val
+    src: /data/shared/ishan_stuff/spice_separated/Iodine/val
   test:
-    src: /pscratch/sd/i/ishan_a/spice_separated/Iodine/test
+    src: /data/shared/ishan_stuff/spice_separated/Iodine/test
 
 outputs:
   energy:

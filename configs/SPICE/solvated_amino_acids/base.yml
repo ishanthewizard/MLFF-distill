@@ -10,8 +10,9 @@ trainer: ocp
 
 dataset:
   train:
+    teacher_labels_folder: /data/shared/ishan_stuff/labels_unlocked/mace_off_large_SpiceAminos
     format: lmdb
-    src: /pscratch/sd/i/ishan_a/spice_separated/Solvated_Amino_Acids/train
+    src: /data/shared/ishan_stuff/spice_separated/Solvated_Amino_Acids/train
     key_mapping:
       y: energy
       force: forces
@@ -24,9 +25,9 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /pscratch/sd/i/ishan_a/spice_separated/Solvated_Amino_Acids/val
+    src: /data/shared/ishan_stuff/spice_separated/Solvated_Amino_Acids/val
   test:
-    src: /pscratch/sd/i/ishan_a/spice_separated/Solvated_Amino_Acids/test
+    src: /data/shared/ishan_stuff/spice_separated/Solvated_Amino_Acids/test
 
 
 outputs:

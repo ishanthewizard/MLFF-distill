@@ -10,7 +10,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/train
+    src: /data/shared/ishan_stuff/mptraj_seperated_all_splits_unlocked/Bandgap_greater_than_5/train
     # src: /data/shared/MPTrj/lmdb/train
     key_mapping:
       corrected_total_energy: energy
@@ -24,7 +24,7 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/val
+    src: /data/shared/ishan_stuff/mptraj_seperated_all_splits_unlocked/Bandgap_greater_than_5/val
     # src: /data/shared/MPTrj/lmdb/val
 
 

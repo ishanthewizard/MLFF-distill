@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: /data/shared/ishan_stuff/mptraj_seperated_all_splits/mace_mp_all_splits_Yttrium
+    teacher_labels_folder: /data/shared/ishan_stuff/labels_unlocked/mace_mp_all_splits_Yttrium
 
 model:
   use_teacher_atom_embeddings: True
