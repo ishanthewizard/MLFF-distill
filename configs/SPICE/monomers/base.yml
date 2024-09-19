@@ -10,6 +10,7 @@ trainer: ocp
 
 dataset:
   train:
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/mace_off_large_SpiceMonomers
     format: lmdb
     src: /pscratch/sd/i/ishan_a/spice_separated/DES370K_Monomers/train
     key_mapping:

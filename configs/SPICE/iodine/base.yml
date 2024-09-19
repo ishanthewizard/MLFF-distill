@@ -11,6 +11,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/mace_off_large_SpiceIodine
     src: /pscratch/sd/i/ishan_a/spice_separated/Iodine/train
     key_mapping:
       y: energy

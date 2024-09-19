@@ -12,8 +12,9 @@ model:
   scale_file: configs/SPICE/solvated_amino_acids/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
-  use_pbc: False
+  use_pbc: True
   otf_graph: True
+  emb_size_teacher: 224
 
 optim:
   batch_size: 16

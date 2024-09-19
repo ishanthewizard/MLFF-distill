@@ -12,7 +12,8 @@ model:
   scale_file: configs/SPICE/iodine/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
-  use_pbc: False
+  use_pbc: True
+  emb_size_teacher: 224
   otf_graph: True
 
 optim:

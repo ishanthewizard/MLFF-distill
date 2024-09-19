@@ -10,6 +10,7 @@ trainer: ocp
 
 dataset:
   train:
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/mace_off_large_SpiceAminos
     format: lmdb
     src: /pscratch/sd/i/ishan_a/spice_separated/Solvated_Amino_Acids/train
     key_mapping:
