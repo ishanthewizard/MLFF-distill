@@ -182,16 +182,34 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
     # Decomposing the Jacobian tensor by molecule in a batch
     jacs_per_mol = [jac[:len(mol_samps), cum_sum:cum_sum + nat, :] for mol_samps, cum_sum, nat in zip(by_molecule, cumulative_sums[:-1], natoms)]
     
-    # Preparing the true jacobians in batch (we're gonna have to change this later most likely)
-    # true_jacs_per_mol = [batch['force_jacs'][samples[:, 0], samples[:, 1]] for samples in by_molecule]
-    cum_jac_indexes = [0] + torch.cumsum((natoms**2) * 9, dim=0).tolist()
-    true_jacs_per_mol = []
+    # # OLD CODE
+    # # Preparing the true jacobians in batch (we're gonna have to change this later most likely)
+    # # true_jacs_per_mol = [batch['force_jacs'][samples[:, 0], samples[:, 1]] for samples in by_molecule]
+    # cum_jac_indexes = [0] + torch.cumsum((natoms**2) * 9, dim=0).tolist()
+    # true_jacs_per_mol = []
+    # if torch.any(torch.isnan(jac)):
+    #     raise Exception("PAINN FORCE JAC IS NAN")
+    # for i, samples in enumerate(by_molecule):
+    #     curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(natoms[i], 3, natoms[i], 3)
+    #     true_jacs_per_mol.append(curr[samples[:,0], samples[:, 1]])
+    # # END OLD CODE
+
+    # NEW CODE (supports masking)
     if torch.any(torch.isnan(jac)):
-        breakpoint()
-        raise Exception("PAINN FORCE JAC IS NAN")
+        raise Exception("FORCE JAC IS NAN")
+    mask_per_mol = [mask[cum_sum:cum_sum + nat] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
+    num_free_atoms_per_mol = torch.tensor([sum(sub_mask) for sub_mask in mask_per_mol], device=natoms.device)
+    cum_jac_indexes = [0] +  torch.cumsum((num_free_atoms_per_mol**2)*9, dim=0).tolist()
+    true_jacs_per_mol = []
     for i, samples in enumerate(by_molecule):
-        curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(natoms[i], 3, natoms[i], 3)
-        true_jacs_per_mol.append(curr[samples[:,0], samples[:, 1]])
+        fixed_atoms = batch.fixed[cumulative_sums[i]:cumulative_sums[i+1]]
+        fixed_cumsum = torch.cumsum(fixed_atoms)
+        num_free_atoms = num_free_atoms_per_mol[i]
+        curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(num_free_atoms, 3, num_free_atoms, 3)
+        subsampled_curr = curr[samples[:, 0] - fixed_cumsum[samples[:, 0]], samples[:, 1]]
+        true_jacs_per_mol.append(subsampled_curr)
+    # END NEW CODE
+
 
     loss_fn = L2MAELoss()
     total_loss = sum(loss_fn(jac, true_jac) for jac, true_jac in zip(jacs_per_mol, true_jacs_per_mol)) / len(jacs_per_mol)

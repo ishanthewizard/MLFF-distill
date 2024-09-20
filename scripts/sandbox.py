@@ -36,22 +36,43 @@ from tqdm import tqdm
 main_path = '/data/shared/MLFF/OC20/s2ef/2M/'
 train = os.path.join(main_path, 'train')
 # test = os.path.join(main_path, 'test')
-pickle_file = 'oc20_data_mapping.pkl'
+pickle_file = 'labels/oc20_data_mapping.pkl'
+
 with open(pickle_file, 'rb') as f:
     data_dict = pickle.load(f)
+
 train_dataset = registry.get_dataset_class("lmdb")({"src": train})
-num = 0
-samples = [0,0,0,0]
+
+# Initialize dictionaries for element counts in each class
+element_dict = {1: 0, 7: 0, 8: 0, 12: 0}  # Element atomic numbers for hydrogen, nitrogen, oxygen, magnesium
+class_dict = {
+    0: element_dict.copy(),  # intermetallics
+    1: element_dict.copy(),  # metalloids
+    2: element_dict.copy(),  # non-metals
+    3: element_dict.copy(),  # halides
+}
+
+# Iterate through the dataset and count occurrences of each element in the adsorbates based on their class
 for sample in tqdm(train_dataset):
     key = "random" + str(sample.sid)
-    samples[data_dict[key]['class']] += 1
-# 0 - intermetallics
-# 1 - metalloids
-# 2 - non-metals
-# 3 - halides
-# test_dataset = registry.get_dataset_class("lmdb")({"src": test})
-total =  len(train_dataset) 
-print(total, samples)
+    elements = [1, 7, 8, 12]  # H, N, O, Mg
+
+    for atomic_num in elements:
+        # Check if the element is present in adsorbates (assuming sample.tags == 2 denotes adsorbates)
+        if (sample.atomic_numbers[sample.tags == 2] == atomic_num).any():
+            class_dict[data_dict[key]['class']][atomic_num] += 1
+
+# Define group and element names for better output
+groups = ['intermetallics', 'metalloids', 'non-metals', 'halides']
+element_names = {1: 'hydrogen', 7: 'nitrogen', 8: 'oxygen', 12: 'magnesium'}
+
+# Print the results nicely
+for class_id, group_name in enumerate(groups):
+    print(f"\nIn {group_name.capitalize()} category:")
+    for atomic_num, element_count in class_dict[class_id].items():
+        element_name = element_names.get(atomic_num, f"Element {atomic_num}")
+        print(f"  {element_name.capitalize()}: {element_count}")
+
 
 # breakpoint()
 
