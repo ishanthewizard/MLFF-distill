@@ -14,8 +14,8 @@ from fairchem.core.common.utils import (
     setup_logging,
 )
 
-if TYPE_CHECKING:
-    import argparse
+from fairchem.core.common.flags import flags
+
 
 
 if __name__ == "__main__":
@@ -23,48 +23,44 @@ if __name__ == "__main__":
     
     setup_logging()
 
-    parser: argparse.ArgumentParser = flags.get_parser()
+    parser = flags.get_parser()
     parser.add_argument("--nersc", action="store_true", help="Run with NERSC")
-    args: argparse.Namespace
-    override_args: list[str]
     args, override_args = parser.parse_known_args()
     config = build_config(args, override_args)
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id
 
-    data = LmdbDataset(
-        {"src": "/data/shared/ishan_stuff/spice_separated/Solvated_Amino_Acids/test"}
-    )
+    data = LmdbDataset(config['dataset']['test'])
 
-    init_data = data.__getitem__(10)
+    init_data = data.__getitem__(config["init_data_idx"])
     atoms = data_to_atoms(init_data)
 
     # Set up the OCP calculator
-    checkpoint_path = "checkpoints/2024-09-18-20-05-36-solvated-gemSmall-DIST-n2n-correctemb/best_checkpoint.pt"
+    checkpoint_path = os.path.join("checkpoints", config["run_name"], "best_checkpoint.pt")
     calc = OCPCalculator(
-        config_yml="configs/SPICE/solvated_amino_acids/gemnet-dT-small.yml",
+        config_yml=args.config_yml.__str__(),
         checkpoint_path=checkpoint_path,
         cpu=False,
-        seed=0,
+        seed=args.seed,
     )
 
     atoms.calc = calc
 
     # Set up Langevin dynamics
-    MaxwellBoltzmannDistribution(atoms, temperature_K=300)
+    MaxwellBoltzmannDistribution(atoms, temperature_K=config["integrator_config"]["temperature"])
     dyn = Langevin(
         atoms,
-        timestep=1 * units.fs,
-        temperature_K=300 * units.kB,
-        friction=0.01 / units.fs,
+        timestep=config["integrator_config"]["timestep"] * units.fs,
+        temperature_K=config["integrator_config"]["temperature"],
+        friction=config["integrator_config"]["friction"] / units.fs,
         trajectory=os.path.join(os.path.dirname(checkpoint_path), "md.traj"),
     )
     dyn.attach(
         MDLogger(
             dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), "md.log"), header=True, stress=False, peratom=True, mode="a"
         ),
-        interval=1000,
+        interval=config["save_freq"],
     )
 
-    dyn.run(100000)
+    dyn.run(config["steps"])
     print("Done")

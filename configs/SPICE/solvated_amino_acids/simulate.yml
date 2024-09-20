@@ -1,0 +1,9 @@
+includes:
+- configs/SPICE/solvated_amino_acids/gemnet-dT-small.yml
+
+run_name: 2024-09-18-20-05-36-solvated-gemSmall-DIST-n2n-correctemb
+init_data_idx: 10
+seed: 123
+save_freq: 1000
+steps: 100000
+integrator_config: {"timestep": 1.0, "temperature": 300., "friction": 0.01}
