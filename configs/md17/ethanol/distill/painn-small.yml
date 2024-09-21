@@ -6,7 +6,7 @@ trainer: src.distill_trainer.DistillTrainer
 dataset:
   train:
     teacher_checkpoint_path: teacher_checkpoints/ethanol-rMD17-GemT-393epochs/best_checkpoint.pt
-    teacher_labels_folder: labels/ethanol-GemT-393epochs
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/ethanol-GemT-393epochs-DISTRIBUTED
     label_force_batch_size: 32
     label_jac_batch_size: 64
     vectorize_teach_jacs: False

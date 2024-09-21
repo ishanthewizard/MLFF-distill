@@ -5,7 +5,8 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/mace_mp_all_splits_Yttrium
+    # teacher_labels_folder: labels/mace_mp_all_splits_Yttrium
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/MPtraj_labels/mace_mp_all_splits_Yttrium
 
 loss_functions:
   - energy:
@@ -23,7 +24,7 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 16
+  batch_size: 4
   eval_batch_size: 32
   force_jac_sample_size: 1
   print_memory_usage: False

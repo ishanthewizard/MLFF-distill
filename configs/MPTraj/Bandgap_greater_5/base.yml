@@ -1,5 +1,5 @@
 includes:
-  - configs/slurm/regular.yml
+  - configs/slurm/premium.yml
   # - configs/slurm/debug.yml
 logger: 
   name: wandb
@@ -10,7 +10,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/train
+    src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Bandgap_greater_than_5/train
     # src: /data/shared/MPTrj/lmdb/train
     key_mapping:
       corrected_total_energy: energy
@@ -24,7 +24,8 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/val
+    # src: /data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/val
+    src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Bandgap_greater_than_5/val
     # src: /data/shared/MPTrj/lmdb/val
 
 

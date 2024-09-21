@@ -15,7 +15,6 @@ def categorize_samples_by_name(dataset, output_dir, test=False):
     # Iterate through the dataset and categorize samples by 'dataset_name'
     for sample in tqdm(dataset, desc="Processing samples"):
         dataset_name = sample.dataset_name
-        breakpoint()
         if dataset_name not in categorized_samples:
             categorized_samples[dataset_name] = []
         categorized_samples[dataset_name].append(sample)

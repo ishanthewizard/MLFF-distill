@@ -120,7 +120,6 @@ class DistillTrainer(OCPTrainer):
         #     self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - true_label).mean().item()
         # self.teacher_force_mae /= len(self.val_dataset)
         # print("TEACHER FORCE MAE:", self.teacher_force_mae)
-        # breakpoint()
 
     def record_and_save(self, dataloader, file_path, fn):
         # Assuming train_loader is your DataLoader
@@ -491,14 +490,12 @@ class DistillTrainer(OCPTrainer):
                 forward = self._forward
                 )
             if torch.any(torch.isnan(force_jac_loss)):
-                breakpoint()
                 raise Exception("FORCE JAC LOSS IS NAN")
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
         else:
             batch['force_jac_loss'] = torch.tensor(0)
         # if self.step == 108:
-        #     breakpoint()
         #     # Assuming force_jac_loss is your loss tensor
         #     force_jac_loss.backward()
 
@@ -508,7 +505,6 @@ class DistillTrainer(OCPTrainer):
         #             print(f"Gradient for {name}: {param.grad}")
         #         else:
         #             print(f"No gradient for {name}")
-        #     breakpoint()
         ## FINISH ISHAN ADDED CODE
         for loss_fn in self.loss_functions:
             target_name, loss_info = loss_fn
@@ -556,7 +552,6 @@ class DistillTrainer(OCPTrainer):
         # Sanity check to make sure the compute graph is correct.
         for lc in loss:
             if torch.any(torch.isnan(lc)):
-                breakpoint()
                 raise Exception("loss is nan")
             assert hasattr(lc, "grad_fn")
         return sum(loss)

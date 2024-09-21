@@ -5,7 +5,8 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/mace_mp_all_splits_Perovskites_noIons
+    # teacher_labels_folder: labels/mace_mp_all_splits_Perovskites_noIons
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/MPtraj_labels/mace_mp_all_splits_Perovskites_noIons
 
 loss_functions:
   - energy:

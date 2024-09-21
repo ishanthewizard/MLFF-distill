@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/mace_off_large_Perovskites_noIons
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/MPtraj_labels/mace_mp_all_splits_Perovskites_noIons
 
 loss_functions:
   - energy:
@@ -19,7 +19,7 @@ loss_functions:
       coefficient: 0
   - force_jacs:
       fn: l2mae
-      coefficient: 400
+      coefficient: 100
       reduction: mean_all
 
 optim:

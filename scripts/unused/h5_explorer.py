@@ -74,8 +74,6 @@ atoms_list = aggregate_atoms_from_folder(folder_path)
 
 # Now you have an aggregated atoms_list with all the molecules
 print(f"Total number of configurations: {len(atoms_list)}")
-breakpoint()
 # Optional: Do something with the atoms objects
 for atoms in atoms_list:
-    breakpoint()
     print(atoms)

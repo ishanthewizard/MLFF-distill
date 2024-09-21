@@ -10,8 +10,8 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons/train
-    # src: /data/shared/MPTrj/lmdb/train
+    # src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons/train
+    src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Perovskites_noIons/train
     key_mapping:
       corrected_total_energy: energy
       force: forces
@@ -24,7 +24,8 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons/val
+    # src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons/val
+    src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Perovskites_noIons/val
     # src: /data/shared/MPTrj/lmdb/val
 
 

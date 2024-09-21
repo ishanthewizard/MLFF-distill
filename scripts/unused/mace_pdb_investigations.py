@@ -39,15 +39,12 @@ def get_accuracy(dataset_path, model='large'):
             for atoms in read(file_path, index=":"):
                 all_atoms.append(atoms)
             atom = all_atoms[0]
-            breakpoint()
             # print(f"Loaded file: {file_path}")
             # print("POS DIFF:", ((all_atoms[0].get_positions() - sample.pos.numpy())**2).sum())
             # print("FORCE LABEL DIFF:", ((all_atoms[0].get_forces() - sample.force.numpy())**2).sum())
             atom.calc = mace_model 
 
             # print("DIFFERENCE IN MACE FORCES:",  ((mace_lmdb_forces - atom.get_forces())**2).sum())
-            if i == 10:
-                breakpoint()
         else:
             print(f"File not found for sample with mp_id: {mp_number}")
             raise Exception("UH OH!!")

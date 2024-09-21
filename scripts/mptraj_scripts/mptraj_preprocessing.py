@@ -35,7 +35,6 @@ def write_lmdb(files, dir):
         diff_idx= 0
         for atoms in read(file_path, index=":"):
             new_sid = atoms.info['mp_id'] + '_' + str(diff_idx)
-            # breakpoint()
             data = mptrj_dict_to_pyg_data(atoms, sid = new_sid )
             txn = db.begin(write=True)
             txn.put(f"{i}".encode("ascii"), pickle.dumps(data, protocol=-1))

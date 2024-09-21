@@ -12,7 +12,7 @@ model:
   scale_file: configs/SPICE/solvated_amino_acids/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
-  use_pbc: False
+  use_pbc: True #changed from original - let's see if this helps
   otf_graph: True
 
 optim:
