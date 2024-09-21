@@ -11,6 +11,7 @@ dataset:
 
 model:
   use_teacher_atom_embeddings: True
+  baseline: True
 
 outputs:
   final_node_features:

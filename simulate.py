@@ -2,6 +2,7 @@ import os
 from fairchem.core import OCPCalculator
 from fairchem.core.datasets import LmdbDataset
 from ase.md.langevin import Langevin
+from ase.md.verlet import VelocityVerlet
 from ase.md.logger import MDLogger
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase import Atoms, units
@@ -32,11 +33,12 @@ if __name__ == "__main__":
 
     data = LmdbDataset(config['dataset']['test'])
 
-    init_data = data.__getitem__(config["init_data_idx"])
+    idx = config["init_data_idx"]
+    init_data = data.__getitem__(idx)
     atoms = data_to_atoms(init_data)
 
     # Set up the OCP calculator
-    checkpoint_path = os.path.join("checkpoints", config["run_name"], "best_checkpoint.pt")
+    checkpoint_path = os.path.join(config["MODELPATH"], config["run_name"], "best_checkpoint.pt")
     calc = OCPCalculator(
         config_yml=args.config_yml.__str__(),
         checkpoint_path=checkpoint_path,
@@ -48,16 +50,14 @@ if __name__ == "__main__":
 
     # Set up Langevin dynamics
     MaxwellBoltzmannDistribution(atoms, temperature_K=config["integrator_config"]["temperature"])
-    dyn = Langevin(
+    dyn = VelocityVerlet(
         atoms,
         timestep=config["integrator_config"]["timestep"] * units.fs,
-        temperature_K=config["integrator_config"]["temperature"],
-        friction=config["integrator_config"]["friction"] / units.fs,
-        trajectory=os.path.join(os.path.dirname(checkpoint_path), "md.traj"),
+        trajectory=os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.traj"),
     )
     dyn.attach(
         MDLogger(
-            dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), "md.log"), header=True, stress=False, peratom=True, mode="a"
+            dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
         ),
         interval=config["save_freq"],
     )
