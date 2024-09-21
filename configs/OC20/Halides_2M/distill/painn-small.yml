@@ -1,0 +1,30 @@
+includes:
+- configs/MPTraj/Bandgap_greater_5/painn/painn-small.yml
+
+trainer: src.distill_trainer.DistillTrainer
+
+dataset:
+  train:
+    teacher_labels_folder: labels/mace_mp_all_splits_Bandgap_greater_5
+
+loss_functions:
+  - energy:
+      fn: mae
+      coefficient: 0
+  - forces:
+      fn: l2mae
+      coefficient: 100
+  - teacher_forces:
+      fn: l2mae
+      coefficient: 0
+  - force_jacs:
+      fn: l2mae
+      coefficient: 100
+      reduction: mean_all
+
+optim:
+  batch_size: 32
+  eval_batch_size: 32
+  force_jac_sample_size: 4
+  print_memory_usage: False
+  vectorize_jacs: True

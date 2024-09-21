@@ -194,7 +194,7 @@ class DistillTrainer(OCPTrainer):
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
-        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
         if dataset_type == 'train':
             # Only for training dataset, save jacobians as well
