@@ -17,6 +17,7 @@ from fairchem.core.common.utils import (
 
 from fairchem.core.common.flags import flags
 
+from mace.calculators import mace_off
 
 
 if __name__ == "__main__":
@@ -45,16 +46,22 @@ if __name__ == "__main__":
         cpu=False,
         seed=args.seed,
     )
+    # calc = mace_off(model="large", dispersion=False, default_dtype="float32", device='cuda')
 
     atoms.calc = calc
 
-    # Set up Langevin dynamics
+    # Initialize atom velocities
     MaxwellBoltzmannDistribution(atoms, temperature_K=config["integrator_config"]["temperature"])
-    dyn = VelocityVerlet(
+
+    # first equilibrate the system with Langevin dynamics for 10 ps
+    dyn = Langevin(
         atoms,
         timestep=config["integrator_config"]["timestep"] * units.fs,
-        trajectory=os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.traj"),
+        temperature_K=config["integrator_config"]["temperature"],
+        friction=config["integrator_config"]["friction"] / units.fs,
+        trajectory=os.path.join(os.path.dirname(checkpoint_path), f"equilibration{idx}.traj"),
     )
+
     dyn.attach(
         MDLogger(
             dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
@@ -63,4 +70,19 @@ if __name__ == "__main__":
     )
 
     dyn.run(config["steps"])
+
+    """Velocity Verlet is becoming unstable for some reason"""
+    # dyn = VelocityVerlet(
+    #     atoms,
+    #     timestep=config["integrator_config"]["timestep"] * units.fs,
+    #     trajectory=os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.traj"),
+    # )
+    # dyn.attach(
+    #     MDLogger(
+    #         dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
+    #     ),
+    #     interval=config["save_freq"],
+    # )
+
+    # dyn.run(config["steps"])
     print("Done")
