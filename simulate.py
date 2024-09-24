@@ -4,7 +4,7 @@ from fairchem.core.datasets import LmdbDataset
 from ase.md.langevin import Langevin
 from ase.md.verlet import VelocityVerlet
 from ase.md.logger import MDLogger
-from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
+from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
 from ase import Atoms, units
 from fairchem.core.common.relaxation.ase_utils import data_to_atoms
 from fairchem.core.common.utils import (
@@ -52,37 +52,32 @@ if __name__ == "__main__":
 
     # Initialize atom velocities
     MaxwellBoltzmannDistribution(atoms, temperature_K=config["integrator_config"]["temperature"])
+    Stationary(atoms)  # zero the center of mass velocity
 
-    # first equilibrate the system with Langevin dynamics for 10 ps
-    dyn = Langevin(
-        atoms,
-        timestep=config["integrator_config"]["timestep"] * units.fs,
-        temperature_K=config["integrator_config"]["temperature"],
-        friction=config["integrator_config"]["friction"] / units.fs,
-        trajectory=os.path.join(os.path.dirname(checkpoint_path), f"equilibration{idx}.traj"),
-    )
+
+    if config["nvt"]:
+        dyn = Langevin(
+            atoms,
+            timestep=config["integrator_config"]["timestep"] * units.fs,
+            temperature_K=config["integrator_config"]["temperature"],
+            friction=config["integrator_config"]["friction"] / units.fs,
+            trajectory=os.path.join(os.path.dirname(checkpoint_path), f"equilibration{idx}.traj"),
+        )
+    else:
+        """Velocity Verlet is becoming unstable for Solvated Amino Acids for some reason"""
+        dyn = VelocityVerlet(
+            atoms,
+            timestep=config["integrator_config"]["timestep"] * units.fs,
+            trajectory=os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.traj"),
+        )
+    
 
     dyn.attach(
-        MDLogger(
-            dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
-        ),
-        interval=config["save_freq"],
-    )
+            MDLogger(
+                dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
+            ),
+            interval=config["save_freq"],
+        )
 
     dyn.run(config["steps"])
-
-    """Velocity Verlet is becoming unstable for some reason"""
-    # dyn = VelocityVerlet(
-    #     atoms,
-    #     timestep=config["integrator_config"]["timestep"] * units.fs,
-    #     trajectory=os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.traj"),
-    # )
-    # dyn.attach(
-    #     MDLogger(
-    #         dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
-    #     ),
-    #     interval=config["save_freq"],
-    # )
-
-    # dyn.run(config["steps"])
     print("Done")

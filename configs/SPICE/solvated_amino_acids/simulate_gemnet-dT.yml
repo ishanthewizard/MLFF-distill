@@ -7,4 +7,5 @@ init_data_idx: 10
 seed: 123
 save_freq: 1000
 steps: 100000 # 100 ps
+nvt: True
 integrator_config: {"timestep": 1.0, "temperature": 300., "friction": 0.01}

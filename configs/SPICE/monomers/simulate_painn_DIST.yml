@@ -1,11 +1,11 @@
 includes:
-- configs/SPICE/solvated_amino_acids/gemnet-dT-small.yml
+- configs/SPICE/monomers/painn/painn-small.yml
 
 MODELPATH: /data/shared/ishan_stuff/student_checkpoints/spice
-run_name: 2024-09-05-13-45-52-solvated-gemSmall-DIST-4s
+run_name: 2024-09-08-10-33-52-monomers-PaiNN-DIST
 init_data_idx: 10
 seed: 123
 save_freq: 1000
 steps: 100000 # 100 ps
-nvt: True
+nvt: False
 integrator_config: {"timestep": 1.0, "temperature": 300., "friction": 0.01}

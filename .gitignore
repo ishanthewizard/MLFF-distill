@@ -8,6 +8,8 @@ MODELPATH
 logs
 *.traj
 experimental
+*.png
+*.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
