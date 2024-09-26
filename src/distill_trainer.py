@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 
 from __future__ import annotations
 
+import contextlib
 import datetime
 import errno
 import logging
@@ -14,6 +15,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from itertools import chain
+import sys
 from typing import TYPE_CHECKING
 import time
 from fairchem.core.common.utils import load_config
@@ -113,32 +115,25 @@ class DistillTrainer(OCPTrainer):
         self.teacher_force_mae /= len(self.val_dataset)
         print("TEACHER FORCE MAE:", self.teacher_force_mae)
 
-        # for datapoint in tqdm(self.train_dataset):
-        #     true_label = datapoint['forces']
-        #     if 'forces' in self.normalizers:
-        #         true_label = self.normalizers['forces'].norm(true_label)
-        #     self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - true_label).mean().item()
-        # self.teacher_force_mae /= len(self.val_dataset)
-        # print("TEACHER FORCE MAE:", self.teacher_force_mae)
-        # breakpoint()
-
     def record_and_save(self, dataloader, file_path, fn):
         # Assuming train_loader is your DataLoader
         data0 = next(iter(dataloader))
-        avg_num_atoms = int(sum(data0.natoms) / len(data0.natoms)) # This will hopefully give a good estimate of average atom # for datasets with different sized atoms
         map_size= 1099511627776 * 2
 
         env = lmdb.open(file_path, map_size=map_size)
         env_info = env.info()
-        with env.begin(write=True) as txn:
+        
+        # Choose the appropriate context manager based on world size
+        no_sync_context = self.model.no_sync() if distutils.get_world_size() > 1 else contextlib.nullcontext()
+
+        with no_sync_context:
             for batch in tqdm(dataloader):
-                batch_ids = [str(int(i)) for i in batch.id]
-                # logging.info(f"BATCH IDS: {batch.id}")
-                batch_output = fn(batch)  # this function needs to output an array where each element correponds to the label for an entire molecule
-                print_cuda_memory_usage()
-                # Convert tensor to bytes and write to LMDB
-                for i in range(len(batch_ids)):
-                    txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
+                with env.begin(write=True) as txn:
+                    batch_ids = [str(int(i)) for i in batch.id]
+                    batch_output = fn(batch)
+                    for i in range(len(batch_ids)):
+                        txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
+
         env.close()
         logging.info(f"All tensors saved to LMDB:{file_path}")
 
@@ -194,59 +189,39 @@ class DistillTrainer(OCPTrainer):
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
-        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
-        if dataset_type == 'train':
-            # Only for training dataset, save jacobians as well
-            jac_dataloader = DataLoader(
-            subset_dataset,
-            collate_fn=self.ocp_collater,
-            num_workers=self.config["optim"]["num_workers"],
-            pin_memory=True,
-            batch_size=self.config["dataset"]["label_jac_batch_size"],
-            )
+        # Compute the teacher atom embeddings
+        
+        atomic_numbers = 1 + torch.arange(self.model.num_elements).to(torch.long).to(self.device)
+        atom_embeddings = self.model.atom_emb(atomic_numbers)
+        
+        np.save(os.path.join(labels_folder, "GemNetOC_atom_embeddings.npy"), atom_embeddings.detach().cpu())
+
+        # Function to calculate teacher node features
+        def get_seperated_node_features(batch):
+            batch.return_final_node_features = True
+            final_node_features = self._forward(batch)['final_node_features']
+            return final_node_features
+
+        node_lmdb_path = os.path.join(labels_folder, f"{dataset_type}_final_node_features", f"data.{distutils.get_rank():04d}.lmdb")
+        self.record_and_save(dataloader, node_lmdb_path, get_seperated_node_features)
+
+        # if dataset_type == 'train':
+        #     # Only for training dataset, save jacobians as well
+        #     jac_dataloader = DataLoader(
+        #     subset_dataset,
+        #     collate_fn=self.ocp_collater,
+        #     num_workers=self.config["optim"]["num_workers"],
+        #     pin_memory=True,
+        #     batch_size=self.config["dataset"]["label_jac_batch_size"],
+        #     )
             
-            jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
-            should_mask = self.output_targets['forces']["train_on_free_atoms"]
-            get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
-            self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
+        #     jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
+        #     should_mask = self.output_targets['forces']["train_on_free_atoms"]
+        #     get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
+        #     self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
 
-    # def record_labels(self, labels_folder):
-    #     self.model.eval()
-    #     get_forces = lambda data_point: self._forward(data_point)['forces']
-    #     def get_seperated_forces(batch):
-    #         all_forces = self._forward(batch)['forces']
-    #         natoms = batch.natoms
-    #         return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
-    #     should_mask = self.output_targets['forces']["train_on_free_atoms"]
-    #     get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
-    #     temp_train_loader = self.get_dataloader(
-    #             self.train_dataset,
-    #             self.get_sampler(
-    #             self.train_dataset,
-    #             self.config["dataset"]["label_force_batch_size"],
-    #             shuffle=False,
-    #         )
-    #     )
-    #     temp_jac_loader = self.get_dataloader(
-    #             self.train_dataset,
-    #             self.get_sampler(
-    #             self.train_dataset,
-    #             self.config["dataset"]["label_jac_batch_size"],
-    #             shuffle=False,
-    #         )
-    #     )
-    #     temp_val_loader = self.get_dataloader(
-    #             self.val_dataset,
-    #             self.get_sampler(
-    #             self.val_dataset,
-    #             self.config["dataset"]["label_force_batch_size"],
-    #             shuffle=False,
-    #         )
-    #     )
-    #     self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
-    #     self.record_and_save(temp_jac_loader, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_seperated_force_jacs )
-    #     self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
 
     def load_teacher_model_and_record(self, labels_folder):
         model_attributes_holder = self.config['model_attributes']
@@ -278,21 +253,39 @@ class DistillTrainer(OCPTrainer):
         #dataset_type either equals 'train' or 'val'
         self.is_validating = False
         labels_folder = self.config['dataset']['teacher_labels_folder']
-        needs_setup = not os.path.exists(labels_folder)
+        train_forces_folder = os.path.join(labels_folder, "train_forces")
+        val_forces_folder = os.path.join(labels_folder, "val_forces")
+        force_jacobian_folder = os.path.join(labels_folder, "force_jacobians")
+        train_node_features_folder = os.path.join(labels_folder, "train_final_node_features")
+        val_node_features_folder = os.path.join(labels_folder, "val_final_node_features")
+
+        # needs_setup = not (os.path.exists(train_forces_folder) and \
+        #                     os.path.exists(val_forces_folder) and \
+        #                     os.path.exists(force_jacobian_folder) and \
+        #                         os.path.exists(train_node_features_folder) and \
+        #                             os.path.exists(val_node_features_folder))
+        needs_setup = True
+
         if distutils.get_rank() == 0:
-            folder_exists = torch.tensor(os.path.exists(labels_folder), dtype=torch.bool).to(self.device)
+            folder_exists = torch.tensor(not needs_setup, dtype=torch.bool).to(self.device)
             distutils.broadcast(folder_exists, src=0)
         else:
             folder_exists = torch.tensor(False, dtype=torch.bool).to(self.device)
             distutils.broadcast(folder_exists, src=0)
         if not folder_exists.item():
-            os.makedirs(os.path.join(labels_folder, "train_forces"), exist_ok=True)
-            os.makedirs(os.path.join(labels_folder, "val_forces"), exist_ok=True)
-            os.makedirs(os.path.join(labels_folder, "force_jacobians"), exist_ok=True)
+            os.environ['NCCL_TIMEOUT'] = '900'  # Timeout set to 15 minutes (900 seconds)
+            os.makedirs(train_forces_folder, exist_ok=True)
+            os.makedirs(val_forces_folder, exist_ok=True)
+            os.makedirs(force_jacobian_folder, exist_ok=True)
+            os.makedirs(train_node_features_folder, exist_ok=True)
+            os.makedirs(val_node_features_folder, exist_ok=True)
+
             self.load_teacher_model_and_record(labels_folder)
-        distutils.synchronize()
+            logging.info(f"GPU {distutils.get_rank()} finished processing it's labels")
+            distutils.synchronize()
+            sys.exit(0)
             
-        teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
+        teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'))
         final_node_feature_dataset = SimpleDataset(os.path.join(labels_folder, f'{dataset_type}_final_node_features'))
         if indxs is not None:
             teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
@@ -323,7 +316,11 @@ class DistillTrainer(OCPTrainer):
                 self.config["dataset"].get("format", "lmdb")
             )(self.config["dataset"])
             
-
+            #  # REMOVE LATER!!!
+            # missing_indexes = np.load('Nonmetals_missing.npy')
+            # self.train_dataset = Subset(self.train_dataset, missing_indexes)
+            #  #END REMOVE
+ 
             #LOAD IN VAL EARLIER:
             if self.config["val_dataset"].get("use_train_settings", True):
                 val_config = self.config["dataset"].copy()
@@ -436,8 +433,7 @@ class DistillTrainer(OCPTrainer):
     def update_loss_coefficients(self):
         # self.force_mae, self.teacher_force_mae are good to go
         if self.force_mae == None:
-            self.validate()
-            print("STUDENT MAE:", self.force_mae)
+            self.force_mae = float('inf')
         if self.step % 20 == 0:
             if self.force_mae < self.teacher_force_mae:
                 logging.info("EXCEEDED TEACHER ACCURACY!!")
@@ -494,13 +490,21 @@ class DistillTrainer(OCPTrainer):
                 forward = self._forward
                 )
             if torch.any(torch.isnan(force_jac_loss)):
-                breakpoint()
                 raise Exception("FORCE JAC LOSS IS NAN")
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
         else:
             batch['force_jac_loss'] = torch.tensor(0)
-        
+        # if self.step == 108:
+        #     # Assuming force_jac_loss is your loss tensor
+        #     force_jac_loss.backward()
+
+        #     # Now the gradients with respect to model parameters have been computed
+        #     for name, param in self.model.named_parameters():
+        #         if param.grad is not None:
+        #             print(f"Gradient for {name}: {param.grad}")
+        #         else:
+        #             print(f"No gradient for {name}")
         ## FINISH ISHAN ADDED CODE
         for loss_fn in self.loss_functions:
             target_name, loss_info = loss_fn
@@ -548,7 +552,6 @@ class DistillTrainer(OCPTrainer):
         # Sanity check to make sure the compute graph is correct.
         for lc in loss:
             if torch.any(torch.isnan(lc)):
-                breakpoint()
                 raise Exception("loss is nan")
             assert hasattr(lc, "grad_fn")
         return sum(loss)
@@ -556,7 +559,7 @@ class DistillTrainer(OCPTrainer):
     def _compute_metrics(self, out, batch, evaluator, metrics=None):
         metrics = super()._compute_metrics(out, batch, evaluator, metrics)
         if not self.is_validating:
-            avg_force_jac_loss = distutils.all_reduce(batch["force_jac_loss"], average=True)
+            avg_force_jac_loss = distutils.all_reduce(batch["force_jac_loss"], average=True )
             metrics['force_jac_loss'] = {}
             metrics['force_jac_loss']['metric'] = avg_force_jac_loss.item()
             metrics['force_jac_loss']['total'] = avg_force_jac_loss.item()
