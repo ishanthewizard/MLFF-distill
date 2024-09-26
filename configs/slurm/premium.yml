@@ -3,4 +3,4 @@ includes:
 
 slurm:
   qos: premium
-  time: "02:00:00"
+  time: "24:00:00"

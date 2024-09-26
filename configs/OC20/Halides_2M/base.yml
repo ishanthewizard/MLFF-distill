@@ -1,21 +1,36 @@
+includes:
+  # - configs/slurm/regular.yml
+  - configs/slurm/premium.yml
+  # - configs/slurm/debug.yml
+
 trainer: ocp
+
+logger: 
+  name: wandb
+  project: OC-20
 
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/OC20_seperated/Halides/train
+    # src: /data/ishan-amin/OC20_seperated/Halides/train
+    src: /pscratch/sd/i/ishan_a/OC20_seperated/Halides/train
+    no_shuffle: True
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
+        energy:
+          mean: -0.7554450631141663
+          stdev: 2.887317180633545
         forces:
           mean: 0
           stdev: 2.887317180633545
   val:
-    src: /data/ishan-amin/OC20_seperated/Halides/val
+    # src: /data/ishan-amin/OC20_seperated/Halides/val
+    src: /pscratch/sd/i/ishan_a/OC20_seperated/Halides/val
+    no_shuffle: True
 
-logger: wandb
 
 outputs:
   energy:

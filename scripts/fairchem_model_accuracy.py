@@ -24,6 +24,25 @@ def evaluate_model(trainer, eval_loss):
     print(f"TRAINER EPOCH: {trainer.epoch}")
     print(f"Trainer best val metric{trainer.best_val_metric}")
     # Use torch.no_grad to disable gradient tracking
+    
+    # trainer.test_dataset = registry.get_dataset_class(
+    #     test_config.get("format", "lmdb")
+    # )(test_config)
+    # self.test_sampler = self.get_sampler(
+    #     self.test_dataset,
+    #     self.config["optim"].get(
+    #         "eval_batch_size", self.config["optim"]["batch_size"]
+    #     ),
+    #     shuffle=False,
+    # )
+    # self.test_loader = self.get_dataloader(
+    #     self.test_dataset,
+    #     self.test_sampler,
+    # )
+    
+    
+    
+    
     with torch.no_grad():
         for i, batch in enumerate(tqdm(trainer.test_loader)):
             if i >= start_record_idx and start is None:
@@ -46,7 +65,7 @@ if __name__ == "__main__":
     # config_path = 'configs/SPICE/solvated_amino_acids/painn/painn-small.yml' # you need to supply this at the command line
     # checkpoint_path = 'checkpoints/2024-09-08-10-29-36-solvated-PaiNN-DIST/best_checkpoint.pt'
     # test_dataset  = '/data/ishan-amin/spice_separated/Iodine/test'
-    batch_size = 32
+    batch_size = 4
     parser: argparse.ArgumentParser = flags.get_parser()
     parser.add_argument("--nersc", action="store_true", help="Run with NERSC")
     parser.add_argument("--eval_loss", action="store_true", default=False)
@@ -64,5 +83,16 @@ if __name__ == "__main__":
 
     with new_trainer_context(config=config, distributed=False) as ctx:
         trainer = ctx.trainer
+
+        checkpoint = torch.load(args.checkpoint, map_location=torch.device("cpu"))
+        model_config = checkpoint["config"]
+
+        trainer.config['model_attributes'] = model_config['model_attributes']
+        #Load teacher config from teacher checkpoint
+        trainer.config['model'] =  model_config['model']
+        trainer.config['model_attributes'].pop('scale_file', None)
+        trainer.normalizers = {}  # This SHOULD be okay since it gets overridden later (in tasks, after datasets), but double check
+        trainer.load_task()
+        trainer.load_model()
         trainer.load_checkpoint(args.checkpoint)
         evaluate_model(trainer, args.eval_loss)

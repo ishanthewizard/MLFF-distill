@@ -1,5 +1,6 @@
 slurm:
-  account: m4319_g
+  # account: m4319_g
+  account: m4558_g
   constraint: gpu
   gpu_bind: none
   mail_type: begin,end,fail

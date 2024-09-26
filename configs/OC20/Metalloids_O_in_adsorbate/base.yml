@@ -1,26 +1,30 @@
+includes:
+  - configs/slurm/regular.yml
+  # - configs/slurm/debug.yml
+
 trainer: ocp
+
+logger: 
+  name: wandb
+  project: Nonmetals_N_in_adsorbate
 
 dataset:
   train:
     format: lmdb
-    split: 10000
-    src: /data/shared/MLFF/OC20/s2ef/200k/train
+    # src: /data/ishan-amin/OC20_seperated/Halides/train
+    src: /pscratch/sd/i/ishan_a/OC20_seperated/Nonmetals_N_in_adsorbate/train
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
-        energy:
-          mean: -0.7554450631141663
-          stdev: 2.887317180633545
         forces:
           mean: 0
           stdev: 2.887317180633545
   val:
-    src: /data/shared/MLFF/OC20/s2ef/all/val_id
-    split: 1000
+    # src: /data/ishan-amin/OC20_seperated/Halides/val
+    src: /pscratch/sd/i/ishan_a/OC20_seperated/Nonmetals_N_in_adsorbate//val
 
-logger: wandb
 
 outputs:
   energy:
@@ -35,7 +39,7 @@ outputs:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 1
+      coefficient: 0
   - forces:
       fn: l2mae
       coefficient: 100

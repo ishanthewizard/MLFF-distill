@@ -1,0 +1,175 @@
+import torch 
+import numpy as np
+from fairchem.core.modules.loss import L2MAELoss
+import time
+import logging
+from fairchem.core.common.data_parallel import  OCPCollater
+def print_cuda_memory_usage():
+    allocated = torch.cuda.memory_allocated() / (1024 ** 3)  # Convert bytes to GB
+    reserved = torch.cuda.memory_reserved() / (1024 ** 3)    # Convert bytes to GB
+    logging.info(f"CUDA memory allocated: {allocated:.2f} GB")
+    logging.info(f"CUDA memory reserved: {reserved:.2f} GB")
+    print(f"CUDA memory allocated: {allocated:.2f} GB")
+    print((f"CUDA memory reserved: {reserved:.2f} GB"))
+
+def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True):
+    natoms = batch.natoms
+    total_num_atoms = sum(batch.natoms)
+    cumulative_sums = [0] + torch.cumsum(natoms, 0).tolist()
+    mask = batch.fixed == 0
+    if not should_mask:
+        mask = torch.ones(total_num_atoms, dtype=torch.bool)
+
+    forces = forces[mask]
+    mask_per_mol = [mask[cum_sum:cum_sum + nat] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
+    num_free_atoms_per_mol = [sum(sub_mask) for sub_mask in mask_per_mol]
+    max_free_atom_per_mol = max(num_free_atoms_per_mol)
+    grad_outputs = torch.zeros((max_free_atom_per_mol, 3, total_num_atoms, 3)).to(forces.device)
+
+    for i, free_atoms_in_mol in enumerate(num_free_atoms_per_mol):
+        indices = torch.arange(free_atoms_in_mol)
+        offset_indices = indices + cumulative_sums[i]
+        grad_outputs[indices, :, offset_indices, :] = torch.eye(3)[None, :, :].to(forces.device)
+    jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
+
+    jacs_per_mol = [jac[:n_fr_at, :,  cum_sum:cum_sum + nat, :] for cum_sum, n_fr_at, nat in zip(cumulative_sums[:-1], num_free_atoms_per_mol, natoms)]
+
+    return jacs_per_mol
+
+
+
+
+
+def sample_with_mask(n, num_samples, mask):
+    if mask.shape[0] != n:
+        raise ValueError("Mask length must be equal to the number of rows in the grid (n)")
+    
+    # Calculate total available columns after applying the mask
+    # Only rows where mask is True are considered
+    valid_rows = torch.where(mask)[0]  # Get indices of rows that are True
+    if valid_rows.numel() == 0:
+        raise ValueError("No valid rows available according to the mask")
+
+    # Each valid row contributes 3 indices
+    valid_indices = valid_rows.repeat_interleave(3) * 3 + torch.tensor([0, 1, 2]).repeat(valid_rows.size(0)).to(mask.device)
+
+    # Sample unique indices from the valid indices
+    chosen_indices = valid_indices[torch.randperm(valid_indices.size(0))[:num_samples]]
+
+    # Convert flat indices back to row and column indices
+    row_indices = chosen_indices // 3
+    col_indices = chosen_indices % 3
+
+    # Combine into 2-tuples
+    samples = torch.stack((row_indices, col_indices), dim=1)
+    
+    return samples
+
+def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
+    # This function should: take the derivatives of forces with respect to positions. 
+    # Grad_outputs should be supplied. if it's none, then
+    def compute_grad(grad_output):
+        return torch.autograd.grad(
+                outputs=forces,
+                inputs=pos,
+                grad_outputs=grad_output,
+                create_graph=create_graph,
+                retain_graph=True
+            )[0]
+    if not looped:
+        if len(grad_outputs.shape) == 4:
+            compute_jacobian = torch.vmap(torch.vmap(compute_grad))
+        else:
+            compute_jacobian = torch.vmap(compute_grad)
+        return compute_jacobian(grad_outputs)
+    else:
+        num_atoms = forces.shape[0]
+        if len(grad_outputs.shape) == 4:
+            full_jac = torch.zeros(grad_outputs.shape[0], 3, num_atoms, 3).to(forces.device)
+            for i in range(grad_outputs.shape[0]):
+                for j in range(3):
+                    full_jac[i, j] = compute_grad(grad_outputs[i, j])
+        else:
+            full_jac = torch.zeros(grad_outputs.shape[0], num_atoms, 3).to(forces.device)
+            for i in range(grad_outputs.shape[0]):
+                    full_jac[i] = compute_grad(grad_outputs[i])
+        return full_jac
+
+
+def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False, finite_differences=False, forward=None, collater=None):
+    forces = out['forces']
+    natoms = batch.natoms
+    total_num_atoms = forces.shape[0]
+    if not should_mask:
+        mask = torch.ones(total_num_atoms, dtype=torch.bool)
+    forces = forces[mask]
+
+    cumulative_sums = [0] + torch.cumsum(natoms, 0).tolist()
+    
+    by_molecule = []
+    grad_outputs = torch.zeros((num_samples, total_num_atoms, 3)).to(forces.device)
+    for i, atoms_in_mol in enumerate(batch.natoms):
+        submask = mask[cumulative_sums[i]:cumulative_sums[i+1]]
+        samples = torch.randperm(valid_indices.size(0))[:num_samples]
+
+
+
+        samples = sample_with_mask(atoms_in_mol, num_samples, submask)
+        by_molecule.append(samples) # swap below and above line, crucial
+        offset_samples = samples.clone()  # Create a copy of the samples array to avoid modifying the original
+        offset_samples[:, 0] += cumulative_sums[i]
+        # Vectorized assignment to grad_outputs
+        grad_outputs[torch.arange(min(num_samples, atoms_in_mol*3)), offset_samples[:, 0], offset_samples[:, 1]] = 1
+    # Compute the jacobian using grad_outputs
+    if not finite_differences:
+        jac = get_jacobian(forces, batch.pos, grad_outputs, create_graph=True, looped=looped)
+    else:
+        jac = get_jacobian_finite_difference(
+            forces=forces, 
+            batch= batch, 
+            grad_outputs=grad_outputs, 
+            collater=collater, 
+            forward= forward, 
+            looped=looped)
+    # Decomposing the Jacobian tensor by molecule in a batch
+    jacs_per_mol = [jac[:len(mol_samps), cum_sum:cum_sum + nat, :] for mol_samps, cum_sum, nat in zip(by_molecule, cumulative_sums[:-1], natoms)]
+    
+    # # OLD CODE
+    # # Preparing the true jacobians in batch (we're gonna have to change this later most likely)
+    # # true_jacs_per_mol = [batch['force_jacs'][samples[:, 0], samples[:, 1]] for samples in by_molecule]
+    # cum_jac_indexes = [0] + torch.cumsum((natoms**2) * 9, dim=0).tolist()
+    # true_jacs_per_mol = []
+    # if torch.any(torch.isnan(jac)):
+    #     raise Exception("PAINN FORCE JAC IS NAN")
+    # for i, samples in enumerate(by_molecule):
+    #     curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(natoms[i], 3, natoms[i], 3)
+    #     true_jacs_per_mol.append(curr[samples[:,0], samples[:, 1]])
+    # # END OLD CODE
+
+    # NEW CODE (supports masking)
+    # NEW CODE (supports masking)
+    if torch.any(torch.isnan(jac)):
+        raise Exception("FORCE JAC IS NAN")
+    mask_per_mol = [mask[cum_sum:cum_sum + nat] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
+    num_free_atoms_per_mol = torch.tensor([sum(sub_mask) for sub_mask in mask_per_mol], device=natoms.device)
+    cum_jac_indexes = [0] +  torch.cumsum((num_free_atoms_per_mol * natoms)*9, dim=0).tolist()
+    true_jacs_per_mol = []
+    for i, samples in enumerate(by_molecule):
+        fixed_atoms = batch.fixed[cumulative_sums[i]:cumulative_sums[i+1]]
+        fixed_cumsum = torch.cumsum(fixed_atoms, dim=0)
+        num_free_atoms = num_free_atoms_per_mol[i]
+        curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(num_free_atoms, 3, natoms[i], 3)
+        subsampled_curr = curr[(samples[:, 0] - fixed_cumsum[samples[:, 0]]).long(), samples[:, 1]] # get the sampled rows
+        true_jacs_per_mol.append(subsampled_curr)
+    
+
+    true_jacs_per_mol = [true_jac[:, mask, :] for true_jac, mask in  zip(true_jacs_per_mol, mask_per_mol)] # IMPORTANT! WE CAN'T USE ANY MASKED ITEMS HERE....
+    jacs_per_mol = [jac[:, mask, :] for jac, mask in  zip(jacs_per_mol, mask_per_mol)] # do the same for te student hessians
+    # END NEW CODE
+    # END NEW CODE
+
+
+    loss_fn = L2MAELoss()
+    total_loss = sum(loss_fn(jac, true_jac) for jac, true_jac in zip(jacs_per_mol, true_jacs_per_mol)) / len(jacs_per_mol)
+    assert hasattr(total_loss, "grad_fn")
+    return total_loss

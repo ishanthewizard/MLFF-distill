@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 
 from __future__ import annotations
 
+import contextlib
 import datetime
 import errno
 import logging
@@ -14,6 +15,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from itertools import chain
+import sys
 from typing import TYPE_CHECKING
 import time
 from fairchem.core.common.utils import load_config
@@ -113,31 +115,25 @@ class DistillTrainer(OCPTrainer):
         self.teacher_force_mae /= len(self.val_dataset)
         print("TEACHER FORCE MAE:", self.teacher_force_mae)
 
-        # for datapoint in tqdm(self.train_dataset):
-        #     true_label = datapoint['forces']
-        #     if 'forces' in self.normalizers:
-        #         true_label = self.normalizers['forces'].norm(true_label)
-        #     self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - true_label).mean().item()
-        # self.teacher_force_mae /= len(self.val_dataset)
-        # print("TEACHER FORCE MAE:", self.teacher_force_mae)
-
     def record_and_save(self, dataloader, file_path, fn):
         # Assuming train_loader is your DataLoader
         data0 = next(iter(dataloader))
-        avg_num_atoms = int(sum(data0.natoms) / len(data0.natoms)) # This will hopefully give a good estimate of average atom # for datasets with different sized atoms
         map_size= 1099511627776 * 2
 
         env = lmdb.open(file_path, map_size=map_size)
         env_info = env.info()
-        with env.begin(write=True) as txn:
+        
+        # Choose the appropriate context manager based on world size
+        no_sync_context = self.model.no_sync() if distutils.get_world_size() > 1 else contextlib.nullcontext()
+
+        with no_sync_context:
             for batch in tqdm(dataloader):
-                batch_ids = [str(int(i)) for i in batch.id]
-                # logging.info(f"BATCH IDS: {batch.id}")
-                batch_output = fn(batch)  # this function needs to output an array where each element correponds to the label for an entire molecule
-                print_cuda_memory_usage()
-                # Convert tensor to bytes and write to LMDB
-                for i in range(len(batch_ids)):
-                    txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
+                with env.begin(write=True) as txn:
+                    batch_ids = [str(int(i)) for i in batch.id]
+                    batch_output = fn(batch)
+                    for i in range(len(batch_ids)):
+                        txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
+
         env.close()
         logging.info(f"All tensors saved to LMDB:{file_path}")
 
@@ -193,7 +189,7 @@ class DistillTrainer(OCPTrainer):
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
-        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
         if dataset_type == 'train':
             # Only for training dataset, save jacobians as well
@@ -210,42 +206,6 @@ class DistillTrainer(OCPTrainer):
             get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
             self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
 
-    # def record_labels(self, labels_folder):
-    #     self.model.eval()
-    #     get_forces = lambda data_point: self._forward(data_point)['forces']
-    #     def get_seperated_forces(batch):
-    #         all_forces = self._forward(batch)['forces']
-    #         natoms = batch.natoms
-    #         return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
-    #     should_mask = self.output_targets['forces']["train_on_free_atoms"]
-    #     get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
-    #     temp_train_loader = self.get_dataloader(
-    #             self.train_dataset,
-    #             self.get_sampler(
-    #             self.train_dataset,
-    #             self.config["dataset"]["label_force_batch_size"],
-    #             shuffle=False,
-    #         )
-    #     )
-    #     temp_jac_loader = self.get_dataloader(
-    #             self.train_dataset,
-    #             self.get_sampler(
-    #             self.train_dataset,
-    #             self.config["dataset"]["label_jac_batch_size"],
-    #             shuffle=False,
-    #         )
-    #     )
-    #     temp_val_loader = self.get_dataloader(
-    #             self.val_dataset,
-    #             self.get_sampler(
-    #             self.val_dataset,
-    #             self.config["dataset"]["label_force_batch_size"],
-    #             shuffle=False,
-    #         )
-    #     )
-    #     self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
-    #     self.record_and_save(temp_jac_loader, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_seperated_force_jacs )
-    #     self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
 
     def load_teacher_model_and_record(self, labels_folder):
         model_attributes_holder = self.config['model_attributes']
@@ -267,7 +227,7 @@ class DistillTrainer(OCPTrainer):
         self.load_task()
         self.load_model()
         self.load_checkpoint(self.config["dataset"]["teacher_checkpoint_path"])
-        self.launch_record_tasks(labels_folder, 'train')
+        # self.launch_record_tasks(labels_folder, 'train')
         self.launch_record_tasks(labels_folder, 'val')
 
         self.config['model_attributes'] = model_attributes_holder
@@ -285,11 +245,14 @@ class DistillTrainer(OCPTrainer):
             folder_exists = torch.tensor(False, dtype=torch.bool).to(self.device)
             distutils.broadcast(folder_exists, src=0)
         if not folder_exists.item():
+            os.environ['NCCL_TIMEOUT'] = '900'  # Timeout set to 15 minutes (900 seconds)
             os.makedirs(os.path.join(labels_folder, "train_forces"), exist_ok=True)
             os.makedirs(os.path.join(labels_folder, "val_forces"), exist_ok=True)
             os.makedirs(os.path.join(labels_folder, "force_jacobians"), exist_ok=True)
             self.load_teacher_model_and_record(labels_folder)
-        distutils.synchronize()
+            logging.info(f"GPU {distutils.get_rank()} finished processing it's labels")
+            distutils.synchronize()
+            sys.exit(0)
             
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
         if indxs is not None:
@@ -320,7 +283,11 @@ class DistillTrainer(OCPTrainer):
                 self.config["dataset"].get("format", "lmdb")
             )(self.config["dataset"])
             
-
+            #  # REMOVE LATER!!!
+            # missing_indexes = np.load('Nonmetals_missing.npy')
+            # self.train_dataset = Subset(self.train_dataset, missing_indexes)
+            #  #END REMOVE
+ 
             #LOAD IN VAL EARLIER:
             if self.config["val_dataset"].get("use_train_settings", True):
                 val_config = self.config["dataset"].copy()

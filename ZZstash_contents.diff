@@ -1,0 +1,1874 @@
+diff --git a/configs/OC20/200k/base.yml b/configs/OC20/200k/base.yml
+deleted file mode 100755
+index a2c22f0..0000000
+--- a/configs/OC20/200k/base.yml
++++ /dev/null
+@@ -1,53 +0,0 @@
+-trainer: ocp
+-
+-dataset:
+-  train:
+-    format: lmdb
+-    split: 10000
+-    src: /data/shared/MLFF/OC20/s2ef/200k/train
+-    key_mapping:
+-      y: energy
+-      force: forces
+-    transforms:
+-      normalizer:
+-        energy:
+-          mean: -0.7554450631141663
+-          stdev: 2.887317180633545
+-        forces:
+-          mean: 0
+-          stdev: 2.887317180633545
+-  val:
+-    src: /data/shared/MLFF/OC20/s2ef/all/val_id
+-    split: 1000
+-
+-logger: wandb
+-
+-outputs:
+-  energy:
+-    shape: 1
+-    level: system
+-  forces:
+-    irrep_dim: 1
+-    level: atom
+-    train_on_free_atoms: True
+-    eval_on_free_atoms: True
+-
+-loss_functions:
+-  - energy:
+-      fn: mae
+-      coefficient: 1
+-  - forces:
+-      fn: l2mae
+-      coefficient: 100
+-
+-evaluation_metrics:
+-  metrics:
+-    energy:
+-      - mae
+-    forces:
+-      - mae
+-      - cosine_similarity
+-      - magnitude_error
+-    misc:
+-      - energy_forces_within_threshold
+-  primary_metric: forces_mae
+diff --git a/configs/OC20/200k/dimenet_plus_plus/dpp.yml b/configs/OC20/200k/dimenet_plus_plus/dpp.yml
+deleted file mode 100755
+index e184002..0000000
+--- a/configs/OC20/200k/dimenet_plus_plus/dpp.yml
++++ /dev/null
+@@ -1,43 +0,0 @@
+-includes:
+-- configs/OC20/200k/base.yml
+-
+-loss_functions:
+-  - energy:
+-      fn: mae
+-      coefficient: 1
+-  - forces:
+-      fn: l2mae
+-      coefficient: 50
+-
+-model:
+-  name: dimenetplusplus
+-  hidden_channels: 192
+-  out_emb_channels: 192
+-  num_blocks: 3
+-  cutoff: 6.0
+-  num_radial: 6
+-  num_spherical: 7
+-  num_before_skip: 1
+-  num_after_skip: 2
+-  num_output_layers: 3
+-  regress_forces: True
+-  use_pbc: True
+-
+-# *** Important note ***
+-#   The total number of gpus used for this run was 16.
+-#   If the global batch size (num_gpus * batch_size) is modified
+-#   the lr_milestones and warmup_steps need to be adjusted accordingly.
+-
+-optim:
+-  batch_size: 12
+-  eval_batch_size: 12
+-  num_workers: 8
+-  lr_initial: 0.00001
+-  lr_gamma: 0.1
+-  lr_milestones: # steps at which lr_initial <- lr_initial * lr_gamma
+-    - 5208
+-    - 8333
+-    - 10416
+-  warmup_steps: 3125
+-  warmup_factor: 0.2
+-  max_epochs: 30
+diff --git a/configs/OC20/200k/gemnet/distill/gemnet-dT.yml b/configs/OC20/200k/gemnet/distill/gemnet-dT.yml
+deleted file mode 100644
+index 1416a99..0000000
+--- a/configs/OC20/200k/gemnet/distill/gemnet-dT.yml
++++ /dev/null
+@@ -1,34 +0,0 @@
+-includes:
+-- configs/OC20/200k/gemnet/gemnet-dT.yml
+-
+-trainer: src.distill_trainer.DistillTrainer
+-
+-dataset:
+-  train:
+-    teacher_checkpoint_path: checkpoints/eq2_31M_ec4_allmd.pt
+-    teacher_labels_folder: labels/eq2_31M_ec4_allmd_on10k
+-    label_force_batch_size: 4
+-    label_jac_batch_size: 8
+-    vectorize_teach_jacs: False
+-
+-loss_functions:
+-  - energy:
+-      fn: mae
+-      coefficient: 1
+-  - forces:
+-      fn: l2mae
+-      coefficient: 100
+-  - teacher_forces:
+-      fn: l2mae
+-      coefficient: 0
+-  - force_jacs:
+-      fn: l2mae
+-      coefficient: 400
+-      reduction: mean_all
+-
+-optim:
+-  batch_size: 4
+-  eval_batch_size: 32
+-  force_jac_sample_size: 30
+-  print_memory_usage: False
+-  vectorize_jacs: True
+diff --git a/configs/OC20/200k/gemnet/gemnet-dT.yml b/configs/OC20/200k/gemnet/gemnet-dT.yml
+deleted file mode 100644
+index 90f5e84..0000000
+--- a/configs/OC20/200k/gemnet/gemnet-dT.yml
++++ /dev/null
+@@ -1,51 +0,0 @@
+-includes:
+-- configs/OC20/200k/base.yml
+-
+-model:
+-  name: gemnet_t
+-  num_spherical: 7
+-  num_radial: 128
+-  num_blocks: 3
+-  emb_size_atom: 128 # changed from 512
+-  emb_size_edge: 128 # changed from 512
+-  emb_size_trip: 64
+-  emb_size_rbf: 16
+-  emb_size_cbf: 16
+-  emb_size_bil_trip: 64
+-  num_before_skip: 1
+-  num_after_skip: 2
+-  num_concat: 1
+-  num_atom: 3
+-  cutoff: 6.0
+-  max_neighbors: 50
+-  rbf:
+-    name: gaussian
+-  envelope:
+-    name: polynomial
+-    exponent: 5
+-  cbf:
+-    name: spherical_harmonics
+-  extensive: True
+-  otf_graph: False
+-  output_init: HeOrthogonal
+-  activation: silu
+-  scale_file: configs/md22/AT-AT/gemnet-dT-scale.json
+-
+-  regress_forces: True
+-  direct_forces: True
+-
+-optim:
+-  batch_size: 32
+-  eval_batch_size: 32
+-  # eval_every: 5000
+-  num_workers: 2
+-  lr_initial: 5.e-4
+-  optimizer: AdamW
+-  optimizer_params: {"amsgrad": True}
+-  scheduler: ReduceLROnPlateau
+-  mode: min
+-  factor: 0.8
+-  patience: 3
+-  max_epochs: 80
+-  ema_decay: 0.999
+-  clip_grad_norm: 10
+diff --git a/configs/OC20/200k/gemnet/gemnet-oc.yml b/configs/OC20/200k/gemnet/gemnet-oc.yml
+deleted file mode 100644
+index 1d9a672..0000000
+--- a/configs/OC20/200k/gemnet/gemnet-oc.yml
++++ /dev/null
+@@ -1,77 +0,0 @@
+-includes:
+-  - configs/OC20/200k/base.yml
+-
+-model:
+-  name: gemnet_oc
+-  num_spherical: 7
+-  num_radial: 128
+-  num_blocks: 4
+-  emb_size_atom: 256
+-  emb_size_edge: 512
+-  emb_size_trip_in: 64
+-  emb_size_trip_out: 64
+-  emb_size_quad_in: 32
+-  emb_size_quad_out: 32
+-  emb_size_aint_in: 64
+-  emb_size_aint_out: 64
+-  emb_size_rbf: 16
+-  emb_size_cbf: 16
+-  emb_size_sbf: 32
+-  num_before_skip: 2
+-  num_after_skip: 2
+-  num_concat: 1
+-  num_atom: 3
+-  num_output_afteratom: 3
+-  cutoff: 12.0
+-  cutoff_qint: 12.0
+-  cutoff_aeaint: 12.0
+-  cutoff_aint: 12.0
+-  max_neighbors: 30
+-  max_neighbors_qint: 8
+-  max_neighbors_aeaint: 20
+-  max_neighbors_aint: 1000
+-  rbf:
+-    name: gaussian
+-  envelope:
+-    name: polynomial
+-    exponent: 5
+-  cbf:
+-    name: spherical_harmonics
+-  sbf:
+-    name: legendre_outer
+-  extensive: True
+-  output_init: HeOrthogonal
+-  activation: silu
+-  scale_file: configs/s2ef/all/gemnet/scaling_factors/gemnet-oc.pt
+-
+-  regress_forces: True
+-  direct_forces: True
+-  forces_coupled: False
+-
+-  quad_interaction: True
+-  atom_edge_interaction: True
+-  edge_atom_interaction: True
+-  atom_interaction: True
+-
+-  num_atom_emb_layers: 2
+-  num_global_out_layers: 2
+-  qint_tags: [1, 2]
+-
+-optim:
+-  batch_size: 16
+-  eval_batch_size: 16
+-  load_balancing: atoms
+-  eval_every: 5000
+-  num_workers: 2
+-  lr_initial: 5.e-4
+-  optimizer: AdamW
+-  optimizer_params:
+-    amsgrad: True
+-    weight_decay: 0
+-  scheduler: ReduceLROnPlateau
+-  mode: min
+-  factor: 0.8
+-  patience: 3
+-  max_epochs: 80
+-  ema_decay: 0.999
+-  clip_grad_norm: 10
+diff --git a/configs/OC20/200k/schnet/schnet.yml b/configs/OC20/200k/schnet/schnet.yml
+deleted file mode 100755
+index 75b70e8..0000000
+--- a/configs/OC20/200k/schnet/schnet.yml
++++ /dev/null
+@@ -1,30 +0,0 @@
+-includes:
+-- configs/OC20/200k/base.yml
+-
+-model:
+-  name: schnet
+-  hidden_channels: 1024
+-  num_filters: 256
+-  num_interactions: 3
+-  num_gaussians: 200
+-  cutoff: 6.0
+-  use_pbc: True
+-
+-# *** Important note ***
+-#   The total number of gpus used for this run was 4.
+-#   If the global batch size (num_gpus * batch_size) is modified
+-#   the lr_milestones and warmup_steps need to be adjusted accordingly.
+-
+-optim:
+-  batch_size: 32
+-  eval_batch_size: 32
+-  num_workers: 16
+-  lr_initial: 0.0005
+-  lr_gamma: 0.1
+-  lr_milestones: # steps at which lr_initial <- lr_initial * lr_gamma
+-    - 7812
+-    - 12500
+-    - 15625
+-  warmup_steps: 4687
+-  warmup_factor: 0.2
+-  max_epochs: 30
+diff --git a/configs/OC20/2M/base.yml b/configs/OC20/2M/base.yml
+deleted file mode 100755
+index cea1f12..0000000
+--- a/configs/OC20/2M/base.yml
++++ /dev/null
+@@ -1,51 +0,0 @@
+-trainer: ocp
+-
+-dataset:
+-  train:
+-    format: lmdb
+-    src: data/s2ef/2M/train/
+-    key_mapping:
+-      y: energy
+-      force: forces
+-    transforms:
+-      normalizer:
+-        energy:
+-          mean: -0.7554450631141663
+-          stdev: 2.887317180633545
+-        forces:
+-          mean: 0
+-          stdev: 2.887317180633545
+-  val:
+-    src: data/s2ef/all/val_id/
+-
+-logger: wandb
+-
+-outputs:
+-  energy:
+-    shape: 1
+-    level: system
+-  forces:
+-    irrep_dim: 1
+-    level: atom
+-    train_on_free_atoms: True
+-    eval_on_free_atoms: True
+-
+-loss_functions:
+-  - energy:
+-      fn: mae
+-      coefficient: 2
+-  - forces:
+-      fn: l2mae
+-      coefficient: 100
+-
+-evaluation_metrics:
+-  metrics:
+-    energy:
+-      - mae
+-    forces:
+-      - mae
+-      - cosine_similarity
+-      - magnitude_error
+-    misc:
+-      - energy_forces_within_threshold
+-  primary_metric: forces_mae
+diff --git a/configs/OC20/2M/dimenet_plus_plus/dpp.yml b/configs/OC20/2M/dimenet_plus_plus/dpp.yml
+deleted file mode 100755
+index add64d2..0000000
+--- a/configs/OC20/2M/dimenet_plus_plus/dpp.yml
++++ /dev/null
+@@ -1,44 +0,0 @@
+-includes:
+-- configs/s2ef/2M/base.yml
+-
+-loss_functions:
+-  - energy:
+-      fn: mae
+-      coefficient: 1
+-  - forces:
+-      fn: l2mae
+-      coefficient: 50
+-
+-model:
+-  name: dimenetplusplus
+-  hidden_channels: 192
+-  out_emb_channels: 192
+-  num_blocks: 3
+-  cutoff: 6.0
+-  num_radial: 6
+-  num_spherical: 7
+-  num_before_skip: 1
+-  num_after_skip: 2
+-  num_output_layers: 3
+-  regress_forces: True
+-  use_pbc: True
+-
+-# *** Important note ***
+-#   The total number of gpus used for this run was 32.
+-#   If the global batch size (num_gpus * batch_size) is modified
+-#   the lr_milestones and warmup_steps need to be adjusted accordingly.
+-
+-optim:
+-  batch_size: 12
+-  eval_batch_size: 12
+-  eval_every: 10000
+-  num_workers: 8
+-  lr_initial: 0.0001
+-  lr_gamma: 0.1
+-  lr_milestones: # steps at which lr_initial <- lr_initial * lr_gamma
+-    - 20833
+-    - 31250
+-    - 41666
+-  warmup_steps: 10416
+-  warmup_factor: 0.2
+-  max_epochs: 15
+diff --git a/configs/OC20/2M/equiformer_v2/equiformer_v2_N@12_L@6_M@2.yml b/configs/OC20/2M/equiformer_v2/equiformer_v2_N@12_L@6_M@2.yml
+deleted file mode 100755
+index 6427279..0000000
+--- a/configs/OC20/2M/equiformer_v2/equiformer_v2_N@12_L@6_M@2.yml
++++ /dev/null
+@@ -1,72 +0,0 @@
+-includes:
+-  - configs/s2ef/2M/base.yml
+-
+-trainer: equiformerv2_forces
+-
+-model:
+-  name: equiformer_v2
+-
+-  use_pbc:                  True
+-  regress_forces:           True
+-  otf_graph:                True
+-  max_neighbors:            20
+-  max_radius:               12.0
+-  max_num_elements:         90
+-
+-  num_layers:               12
+-  sphere_channels:          128
+-  attn_hidden_channels:     64              # [64, 96] This determines the hidden size of message passing. Do not necessarily use 96.
+-  num_heads:                8
+-  attn_alpha_channels:      64              # Not used when `use_s2_act_attn` is True.
+-  attn_value_channels:      16
+-  ffn_hidden_channels:      128
+-  norm_type:                'layer_norm_sh'    # ['rms_norm_sh', 'layer_norm', 'layer_norm_sh']
+-
+-  lmax_list:                [6]
+-  mmax_list:                [2]
+-  grid_resolution:          18              # [18, 16, 14, None] For `None`, simply comment this line.
+-
+-  num_sphere_samples:       128
+-
+-  edge_channels:              128
+-  use_atom_edge_embedding:    True
+-  share_atom_edge_embedding:  False         # If `True`, `use_atom_edge_embedding` must be `True` and the atom edge embedding will be shared across all blocks.
+-  distance_function:          'gaussian'
+-  num_distance_basis:         512           # not used
+-
+-  attn_activation:          'silu'
+-  use_s2_act_attn:          False       # [False, True] Switch between attention after S2 activation or the original EquiformerV1 attention.
+-  use_attn_renorm:          True        # Attention re-normalization. Used for ablation study.
+-  ffn_activation:           'silu'      # ['silu', 'swiglu']
+-  use_gate_act:             False       # [True, False] Switch between gate activation and S2 activation
+-  use_grid_mlp:             True        # [False, True] If `True`, use projecting to grids and performing MLPs for FFNs.
+-  use_sep_s2_act:           True        # Separable S2 activation. Used for ablation study.
+-
+-  alpha_drop:               0.1         # [0.0, 0.1]
+-  drop_path_rate:           0.05        # [0.0, 0.05]
+-  proj_drop:                0.0
+-
+-  weight_init:              'uniform'    # ['uniform', 'normal']
+-
+-optim:
+-  batch_size:                   4         # 6
+-  eval_batch_size:              4         # 6
+-  load_balancing: atoms
+-  num_workers: 8
+-  lr_initial:                   0.0004    # [0.0002, 0.0004], eSCN uses 0.0008 for batch size 96
+-
+-  optimizer: AdamW
+-  optimizer_params:
+-    weight_decay: 0.001
+-  scheduler: LambdaLR
+-  scheduler_params:
+-    lambda_type: cosine
+-    warmup_factor: 0.2
+-    warmup_epochs: 0.1
+-    lr_min_factor: 0.01         #
+-
+-  max_epochs: 30
+-  clip_grad_norm: 100
+-  ema_decay: 0.999
+-
+-  eval_every: 5000
+diff --git a/configs/OC20/2M/escn/eSCN-L4-M2-Lay12.yml b/configs/OC20/2M/escn/eSCN-L4-M2-Lay12.yml
+deleted file mode 100755
+index be3f3db..0000000
+--- a/configs/OC20/2M/escn/eSCN-L4-M2-Lay12.yml
++++ /dev/null
+@@ -1,39 +0,0 @@
+-# A total of 16 32GB GPUs were used for training.
+-
+-includes:
+-  - configs/s2ef/2M/base.yml
+-
+-model:
+-  name: escn
+-  num_layers: 12
+-  max_neighbors: 20
+-  cutoff: 12.0
+-  sphere_channels: 128
+-  hidden_channels: 256
+-  lmax_list: [4]
+-  mmax_list: [2]
+-  num_sphere_samples: 128
+-  distance_function: "gaussian"
+-  regress_forces: True
+-  use_pbc: True
+-  basis_width_scalar: 2.0
+-  otf_graph: True
+-
+-optim:
+-  batch_size: 6
+-  eval_batch_size: 6
+-  num_workers: 8
+-  lr_initial: 0.0008
+-  optimizer: AdamW
+-  optimizer_params: {"amsgrad": True}
+-  eval_every: 5000
+-  lr_gamma: 0.3
+-  lr_milestones: # epochs at which lr_initial <- lr_initial * lr_gamma
+-    - 145833
+-    - 187500
+-    - 229166
+-  warmup_steps: 100
+-  warmup_factor: 0.2
+-  max_epochs: 12
+-  clip_grad_norm: 20
+-  ema_decay: 0.999
+diff --git a/configs/OC20/2M/escn/eSCN-L6-M2-Lay12.yml b/configs/OC20/2M/escn/eSCN-L6-M2-Lay12.yml
+deleted file mode 100755
+index 543ccc9..0000000
+--- a/configs/OC20/2M/escn/eSCN-L6-M2-Lay12.yml
++++ /dev/null
+@@ -1,39 +0,0 @@
+-# A total of 16 32GB GPUs were used for training.
+-
+-includes:
+-  - configs/s2ef/2M/base.yml
+-
+-model:
+-  name: escn
+-  num_layers: 12
+-  max_neighbors: 20
+-  cutoff: 12.0
+-  sphere_channels: 128
+-  hidden_channels: 256
+-  lmax_list: [6]
+-  mmax_list: [2]
+-  num_sphere_samples: 128
+-  distance_function: "gaussian"
+-  regress_forces: True
+-  use_pbc: True
+-  basis_width_scalar: 2.0
+-  otf_graph: True
+-
+-optim:
+-  batch_size: 6
+-  eval_batch_size: 6
+-  num_workers: 8
+-  lr_initial: 0.0008
+-  optimizer: AdamW
+-  optimizer_params: {"amsgrad": True}
+-  eval_every: 5000
+-  lr_gamma: 0.3
+-  lr_milestones: # epochs at which lr_initial <- lr_initial * lr_gamma
+-    - 145833
+-    - 187500
+-    - 229166
+-  warmup_steps: 100
+-  warmup_factor: 0.2
+-  max_epochs: 12
+-  clip_grad_norm: 100
+-  ema_decay: 0.999
+diff --git a/configs/OC20/2M/gemnet/gemnet-dT.yml b/configs/OC20/2M/gemnet/gemnet-dT.yml
+deleted file mode 100644
+index 9ea1021..0000000
+--- a/configs/OC20/2M/gemnet/gemnet-dT.yml
++++ /dev/null
+@@ -1,59 +0,0 @@
+-includes:
+-- configs/s2ef/2M/base.yml
+-
+-loss_functions:
+-  - energy:
+-      fn: mae
+-      coefficient: 1
+-  - forces:
+-      fn: l2mae
+-      coefficient: 100
+-
+-model:
+-  name: gemnet_t
+-  num_spherical: 7
+-  num_radial: 128
+-  num_blocks: 3
+-  emb_size_atom: 512
+-  emb_size_edge: 512
+-  emb_size_trip: 64
+-  emb_size_rbf: 16
+-  emb_size_cbf: 16
+-  emb_size_bil_trip: 64
+-  num_before_skip: 1
+-  num_after_skip: 2
+-  num_concat: 1
+-  num_atom: 3
+-  cutoff: 6.0
+-  max_neighbors: 50
+-  rbf:
+-    name: gaussian
+-  envelope:
+-    name: polynomial
+-    exponent: 5
+-  cbf:
+-    name: spherical_harmonics
+-  extensive: True
+-  otf_graph: False
+-  output_init: HeOrthogonal
+-  activation: silu
+-  scale_file: configs/s2ef/all/gemnet/scaling_factors/gemnet-dT.json
+-
+-  regress_forces: True
+-  direct_forces: True
+-
+-optim:
+-  batch_size: 32
+-  eval_batch_size: 32
+-  eval_every: 5000
+-  num_workers: 2
+-  lr_initial: 5.e-4
+-  optimizer: AdamW
+-  optimizer_params: {"amsgrad": True}
+-  scheduler: ReduceLROnPlateau
+-  mode: min
+-  factor: 0.8
+-  patience: 3
+-  max_epochs: 80
+-  ema_decay: 0.999
+-  clip_grad_norm: 10
+diff --git a/configs/OC20/2M/gemnet/gemnet-oc.yml b/configs/OC20/2M/gemnet/gemnet-oc.yml
+deleted file mode 100644
+index e0ba07a..0000000
+--- a/configs/OC20/2M/gemnet/gemnet-oc.yml
++++ /dev/null
+@@ -1,77 +0,0 @@
+-includes:
+-  - configs/s2ef/2M/base.yml
+-
+-model:
+-  name: gemnet_oc
+-  num_spherical: 7
+-  num_radial: 128
+-  num_blocks: 4
+-  emb_size_atom: 256
+-  emb_size_edge: 512
+-  emb_size_trip_in: 64
+-  emb_size_trip_out: 64
+-  emb_size_quad_in: 32
+-  emb_size_quad_out: 32
+-  emb_size_aint_in: 64
+-  emb_size_aint_out: 64
+-  emb_size_rbf: 16
+-  emb_size_cbf: 16
+-  emb_size_sbf: 32
+-  num_before_skip: 2
+-  num_after_skip: 2
+-  num_concat: 1
+-  num_atom: 3
+-  num_output_afteratom: 3
+-  cutoff: 12.0
+-  cutoff_qint: 12.0
+-  cutoff_aeaint: 12.0
+-  cutoff_aint: 12.0
+-  max_neighbors: 30
+-  max_neighbors_qint: 8
+-  max_neighbors_aeaint: 20
+-  max_neighbors_aint: 1000
+-  rbf:
+-    name: gaussian
+-  envelope:
+-    name: polynomial
+-    exponent: 5
+-  cbf:
+-    name: spherical_harmonics
+-  sbf:
+-    name: legendre_outer
+-  extensive: True
+-  output_init: HeOrthogonal
+-  activation: silu
+-  scale_file: configs/s2ef/all/gemnet/scaling_factors/gemnet-oc.pt
+-
+-  regress_forces: True
+-  direct_forces: True
+-  forces_coupled: False
+-
+-  quad_interaction: True
+-  atom_edge_interaction: True
+-  edge_atom_interaction: True
+-  atom_interaction: True
+-
+-  num_atom_emb_layers: 2
+-  num_global_out_layers: 2
+-  qint_tags: [1, 2]
+-
+-optim:
+-  batch_size: 16
+-  eval_batch_size: 16
+-  load_balancing: atoms
+-  eval_every: 5000
+-  num_workers: 2
+-  lr_initial: 5.e-4
+-  optimizer: AdamW
+-  optimizer_params:
+-    amsgrad: True
+-    weight_decay: 0.
+-  scheduler: ReduceLROnPlateau
+-  mode: min
+-  factor: 0.8
+-  patience: 3
+-  max_epochs: 80
+-  ema_decay: 0.999
+-  clip_grad_norm: 10
+diff --git a/configs/OC20/2M/schnet/schnet.yml b/configs/OC20/2M/schnet/schnet.yml
+deleted file mode 100755
+index 538d014..0000000
+--- a/configs/OC20/2M/schnet/schnet.yml
++++ /dev/null
+@@ -1,38 +0,0 @@
+-includes:
+-- configs/s2ef/2M/base.yml
+-
+-loss_functions:
+-  - energy:
+-      fn: mae
+-      coefficient: 1
+-  - forces:
+-      fn: l2mae
+-      coefficient: 100
+-
+-model:
+-  name: schnet
+-  hidden_channels: 1024
+-  num_filters: 256
+-  num_interactions: 5
+-  num_gaussians: 200
+-  cutoff: 6.0
+-  use_pbc: True
+-
+-# *** Important note ***
+-#   The total number of gpus used for this run was 8.
+-#   If the global batch size (num_gpus * batch_size) is modified
+-#   the lr_milestones and warmup_steps need to be adjusted accordingly.
+-
+-optim:
+-  batch_size: 24
+-  eval_batch_size: 24
+-  num_workers: 16
+-  lr_initial: 0.0001
+-  lr_gamma: 0.1
+-  lr_milestones: # steps at which lr_initial <- lr_initial * lr_gamma
+-    - 52083
+-    - 83333
+-    - 104166
+-  warmup_steps: 31250
+-  warmup_factor: 0.2
+-  max_epochs: 30
+diff --git a/configs/OC20/2M/scn/scn-t1-b1.yml b/configs/OC20/2M/scn/scn-t1-b1.yml
+deleted file mode 100755
+index 005031a..0000000
+--- a/configs/OC20/2M/scn/scn-t1-b1.yml
++++ /dev/null
+@@ -1,44 +0,0 @@
+-# A total of 16 32GB GPUs were used for training.
+-
+-includes:
+-  - configs/s2ef/2M/base.yml
+-
+-model:
+-  name: scn
+-  num_interactions: 12
+-  hidden_channels: 1024
+-  sphere_channels: 128
+-  sphere_channels_reduce: 128
+-  num_sphere_samples: 128
+-  num_basis_functions: 128
+-  distance_function: "gaussian"
+-  max_num_neighbors: 40
+-  cutoff: 8.0
+-  lmax: 6
+-  mmax: 1
+-  use_grid: True
+-  num_bands: 1
+-  num_taps: 1
+-  regress_forces: True
+-  use_pbc: True
+-  basis_width_scalar: 2.0
+-  otf_graph: True
+-
+-optim:
+-  batch_size: 4
+-  eval_batch_size: 4
+-  num_workers: 8
+-  lr_initial: 0.0004
+-  optimizer: AdamW
+-  optimizer_params: {"amsgrad": True}
+-  eval_every: 5000
+-  lr_gamma: 0.3
+-  lr_milestones: # steps at which lr_initial <- lr_initial * lr_gamma
+-    - 156250
+-    - 218750
+-    - 281250
+-    - 343750
+-  warmup_steps: 100
+-  warmup_factor: 0.2
+-  max_epochs: 12
+-  ema_decay: 0.999
+diff --git a/configs/OC20/2M/scn/scn-t4-b2.yml b/configs/OC20/2M/scn/scn-t4-b2.yml
+deleted file mode 100755
+index 6b45a08..0000000
+--- a/configs/OC20/2M/scn/scn-t4-b2.yml
++++ /dev/null
+@@ -1,45 +0,0 @@
+-# A total of 16 32GB GPUs were used for training.
+-
+-includes:
+-  - configs/s2ef/2M/base.yml
+-
+-model:
+-  name: scn
+-  num_interactions: 12
+-  hidden_channels: 1024
+-  sphere_channels: 128
+-  sphere_channels_reduce: 128
+-  num_sphere_samples: 128
+-  num_basis_functions: 128
+-  distance_function: "gaussian"
+-  max_num_neighbors: 40
+-  cutoff: 8.0
+-  lmax: 6
+-  mmax: 1
+-  use_grid: True
+-  num_bands: 2
+-  num_taps: -1
+-  regress_forces: True
+-  use_pbc: True
+-  basis_width_scalar: 2.0
+-  otf_graph: True
+-
+-optim:
+-  batch_size: 3
+-  eval_batch_size: 3
+-  num_workers: 8
+-  lr_initial: 0.0004
+-  optimizer: AdamW
+-  optimizer_params: {"amsgrad": True}
+-  eval_every: 5000
+-  lr_gamma: 0.3
+-  lr_milestones: # steps at which lr_initial <- lr_initial * lr_gamma
+-    - 208333
+-    - 291667
+-    - 375000
+-    - 458333
+-  warmup_steps: 100
+-  warmup_factor: 0.2
+-  max_epochs: 12
+-  clip_grad_norm: 100
+-  ema_decay: 0.999
+diff --git a/configs/OC20/Halides_2M/base.yml b/configs/OC20/Halides_2M/base.yml
+index 719541a..b2edb89 100755
+--- a/configs/OC20/Halides_2M/base.yml
++++ b/configs/OC20/Halides_2M/base.yml
+@@ -1,21 +1,35 @@
++includes:
++  - configs/slurm/premium.yml
++  # - configs/slurm/debug.yml
++
+ trainer: ocp
+ 
++logger: 
++  name: wandb
++  project: OC-20
++
+ dataset:
+   train:
+     format: lmdb
+-    src: /data/ishan-amin/OC20_seperated/Halides/train
++    # src: /data/ishan-amin/OC20_seperated/Halides/train
++    src: /pscratch/sd/i/ishan_a/OC20_seperated/Halides/train
++    no_shuffle: True
+     key_mapping:
+       y: energy
+       force: forces
+     transforms:
+       normalizer:
++        energy:
++          mean: -0.7554450631141663
++          stdev: 2.887317180633545
+         forces:
+           mean: 0
+           stdev: 2.887317180633545
+   val:
+-    src: /data/ishan-amin/OC20_seperated/Halides/val
++    # src: /data/ishan-amin/OC20_seperated/Halides/val
++    src: /pscratch/sd/i/ishan_a/OC20_seperated/Halides/val
++    no_shuffle: True
+ 
+-logger: wandb
+ 
+ outputs:
+   energy:
+diff --git a/configs/OC20/Halides_2M/distill/gemnet-dT-small.yml b/configs/OC20/Halides_2M/distill/gemnet-dT-small.yml
+deleted file mode 100644
+index 44bb984..0000000
+--- a/configs/OC20/Halides_2M/distill/gemnet-dT-small.yml
++++ /dev/null
+@@ -1,36 +0,0 @@
+-includes:
+-- configs/OC20/Halides_2M/gemnet-dT.yml
+-
+-trainer: src.distill_trainer.DistillTrainer
+-
+-dataset:
+-  train:
+-    # teacher_checkpoint_path: /data/ishan-amin/OC20_teacher_checkpoints/eq2_31M_ec4_allmd.pt
+-    teacher_checkpoint_path: /data/ishan-amin/OC20_teacher_checkpoints/gemnet_oc_large_s2ef_all_md.pt
+-    teacher_labels_folder: labels/Halides_eq2_31M_ec4_allmd
+-    # teacher_labels_folder: labels/Halides_gemnet_oc_large_s2ef_all_md
+-    label_force_batch_size: 1
+-    label_jac_batch_size: 1
+-    vectorize_teach_jacs: False
+-
+-loss_functions:
+-  - energy:
+-      fn: mae
+-      coefficient: 0
+-  - forces:
+-      fn: l2mae
+-      coefficient: 100
+-  - teacher_forces:
+-      fn: l2mae
+-      coefficient: 0
+-  - force_jacs:
+-      fn: l2mae
+-      coefficient: 100
+-      reduction: mean_all
+-
+-optim:
+-  batch_size: 16
+-  eval_batch_size: 32
+-  force_jac_sample_size: 4
+-  print_memory_usage: False
+-  vectorize_jacs: True
+diff --git a/configs/OC20/Halides_2M/distill/painn-small.yml b/configs/OC20/Halides_2M/distill/painn-small.yml
+index c373c2e..ee4aa11 100644
+--- a/configs/OC20/Halides_2M/distill/painn-small.yml
++++ b/configs/OC20/Halides_2M/distill/painn-small.yml
+@@ -1,16 +1,22 @@
+ includes:
+-- configs/MPTraj/Bandgap_greater_5/painn/painn-small.yml
++- configs/OC20/Halides_2M/painn/painn_h128_L6.yml
+ 
+ trainer: src.distill_trainer.DistillTrainer
+ 
+ dataset:
+   train:
+-    teacher_labels_folder: labels/mace_mp_all_splits_Bandgap_greater_5
++    # teacher_checkpoint_path:  /pscratch/sd/i/ishan_a/OC20_teacher_checkpoints/eq2_31M_ec4_allmd.pt
++    # teacher_labels_folder: /pscratch/sd/i/ishan_a/OC20_labels/Halides_eq2_31M_ec4_allmd
++    # teacher_checkpoint_path: /pscratch/sd/i/ishan_a/OC20_teacher_checkpoints/gemnet_oc_base_s2ef_all_md.pt
++    teacher_labels_folder: /pscratch/sd/i/ishan_a/OC20_labels/Halides_gemnet_oc_base_s2ef_all_md
++    label_force_batch_size: 1
++    label_jac_batch_size: 1
++    vectorize_teach_jacs: False
+ 
+ loss_functions:
+   - energy:
+       fn: mae
+-      coefficient: 0
++      coefficient: 0.001
+   - forces:
+       fn: l2mae
+       coefficient: 100
+@@ -19,11 +25,11 @@ loss_functions:
+       coefficient: 0
+   - force_jacs:
+       fn: l2mae
+-      coefficient: 100
++      coefficient: 400
+       reduction: mean_all
+ 
+ optim:
+-  batch_size: 32
++  batch_size: 16
+   eval_batch_size: 32
+   force_jac_sample_size: 4
+   print_memory_usage: False
+diff --git a/configs/OC20/Halides_2M/gemnet-dT.yml b/configs/OC20/Halides_2M/gemnet-dT.yml
+index d844519..cdf66e9 100644
+--- a/configs/OC20/Halides_2M/gemnet-dT.yml
++++ b/configs/OC20/Halides_2M/gemnet-dT.yml
+@@ -6,8 +6,8 @@ model:
+   num_spherical: 7
+   num_radial: 128
+   num_blocks: 3
+-  emb_size_atom: 128 # smaller from 512
+-  emb_size_edge: 128 # smaller from 512
++  emb_size_atom: 64 # smaller from 512
++  emb_size_edge: 64 # smaller from 512
+   emb_size_trip: 32 # smaller from 64
+   emb_size_rbf: 16
+   emb_size_cbf: 16
+@@ -17,6 +17,7 @@ model:
+   num_concat: 1
+   num_atom: 3
+   cutoff: 6.0
++  otf_graph: False
+   max_neighbors: 50
+   rbf:
+     name: gaussian
+@@ -26,10 +27,9 @@ model:
+   cbf:
+     name: spherical_harmonics
+   extensive: True
+-  otf_graph: False
+   output_init: HeOrthogonal
+   activation: silu
+-  scale_file: configs/s2ef/all/gemnet/scaling_factors/gemnet-dT.json
++  scale_file: configs/OC20/Halides_2M/gemnet-64-scale.pt
+ 
+   regress_forces: True
+   direct_forces: True
+@@ -37,7 +37,7 @@ model:
+ optim:
+   batch_size: 16
+   eval_batch_size: 32
+-  eval_every: 15000 #upped from 5k
++  # eval_every: 15000 #upped from 5k
+   num_workers: 4
+   lr_initial: 5.e-4
+   optimizer: AdamW
+@@ -46,6 +46,6 @@ optim:
+   mode: min
+   factor: 0.8
+   patience: 3
+-  max_epochs: 100 #upped from 80 (we're using a smaller dataset ig)
++  max_epochs: 200 #upped from 80 (we're using a smaller dataset ig)
+   ema_decay: 0.999
+   clip_grad_norm: 10
+diff --git a/configs/OC20/Halides_2M/painn/painn_h512.yml b/configs/OC20/Halides_2M/painn/painn_h512.yml
+deleted file mode 100644
+index 2a2f7a2..0000000
+--- a/configs/OC20/Halides_2M/painn/painn_h512.yml
++++ /dev/null
+@@ -1,36 +0,0 @@
+-includes:
+-  - configs/s2ef/all/base.yml
+-
+-model:
+-  name: painn
+-  hidden_channels: 512
+-  num_layers: 6
+-  num_rbf: 128
+-  cutoff: 12.0
+-  max_neighbors: 50
+-  scale_file: configs/s2ef/all/painn/painn_nb6_scaling_factors.pt
+-  regress_forces: True
+-  direct_forces: True
+-  use_pbc: True
+-
+-optim:
+-  batch_size: 32
+-  eval_batch_size: 32
+-  load_balancing: atoms
+-  eval_every: 5000
+-  num_workers: 2
+-  optimizer: AdamW
+-  optimizer_params:
+-    amsgrad: True
+-    weight_decay: 0.  # 2e-6 (TF weight decay) / 1e-4 (lr) = 2e-2
+-  lr_initial: 1.e-4
+-  lr_gamma: 0.8
+-  scheduler: ReduceLROnPlateau
+-  mode: min
+-  factor: 0.8
+-  patience: 3
+-  max_epochs: 80
+-  force_coefficient: 100
+-  energy_coefficient: 1
+-  ema_decay: 0.999
+-  clip_grad_norm: 10
+diff --git a/configs/OC20/Halides_2M/painn/painn_nb6_scaling_factors.pt b/configs/OC20/Halides_2M/painn/painn_nb6_scaling_factors.pt
+deleted file mode 100644
+index 3843d7c..0000000
+Binary files a/configs/OC20/Halides_2M/painn/painn_nb6_scaling_factors.pt and /dev/null differ
+diff --git a/configs/slurm/base.yml b/configs/slurm/base.yml
+index 0a52b87..ec9f513 100644
+--- a/configs/slurm/base.yml
++++ b/configs/slurm/base.yml
+@@ -1,5 +1,6 @@
+ slurm:
+   account: m4319_g
++  # account: m4558_g
+   constraint: gpu
+   gpu_bind: none
+   mail_type: begin,end,fail
+diff --git a/configs/slurm/debug.yml b/configs/slurm/debug.yml
+index f1ce724..41471f2 100644
+--- a/configs/slurm/debug.yml
++++ b/configs/slurm/debug.yml
+@@ -3,5 +3,5 @@ includes:
+ 
+ slurm:
+   qos: debug
+-  time: 00:59:00
++  time: 00:20:00
+  
+\ No newline at end of file
+diff --git a/configs/slurm/premium.yml b/configs/slurm/premium.yml
+index 2abd48a..906d96f 100644
+--- a/configs/slurm/premium.yml
++++ b/configs/slurm/premium.yml
+@@ -3,4 +3,4 @@ includes:
+ 
+ slurm:
+   qos: premium
+-  time: "02:00:00"
++  time: "15:00:00"
+diff --git a/configs/slurm/regular.yml b/configs/slurm/regular.yml
+index dd589b7..78109cd 100644
+--- a/configs/slurm/regular.yml
++++ b/configs/slurm/regular.yml
+@@ -3,4 +3,4 @@ includes:
+ 
+ slurm:
+   qos: regular
+-  time: "24:00:00"
++  time: "12:00:00"
+diff --git a/main.py b/main.py
+index ea62098..d1693f1 100644
+--- a/main.py
++++ b/main.py
+@@ -31,12 +31,11 @@ if TYPE_CHECKING:
+ 
+ 
+ class Runner(Checkpointable):
+-    def __init__(self, distributed: bool = False) -> None:
++    def __init__(self) -> None:
+         self.config = None
+-        self.distributed = distributed
+ 
+     def __call__(self, config: dict) -> None:
+-        with new_trainer_context(config=config, distributed=self.distributed) as ctx:
++        with new_trainer_context(config=config) as ctx:
+             self.config = ctx.config
+             self.task = ctx.task
+             self.trainer = ctx.trainer
+@@ -44,15 +43,23 @@ class Runner(Checkpointable):
+             self.task.run()
+ 
+     def checkpoint(self, *args, **kwargs):
+-        new_runner = Runner(self.distributed)
++        new_runner = Runner()
+         self.trainer.save(checkpoint_file="checkpoint.pt", training_state=True)
+         self.config["checkpoint"] = self.task.chkpt_path
+         self.config["timestamp_id"] = self.trainer.timestamp_id
+         if self.trainer.logger is not None:
+             self.trainer.logger.mark_preempting()
++        logging.info(
++            f'Checkpointing callback is triggered, checkpoint saved to: {self.config["checkpoint"]}, timestamp_id: {self.config["timestamp_id"]}'
++        )
+         return DelayedSubmission(new_runner, self.config)
+ 
+ 
++def runner_wrapper(config: dict):
++    Runner()(config)
++
++
++
+ def main():
+     """Run the main fairchem program."""
+     setup_logging()
+@@ -63,6 +70,7 @@ def main():
+     override_args: list[str]
+     args, override_args = parser.parse_known_args()
+     config = build_config(args, override_args)
++
+     if args.timestamp_id is not None and len(args.identifier) == 0:
+         args.identifier = args.timestamp_id
+ 
+@@ -83,7 +91,7 @@ def main():
+             # slurm_partition=args.slurm_partition,
+             gpus_per_node=args.num_gpus,
+             cpus_per_task=(config["optim"]["num_workers"] + 1),
+-            tasks_per_node=(args.num_gpus if args.distributed else 1),
++            tasks_per_node=(args.num_gpus if hasattr(args, 'num_gpus') else 1 ),
+             nodes=args.num_nodes,
+             slurm_additional_parameters=slurm_add_params,
+         )
+@@ -95,7 +103,7 @@ def main():
+         for config in configs:
+             config["slurm"] = copy.deepcopy(executor.parameters)
+             config["slurm"]["folder"] = str(executor.folder)
+-        jobs = executor.map_array(Runner(distributed=args.distributed), configs)
++        jobs = executor.map_array(Runner(), configs)
+         logging.info(f"Submitted jobs: {', '.join([job.job_id for job in jobs])}")
+         log_file = save_experiment_log(args, jobs, configs)
+         logging.info(f"Experiment log saved to: {log_file}")
+diff --git a/scripts/sandbox.py b/scripts/sandbox.py
+index 418fa40..b36e565 100644
+--- a/scripts/sandbox.py
++++ b/scripts/sandbox.py
+@@ -5,6 +5,7 @@ from fairchem.core.common.registry import registry
+ # from ase.io import read
+ from src.distill_datasets import SimpleDataset
+ from tqdm import tqdm
++import torch
+ # with MPRester("PZ6Gx8dJTmeySErT5xuuaGhypYyg86p4") as mpr:
+ #     docs = mpr.summary.search(material_ids= ['mp-689577'])
+ #     mp_number = 'mp-1120767'
+@@ -33,45 +34,45 @@ from tqdm import tqdm
+ # print("DIFFERENCE:",total - len(mace_train_dataset))
+ 
+ 
+-main_path = '/data/shared/MLFF/OC20/s2ef/2M/'
+-train = os.path.join(main_path, 'train')
+-# test = os.path.join(main_path, 'test')
+-pickle_file = 'labels/oc20_data_mapping.pkl'
+-
+-with open(pickle_file, 'rb') as f:
+-    data_dict = pickle.load(f)
+-
+-train_dataset = registry.get_dataset_class("lmdb")({"src": train})
+-
+-# Initialize dictionaries for element counts in each class
+-element_dict = {1: 0, 7: 0, 8: 0, 12: 0}  # Element atomic numbers for hydrogen, nitrogen, oxygen, magnesium
+-class_dict = {
+-    0: element_dict.copy(),  # intermetallics
+-    1: element_dict.copy(),  # metalloids
+-    2: element_dict.copy(),  # non-metals
+-    3: element_dict.copy(),  # halides
+-}
+-
+-# Iterate through the dataset and count occurrences of each element in the adsorbates based on their class
+-for sample in tqdm(train_dataset):
+-    key = "random" + str(sample.sid)
+-    elements = [1, 7, 8, 12]  # H, N, O, Mg
++# main_path = '/data/shared/MLFF/OC20/s2ef/2M/'
++# train = os.path.join(main_path, 'train')
++# # test = os.path.join(main_path, 'test')
++# pickle_file = 'labels/oc20_data_mapping.pkl'
+ 
+-    for atomic_num in elements:
+-        # Check if the element is present in adsorbates (assuming sample.tags == 2 denotes adsorbates)
+-        if (sample.atomic_numbers[sample.tags == 2] == atomic_num).any():
+-            class_dict[data_dict[key]['class']][atomic_num] += 1
++# with open(pickle_file, 'rb') as f:
++#     data_dict = pickle.load(f)
+ 
+-# Define group and element names for better output
+-groups = ['intermetallics', 'metalloids', 'non-metals', 'halides']
+-element_names = {1: 'hydrogen', 7: 'nitrogen', 8: 'oxygen', 12: 'magnesium'}
++# train_dataset = registry.get_dataset_class("lmdb")({"src": train})
+ 
+-# Print the results nicely
+-for class_id, group_name in enumerate(groups):
+-    print(f"\nIn {group_name.capitalize()} category:")
+-    for atomic_num, element_count in class_dict[class_id].items():
+-        element_name = element_names.get(atomic_num, f"Element {atomic_num}")
+-        print(f"  {element_name.capitalize()}: {element_count}")
++# # Initialize dictionaries for element counts in each class
++# element_dict = {1: 0, 7: 0, 8: 0, 12: 0}  # Element atomic numbers for hydrogen, nitrogen, oxygen, magnesium
++# class_dict = {
++#     0: element_dict.copy(),  # intermetallics
++#     1: element_dict.copy(),  # metalloids
++#     2: element_dict.copy(),  # non-metals
++#     3: element_dict.copy(),  # halides
++# }
++
++# # Iterate through the dataset and count occurrences of each element in the adsorbates based on their class
++# for sample in tqdm(train_dataset):
++#     key = "random" + str(sample.sid)
++#     elements = [1, 7, 8, 12]  # H, N, O, Mg
++
++#     for atomic_num in elements:
++#         # Check if the element is present in adsorbates (assuming sample.tags == 2 denotes adsorbates)
++#         if (sample.atomic_numbers[sample.tags == 2] == atomic_num).any():
++#             class_dict[data_dict[key]['class']][atomic_num] += 1
++
++# # Define group and element names for better output
++# groups = ['intermetallics', 'metalloids', 'non-metals', 'halides']
++# element_names = {1: 'hydrogen', 7: 'nitrogen', 8: 'oxygen', 12: 'magnesium'}
++
++# # Print the results nicely
++# for class_id, group_name in enumerate(groups):
++#     print(f"\nIn {group_name.capitalize()} category:")
++#     for atomic_num, element_count in class_dict[class_id].items():
++#         element_name = element_names.get(atomic_num, f"Element {atomic_num}")
++#         print(f"  {element_name.capitalize()}: {element_count}")
+ 
+ 
+ # breakpoint()
+@@ -124,23 +125,39 @@ for class_id, group_name in enumerate(groups):
+ 
+ 
+ # Paths
+-normal_label_path = '/pscratch/sd/i/ishan_a/labels/ethanol-GemT-393epochs'
+-distributed_label_path = '/pscratch/sd/i/ishan_a/labels/ethanol-GemT-393epochs-DISTRIBUTED'
++main_path = '/pscratch/sd/i/ishan_a/OC20_seperated/Halides'
++# val = os.path.join(main_path, 'val')
++# # test = os.path.join(main_path, 'test')
++
++train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(main_path, 'train')})
++val_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(main_path, 'val')})
++# normal_label_path = '/pscratch/sd/i/ishan_a/OC20_labels/Halides_eq2_31M_ec4_allmd'
++normal_label_path = '/pscratch/sd/i/ishan_a/OC20_labels/Halides_gemnet_oc_base_s2ef_all_md'
++
++force_jac_dataset = SimpleDataset(os.path.join(normal_label_path, 'force_jacobians'))
++teacher_val_forces = SimpleDataset(os.path.join(normal_label_path, 'val_forces'))
++teacher_train_forces = SimpleDataset(os.path.join(normal_label_path, 'train_forces'))
++
++print(len(train_dataset))
++print(len(force_jac_dataset))
++print(len(teacher_train_forces))
++print(" ")
++print(len(teacher_val_forces))
++print(len(val_dataset))
++# force_mae = 0
++# for i, samp in tqdm(enumerate(teacher_train_forces)):
++#     true_forces = train_dataset[i]['force']
++#     true_forces /= 2.887317180633545 
++#     force_mae += torch.abs(samp.reshape(true_forces.shape[0], 3) - true_forces).mean().item()
++# force_mae /= len(teacher_val_forces)    
++# print("TEACHER FORCE MAE:", force_mae)
++# breakpoint()
++
++for i, true_force_jac in tqdm(enumerate(force_jac_dataset)):
++    sample = train_dataset[i]
++    num_free_atoms = sum(sample.fixed == 0).item()
++    assert len(sample.pos) * num_free_atoms * 9 == len(true_force_jac)
+ 
+-normal_force_jac_dataset = SimpleDataset(os.path.join(normal_label_path, 'force_jacobians'))
+-distributed_force_jac_dataset = SimpleDataset(os.path.join(distributed_label_path, 'force_jacobians'))
+-normal_val_forces_dataset = SimpleDataset(os.path.join(normal_label_path, 'val_forces'))
+-distributed_val_forces_dataset = SimpleDataset(os.path.join(distributed_label_path, 'val_forces'))
+-loss = 0
+-assert len(normal_force_jac_dataset) == len(distributed_force_jac_dataset)
+-for i, true_force_jac in tqdm(enumerate(normal_force_jac_dataset)):
+-    curr_loss = ((true_force_jac - distributed_force_jac_dataset[i])**2).mean()
+-    loss += curr_loss
+-print("LOSS:", loss)
+ loss = 0
+-for i, true_force in tqdm(enumerate(normal_val_forces_dataset)):
+-    curr_loss = ((true_force- distributed_val_forces_dataset[i])**2).mean()
+-    loss += curr_loss 
+-print('LOSS:', loss)
+ 
+     
+\ No newline at end of file
+diff --git a/src/distill_datasets.py b/src/distill_datasets.py
+index 9c65eb2..45687c2 100644
+--- a/src/distill_datasets.py
++++ b/src/distill_datasets.py
+@@ -17,6 +17,7 @@ class CombinedDataset(Dataset):
+         self.main_dataset = main_dataset
+         self.teach_force_dataset = teach_force_dataset
+         self.force_jac_dataset = force_jac_dataset 
++        self._metadata = False
+ 
+     def __len__(self):
+         return len(self.main_dataset)  # Assuming both datasets are the same size
+@@ -24,7 +25,6 @@ class CombinedDataset(Dataset):
+     def __getitem__(self, idx):
+         main_batch = self.main_dataset[idx]
+         num_atoms = main_batch.natoms
+-        
+         teacher_forces = self.teach_force_dataset[idx].reshape(num_atoms, 3)
+         if self.force_jac_dataset:
+             num_free_atoms = (main_batch.fixed == 0).sum().item()
+@@ -35,6 +35,12 @@ class CombinedDataset(Dataset):
+         main_batch.teacher_forces = teacher_forces
+         main_batch.force_jacs = force_jacs
+         return main_batch
++    
++
++    def metadata_hasattr(self, attr) -> bool:
++        if self._metadata is None:
++            return False
++        return hasattr(self._metadata, attr)
+ 
+     def close_db(self):
+         self.main_dataset.close_db()
+@@ -74,8 +80,11 @@ class SimpleDataset(Dataset):
+ 
+         # Find which database to access
+         db_idx = bisect.bisect_right(self._keylen_cumulative, index)
+-
++        
+         with self.envs[db_idx].begin() as txn:
++            # cursor = txn.cursor()
++            # for key, value in cursor:
++            #     print(f"Key: {key.decode('utf-8')}, Size of value: {len(value)}")
+             byte_data = txn.get(str(index).encode())
+             if byte_data:
+                 tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=self.dtype))
+diff --git a/src/distill_trainer.py b/src/distill_trainer.py
+index 148316c..a12436b 100644
+--- a/src/distill_trainer.py
++++ b/src/distill_trainer.py
+@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.
+ """
+ 
+ from __future__ import annotations
+-
++import copy
+ import datetime
+ import errno
+ import logging
+@@ -14,15 +14,19 @@ import os
+ import random
+ from abc import ABC, abstractmethod
+ from itertools import chain
++import sys
+ from typing import TYPE_CHECKING
+ import time
+ from fairchem.core.common.utils import load_config
+ import numpy as np
++from functools import partial
+ import numpy.typing as npt
+ import torch
+ import torch.nn as nn
+ import yaml
+ from torch.nn.parallel.distributed import DistributedDataParallel
++from fairchem.core.datasets.base_dataset import create_dataset
++from fairchem.core.datasets import data_list_collater
+ from torch.utils.data import DataLoader, Subset
+ from tqdm import tqdm
+ import lmdb
+@@ -36,7 +40,6 @@ from fairchem.core.common.typing import none_throws
+ from fairchem.core.modules.evaluator import Evaluator
+ from fairchem.core.modules.exponential_moving_average import ExponentialMovingAverage
+ from fairchem.core.modules.loss import DDPLoss
+-from fairchem.core.modules.normalizer import Normalizer
+ from fairchem.core.modules.scaling.compat import load_scales_compat
+ from fairchem.core.modules.scaling.util import ensure_fitted
+ from fairchem.core.modules.scheduler import LRScheduler
+@@ -53,27 +56,29 @@ if TYPE_CHECKING:
+ class DistillTrainer(OCPTrainer):
+     def __init__(
+         self,
+-        task,
+-        model,
+-        outputs,
+-        dataset,
+-        optimizer,
+-        loss_functions,
+-        evaluation_metrics,
+-        identifier,
+-        timestamp_id=None,
+-        run_dir=None,
+-        is_debug=False,
+-        print_every=100,
+-        seed=None,
+-        logger="wandb",
+-        local_rank=0,
+-        amp=False,
+-        cpu=False,
++        task: dict[str, str | Any],
++        model: dict[str, Any],
++        outputs: dict[str, str | int],
++        dataset: dict[str, str | float],
++        optimizer: dict[str, str | float],
++        loss_functions: dict[str, str | float],
++        evaluation_metrics: dict[str, str],
++        identifier: str,
++        # TODO: dealing with local rank is dangerous
++        # T201111838 remove this and use CUDA_VISIBILE_DEVICES instead so trainers don't need to know about which devie to use
++        local_rank: int,
++        timestamp_id: str | None = None,
++        run_dir: str | None = None,
++        is_debug: bool = False,
++        print_every: int = 100,
++        seed: int | None = None,
++        logger: str = "wandb",
++        amp: bool = False,
++        cpu: bool = False,
++        name: str = "ocp",
+         slurm=None,
+-        noddp=False,
+-        name="ocp",
+-        gp_gpus=None,
++        gp_gpus: int | None = None,
++        inference_only: bool = False,
+     ):
+         if slurm is None:
+             slurm = {}
+@@ -86,18 +91,17 @@ class DistillTrainer(OCPTrainer):
+             loss_functions=loss_functions,
+             evaluation_metrics=evaluation_metrics,
+             identifier=identifier,
++            local_rank=local_rank,
+             timestamp_id=timestamp_id,
+             run_dir=run_dir,
+             is_debug=is_debug,
+             print_every=print_every,
+             seed=seed,
+             logger=logger,
+-            local_rank=local_rank,
+             amp=amp,
+             cpu=cpu,
+-            slurm=slurm,
+-            noddp=noddp,
+             name=name,
++            slurm=slurm,
+             gp_gpus=gp_gpus,
+         )
+         self.force_mae =  None
+@@ -106,6 +110,7 @@ class DistillTrainer(OCPTrainer):
+         # Compute teacher MAE
+         self.teacher_force_mae = 0
+         for datapoint in tqdm(self.val_dataset):
++            datapoint.to(self.device)
+             true_label = datapoint['forces']
+             if 'forces' in self.normalizers:
+                 true_label = self.normalizers['forces'].norm(true_label)
+@@ -113,13 +118,6 @@ class DistillTrainer(OCPTrainer):
+         self.teacher_force_mae /= len(self.val_dataset)
+         print("TEACHER FORCE MAE:", self.teacher_force_mae)
+ 
+-        # for datapoint in tqdm(self.train_dataset):
+-        #     true_label = datapoint['forces']
+-        #     if 'forces' in self.normalizers:
+-        #         true_label = self.normalizers['forces'].norm(true_label)
+-        #     self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - true_label).mean().item()
+-        # self.teacher_force_mae /= len(self.val_dataset)
+-        # print("TEACHER FORCE MAE:", self.teacher_force_mae)
+ 
+     def record_and_save(self, dataloader, file_path, fn):
+         # Assuming train_loader is your DataLoader
+@@ -129,15 +127,16 @@ class DistillTrainer(OCPTrainer):
+ 
+         env = lmdb.open(file_path, map_size=map_size)
+         env_info = env.info()
+-        with env.begin(write=True) as txn:
++        logging.info(f"DATALOADER LEN WHILE SAVING:{len(dataloader)}")
++        with self.model.no_sync():
+             for batch in tqdm(dataloader):
+-                batch_ids = [str(int(i)) for i in batch.id]
+-                # logging.info(f"BATCH IDS: {batch.id}")
+-                batch_output = fn(batch)  # this function needs to output an array where each element correponds to the label for an entire molecule
+-                print_cuda_memory_usage()
+-                # Convert tensor to bytes and write to LMDB
+-                for i in range(len(batch_ids)):
+-                    txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
++                with env.begin(write=True) as txn:
++                    batch_ids = [str(int(i)) for i in batch.id]
++                    batch_output = fn(batch)
++                    # print_cuda_memory_usage()
++                    for i in range(len(batch_ids)):
++                        txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
++
+         env.close()
+         logging.info(f"All tensors saved to LMDB:{file_path}")
+ 
+@@ -151,10 +150,14 @@ class DistillTrainer(OCPTrainer):
+         world_size = distutils.get_world_size()
+ 
+         dataset_size = len(self.train_dataset if dataset_type == 'train' else self.val_dataset)
++        #ADDED DUE TO MISTAKE:
++        # offset_idx = 67408
++        #
++        
+         indices_per_worker = dataset_size // world_size
+         start_idx = rank * indices_per_worker
+         end_idx = start_idx + indices_per_worker if rank < world_size - 1 else dataset_size
+-
++        logging.info(f"indicies per worker: {indices_per_worker}")
+         # Each worker calls the record_labels_parallel function with its assigned indices
+         self.record_labels_parallel(labels_folder, dataset_type, start_idx, end_idx)
+     
+@@ -193,7 +196,7 @@ class DistillTrainer(OCPTrainer):
+             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
+         
+         # Record and save the data
+-        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
++        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+ 
+         if dataset_type == 'train':
+             # Only for training dataset, save jacobians as well
+@@ -210,46 +213,8 @@ class DistillTrainer(OCPTrainer):
+             get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
+             self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
+ 
+-    # def record_labels(self, labels_folder):
+-    #     self.model.eval()
+-    #     get_forces = lambda data_point: self._forward(data_point)['forces']
+-    #     def get_seperated_forces(batch):
+-    #         all_forces = self._forward(batch)['forces']
+-    #         natoms = batch.natoms
+-    #         return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
+-    #     should_mask = self.output_targets['forces']["train_on_free_atoms"]
+-    #     get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
+-    #     temp_train_loader = self.get_dataloader(
+-    #             self.train_dataset,
+-    #             self.get_sampler(
+-    #             self.train_dataset,
+-    #             self.config["dataset"]["label_force_batch_size"],
+-    #             shuffle=False,
+-    #         )
+-    #     )
+-    #     temp_jac_loader = self.get_dataloader(
+-    #             self.train_dataset,
+-    #             self.get_sampler(
+-    #             self.train_dataset,
+-    #             self.config["dataset"]["label_jac_batch_size"],
+-    #             shuffle=False,
+-    #         )
+-    #     )
+-    #     temp_val_loader = self.get_dataloader(
+-    #             self.val_dataset,
+-    #             self.get_sampler(
+-    #             self.val_dataset,
+-    #             self.config["dataset"]["label_force_batch_size"],
+-    #             shuffle=False,
+-    #         )
+-    #     )
+-    #     self.record_and_save(temp_train_loader, os.path.join(labels_folder, 'train_forces.lmdb'), get_seperated_forces)
+-    #     self.record_and_save(temp_jac_loader, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_seperated_force_jacs )
+-    #     self.record_and_save(temp_val_loader, os.path.join(labels_folder, 'val_forces.lmdb'), get_seperated_forces )
+-
+     def load_teacher_model_and_record(self, labels_folder):
+-        model_attributes_holder = self.config['model_attributes']
+-        model_name_holder = self.config['model']
++        model_attributes_holder = self.config['model']
+ 
+         checkpoint = torch.load(self.config["dataset"]["teacher_checkpoint_path"], map_location=torch.device("cpu"))
+         self.teacher_config = checkpoint["config"]
+@@ -259,19 +224,20 @@ class DistillTrainer(OCPTrainer):
+         if self.config["dataset"].get("teacher_scale_file", None):
+             self.teacher_config["model_attributes"]["scale_file"] = self.config["dataset"]["teacher_scale_file"]
+ 
+-        self.config['model_attributes'] = self.teacher_config['model_attributes']
++        # self.config['model_attributes'] = self.teacher_config['model_attributes']
+         #Load teacher config from teacher checkpoint
+-        self.config['model'] =  self.teacher_config['model']
+-        self.config['model_attributes'].pop('scale_file', None)
++        self.teacher_config['model_attributes']['name'] = self.teacher_config['model']
++        self.config['model'] =  self.teacher_config['model_attributes']
++        # self.config['model_attributes'].pop('scale_file', None)
+         self.normalizers = {}  # This SHOULD be okay since it gets overridden later (in tasks, after datasets), but double check
+         self.load_task()
+         self.load_model()
+         self.load_checkpoint(self.config["dataset"]["teacher_checkpoint_path"])
+-        self.launch_record_tasks(labels_folder, 'train')
+         self.launch_record_tasks(labels_folder, 'val')
++        self.launch_record_tasks(labels_folder, 'train')
+ 
+-        self.config['model_attributes'] = model_attributes_holder
+-        self.config['model'] = model_name_holder
++
++        self.config['model'] = model_attributes_holder
+ 
+     def insert_teach_datasets(self, main_dataset, dataset_type, indxs=None):
+         #dataset_type either equals 'train' or 'val'
+@@ -285,11 +251,15 @@ class DistillTrainer(OCPTrainer):
+             folder_exists = torch.tensor(False, dtype=torch.bool).to(self.device)
+             distutils.broadcast(folder_exists, src=0)
+         if not folder_exists.item():
++            # os.environ['NCCL_TIMEOUT'] = '600'  # Timeout set to 10 minutes (600 seconds)
+             os.makedirs(os.path.join(labels_folder, "train_forces"), exist_ok=True)
+             os.makedirs(os.path.join(labels_folder, "val_forces"), exist_ok=True)
+             os.makedirs(os.path.join(labels_folder, "force_jacobians"), exist_ok=True)
+             self.load_teacher_model_and_record(labels_folder)
+-        distutils.synchronize()
++            logging.info(f"GPU {distutils.get_rank()} finished processing it's labels")
++            distutils.synchronize()
++            sys.exit(0)
++
+             
+         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
+         if indxs is not None:
+@@ -303,22 +273,37 @@ class DistillTrainer(OCPTrainer):
+         return CombinedDataset(main_dataset,  teacher_force_dataset, force_jac_dataset)
+ 
+     def load_datasets(self) -> None:
+-        self.ocp_collater = OCPCollater(
+-            self.config["model_attributes"].get("otf_graph", False)
++        self.ocp_collater = partial(
++            data_list_collater, otf_graph=self.config["model"].get("otf_graph", False)
+         )
++        self.collater = self.ocp_collater
+         self.train_loader = None
+         self.val_loader = None
+         self.test_loader = None
+ 
++        # This is hacky and scheduled to be removed next BE week
++        # move ['X_split_settings'] to ['splits'][X]
++        def convert_settings_to_split_settings(config, split_name):
++            config = copy.deepcopy(config)  # make sure we dont modify the original
++            if f"{split_name}_split_settings" in config:
++                config["splits"] = {
++                    split_name: config.pop(f"{split_name}_split_settings")
++                }
++            return config
++
+         # load train, val, test datasets
+         if self.config["dataset"].get("src", None):
+             logging.info(
+                 f"Loading dataset: {self.config['dataset'].get('format', 'lmdb')}"
+             )
+ 
+-            self.train_dataset = registry.get_dataset_class(
+-                self.config["dataset"].get("format", "lmdb")
+-            )(self.config["dataset"])
++            # self.train_dataset = registry.get_dataset_class(
++            #     self.config["dataset"].get("format", "lmdb")
++            # )(self.config["dataset"])
++            self.train_dataset = create_dataset(
++                convert_settings_to_split_settings(self.config["dataset"], "train"),
++                "train",
++            )
+             
+ 
+             #LOAD IN VAL EARLIER:
+@@ -328,10 +313,14 @@ class DistillTrainer(OCPTrainer):
+                 val_config.update(self.config["val_dataset"])
+             else:
+                 val_config = self.config["val_dataset"]
++            
++            # self.val_dataset = registry.get_dataset_class(
++            #     val_config.get("format", "lmdb")
++            # )(val_config)
+ 
+-            self.val_dataset = registry.get_dataset_class(
+-                val_config.get("format", "lmdb")
+-            )(val_config)
++            self.val_dataset = create_dataset(
++                convert_settings_to_split_settings(val_config, "val"), "val"
++            )
+             # END LOAD IN VAL
+             # Ryan's code
+             train_indxs = val_indxs = None
+@@ -391,44 +380,6 @@ class DistillTrainer(OCPTrainer):
+                     self.val_sampler,
+                 )
+ 
+-            if self.config.get("test_dataset", None):
+-                if self.config["test_dataset"].get("use_train_settings", True):
+-                    test_config = self.config["dataset"].copy()
+-                    test_config.update(self.config["test_dataset"])
+-                else:
+-                    test_config = self.config["test_dataset"]
+-
+-                self.test_dataset = registry.get_dataset_class(
+-                    test_config.get("format", "lmdb")
+-                )(test_config)
+-                self.test_sampler = self.get_sampler(
+-                    self.test_dataset,
+-                    self.config["optim"].get(
+-                        "eval_batch_size", self.config["optim"]["batch_size"]
+-                    ),
+-                    shuffle=False,
+-                )
+-                self.test_loader = self.get_dataloader(
+-                    self.test_dataset,
+-                    self.test_sampler,
+-                )
+-
+-        # load relaxation dataset
+-        if "relax_dataset" in self.config["task"]:
+-            self.relax_dataset = registry.get_dataset_class("lmdb")(
+-                self.config["task"]["relax_dataset"]
+-            )
+-            self.relax_sampler = self.get_sampler(
+-                self.relax_dataset,
+-                self.config["optim"].get(
+-                    "eval_batch_size", self.config["optim"]["batch_size"]
+-                ),
+-                shuffle=False,
+-            )
+-            self.relax_loader = self.get_dataloader(
+-                self.relax_dataset,
+-                self.relax_sampler,
+-            )
+ 
+     def update_loss_coefficients(self):
+         # self.force_mae, self.teacher_force_mae are good to go
+@@ -443,7 +394,6 @@ class DistillTrainer(OCPTrainer):
+             threshold = 5
+             if percent_higher < threshold: 
+                 self.loss_functions[-1][1]['coefficient'] = 0.25 * self.original_fjac_coeff
+-                # self.loss_functions[-1][1]['coefficient'] = custom_sigmoid(percent_higher, threshold) * self.original_fjac_coeff
+                 
+ 
+ 
+@@ -495,17 +445,7 @@ class DistillTrainer(OCPTrainer):
+                 print_cuda_memory_usage()
+         else:
+             batch['force_jac_loss'] = torch.tensor(0)
+-        # if self.step == 108:
+-        #     # Assuming force_jac_loss is your loss tensor
+-        #     force_jac_loss.backward()
+-
+-        #     # Now the gradients with respect to model parameters have been computed
+-        #     for name, param in self.model.named_parameters():
+-        #         if param.grad is not None:
+-        #             print(f"Gradient for {name}: {param.grad}")
+-        #         else:
+-        #             print(f"No gradient for {name}")
+-        ## FINISH ISHAN ADDED CODE
++
+         for loss_fn in self.loss_functions:
+             target_name, loss_info = loss_fn
+             if loss_info['coefficient'] == 0: #Added this, don't bother
+diff --git a/src/distill_utils.py b/src/distill_utils.py
+index 7ea166f..90b5853 100644
+--- a/src/distill_utils.py
++++ b/src/distill_utils.py
+@@ -199,15 +199,19 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
+         raise Exception("FORCE JAC IS NAN")
+     mask_per_mol = [mask[cum_sum:cum_sum + nat] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
+     num_free_atoms_per_mol = torch.tensor([sum(sub_mask) for sub_mask in mask_per_mol], device=natoms.device)
+-    cum_jac_indexes = [0] +  torch.cumsum((num_free_atoms_per_mol**2)*9, dim=0).tolist()
++    cum_jac_indexes = [0] +  torch.cumsum((num_free_atoms_per_mol * natoms)*9, dim=0).tolist()
+     true_jacs_per_mol = []
+     for i, samples in enumerate(by_molecule):
+         fixed_atoms = batch.fixed[cumulative_sums[i]:cumulative_sums[i+1]]
+-        fixed_cumsum = torch.cumsum(fixed_atoms)
++        fixed_cumsum = torch.cumsum(fixed_atoms, dim=0)
+         num_free_atoms = num_free_atoms_per_mol[i]
+-        curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(num_free_atoms, 3, num_free_atoms, 3)
+-        subsampled_curr = curr[samples[:, 0] - fixed_cumsum[samples[:, 0]], samples[:, 1]]
++        curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(num_free_atoms, 3, natoms[i], 3)
++        subsampled_curr = curr[(samples[:, 0] - fixed_cumsum[samples[:, 0]]).long(), samples[:, 1]] # get the sampled rows
+         true_jacs_per_mol.append(subsampled_curr)
++    
++
++    true_jacs_per_mol = [true_jac[:, mask, :] for true_jac, mask in  zip(true_jacs_per_mol, mask_per_mol)] # IMPORTANT! WE CAN'T USE ANY MASKED ITEMS HERE....
++    jacs_per_mol = [jac[:, mask, :] for jac, mask in  zip(jacs_per_mol, mask_per_mol)] # do the same for te student hessians
+     # END NEW CODE
+ 
+ 
+diff --git a/zz_nans/num_nans.txt b/zz_nans/num_nans.txt
+index 43f0148..9111bf9 100644
+--- a/zz_nans/num_nans.txt
++++ b/zz_nans/num_nans.txt
+@@ -1 +1 @@
+-86331
++86339
+\ No newline at end of file

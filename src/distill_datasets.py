@@ -1,11 +1,13 @@
 import bisect
 import os
+from fairchem.core.common.data_parallel import _HasMetadata
 from torch.utils.data import Dataset, DataLoader
 import lmdb
 import torch
 import numpy as np
 import logging 
 from torch.utils.data import Sampler
+from tqdm import tqdm
 class CombinedDataset(Dataset):
     def __init__(self, main_dataset, teach_force_dataset, force_jac_dataset=None):
         if  len(main_dataset) != len(teach_force_dataset):
@@ -17,6 +19,8 @@ class CombinedDataset(Dataset):
         self.main_dataset = main_dataset
         self.teach_force_dataset = teach_force_dataset
         self.force_jac_dataset = force_jac_dataset 
+        if  isinstance(self.main_dataset, _HasMetadata):
+            self.metadata_path = self.main_dataset.metadata_path 
 
     def __len__(self):
         return len(self.main_dataset)  # Assuming both datasets are the same size
@@ -83,9 +87,30 @@ class SimpleDataset(Dataset):
             else:
                 raise Exception(f"Data not found for index {index} in LMDB file.")
 
+    def merge_lmdb_files(self, output_file, map_size=1099511627776 * 2):
+        # Initialize new LMDB environment for output
+        input_folder = self.folder_path
+        os.makedirs(os.path.join(output_file))
+        env = lmdb.open(os.path.join(output_file, 'data.lmdb'), map_size=int(map_size))  # Adjust map_size as needed
+
+        # Iterate through each LMDB file in the folder
+        for db_path in tqdm(sorted([os.path.join(input_folder, f) for f in os.listdir(input_folder) if f.endswith('.lmdb')])):
+            print(f"Processing {db_path}")
+            with lmdb.open(db_path, readonly=True, lock=False) as env_in:
+                with env_in.begin() as txn_in, env.begin(write=True) as txn_out:
+                    cursor = txn_in.cursor()
+                    for key, value in cursor:
+                        # Use the original key from the source LMDB file
+                        txn_out.put(key, value)
+
+        # Close the new LMDB environment
+        env.close()
+
     def close_db(self):
         for env in self.envs:
             env.close()
+
+
 
 class SubsetDistributedSampler(Sampler):
     def __init__(self, dataset, indices):
