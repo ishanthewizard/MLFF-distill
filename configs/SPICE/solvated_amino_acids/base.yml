@@ -1,6 +1,6 @@
 includes:
-  # - configs/slurm/regular.yml
-  - configs/slurm/debug.yml
+  - configs/slurm/regular.yml
+  # configs/slurm/debug.yml
 logger: 
   name: wandb
   entity: ishan-amin
