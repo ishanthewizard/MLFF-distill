@@ -3,7 +3,7 @@ includes:
 
 model:
   name: painn
-  hidden_channels: 512 #changed from 512
+  hidden_channels: 128 #changed from 512
   num_layers: 4 # down from 6
   num_rbf: 128
   cutoff: 12.0
