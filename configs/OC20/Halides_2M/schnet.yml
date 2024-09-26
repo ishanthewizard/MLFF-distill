@@ -1,13 +1,5 @@
 includes:
-- configs/s2ef/2M/base.yml
-
-loss_functions:
-  - energy:
-      fn: mae
-      coefficient: 1
-  - forces:
-      fn: l2mae
-      coefficient: 100
+- configs/OC20/Halides_2M/base.yml
 
 model:
   name: schnet
