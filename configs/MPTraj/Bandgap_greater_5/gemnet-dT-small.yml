@@ -1,5 +1,5 @@
 includes:
-- configs/MPTraj/Perovskites/base.yml
+- configs/MPTraj/Bandgap_greater_5/base.yml
 
 model:
   name: gemnet_t
@@ -18,7 +18,7 @@ model:
   num_concat: 1
   num_atom: 2
   cutoff: 6.0
-  max_neighbors: 50
+  max_neighbors: 20
   rbf:
     name: gaussian
   envelope:
@@ -37,7 +37,7 @@ model:
 
 optim:
   batch_size: 16
-  eval_batch_size: 16
+  eval_batch_size: 32
   num_workers: 4
   lr_initial: 0.001
   optimizer: AdamW

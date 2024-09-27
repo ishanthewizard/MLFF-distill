@@ -259,12 +259,12 @@ class DistillTrainer(OCPTrainer):
         train_node_features_folder = os.path.join(labels_folder, "train_final_node_features")
         val_node_features_folder = os.path.join(labels_folder, "val_final_node_features")
 
-        # needs_setup = not (os.path.exists(train_forces_folder) and \
-        #                     os.path.exists(val_forces_folder) and \
-        #                     os.path.exists(force_jacobian_folder) and \
-        #                         os.path.exists(train_node_features_folder) and \
-        #                             os.path.exists(val_node_features_folder))
-        needs_setup = True
+        needs_setup = not (os.path.exists(train_forces_folder) and \
+                            os.path.exists(val_forces_folder) and \
+                            os.path.exists(force_jacobian_folder) and \
+                                os.path.exists(train_node_features_folder) and \
+                                    os.path.exists(val_node_features_folder))
+        # needs_setup = True
 
         if distutils.get_rank() == 0:
             folder_exists = torch.tensor(not needs_setup, dtype=torch.bool).to(self.device)

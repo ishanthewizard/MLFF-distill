@@ -1,5 +1,5 @@
 includes:
-- configs/MPTraj/Perovskites/base.yml
+- configs/MPTraj/Yttrium/base.yml
 
 model:
   name: gemnet_t

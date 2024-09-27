@@ -4,7 +4,7 @@ includes:
 trainer: src.distill_trainer.DistillTrainer
 
 model:
-  use_teacher_atom_embeddings: False
+  use_teacher_atom_embeddings: True
 
 outputs:
   final_node_features:
@@ -28,7 +28,7 @@ loss_functions:
       coefficient: 0
   - force_jacs:
       fn: l2mae
-      coefficient: 100
+      coefficient: 0
       reduction: mean_all
 
 evaluation_metrics:

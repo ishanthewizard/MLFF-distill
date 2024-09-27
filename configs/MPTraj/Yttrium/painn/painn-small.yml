@@ -1,15 +1,15 @@
 # Make sure to run without AMP.
 includes:
-- configs/MPTraj/Perovskites/base.yml
+- configs/MPTraj/Yttrium/base.yml
 
 model:
   name: painn
   hidden_channels: 128
   num_layers: 4
   num_rbf: 128
-  cutoff: 14
+  cutoff: 6
   max_neighbors: 50
-  scale_file: configs/MPTraj/Perovskites/painn/painn-small-scale.pt
+  scale_file: configs/MPTraj/Yttrium/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
   use_pbc: True # IMPORTANT
