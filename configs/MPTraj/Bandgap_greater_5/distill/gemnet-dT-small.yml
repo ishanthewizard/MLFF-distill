@@ -25,8 +25,8 @@ loss_functions:
       fn: l2mae
       coefficient: 0
   - final_node_features:
-    fn: mse
-    coefficient: 0
+      fn: mse
+      coefficient: 0
   - force_jacs:
       fn: l2mae
       coefficient: 100
