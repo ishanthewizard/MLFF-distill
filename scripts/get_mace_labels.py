@@ -72,39 +72,39 @@ def record_labels(labels_folder, dataset_path, model="large"):
 
 if __name__ == "__main__":
     '''Mace-MP on MPTraj'''
-    # labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_mp_all_splits_Bandgap_greater_5'
-    # dataset_path = '/data/shared/ishan_stuff/mptraj_seperated_all_splits_unlocked/Bandgap_greater_than_5'
+    labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_mp_all_splits_Bandgap_greater_5'
+    dataset_path = '/data/shared/ishan_stuff/mptraj_seperated_all_splits_unlocked/Bandgap_greater_than_5'
 
-    # record_labels(labels_folder, dataset_path)
+    record_labels(labels_folder, dataset_path)
 
-    # labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_mp_all_splits_Yttrium'
-    # dataset_path = '/data/shared/ishan_stuff/mptraj_seperated_all_splits_unlocked/Yttrium'
+    labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_mp_all_splits_Yttrium'
+    dataset_path = '/data/shared/ishan_stuff/mptraj_seperated_all_splits_unlocked/Yttrium'
 
-    # record_labels(labels_folder, dataset_path)
-
-
-    # labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_mp_all_splits_Perovskites_noIons'
-    # dataset_path = '/data/shared/ishan_stuff/mptraj_seperated_all_splits_unlocked/Perovskites_noIons'
+    record_labels(labels_folder, dataset_path)
 
 
-    # record_labels(labels_folder, dataset_path)
+    labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_mp_all_splits_Perovskites_noIons'
+    dataset_path = '/data/shared/ishan_stuff/mptraj_seperated_all_splits_unlocked/Perovskites_noIons'
+
+
+    record_labels(labels_folder, dataset_path)
 
     '''Mace-OFF on SPICE'''
-    labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_off_large_SpiceAminos'
-    dataset_path = '/data/shared/ishan_stuff/spice_separated/Solvated_Amino_Acids'
-    record_labels(labels_folder, dataset_path)
+    # labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_off_large_SpiceAminos'
+    # dataset_path = '/data/shared/ishan_stuff/spice_separated/Solvated_Amino_Acids'
+    # record_labels(labels_folder, dataset_path)
 
-    labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_off_large_SpiceIodine'
-    dataset_path = '/data/shared/ishan_stuff/spice_separated/Iodine'
+    # labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_off_large_SpiceIodine'
+    # dataset_path = '/data/shared/ishan_stuff/spice_separated/Iodine'
 
-    record_labels(labels_folder, dataset_path)
-
-
-    labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_off_large_SpiceMonomers'
-    dataset_path = '/data/shared/ishan_stuff/spice_separated/DES370K_Monomers'
+    # record_labels(labels_folder, dataset_path)
 
 
-    record_labels(labels_folder, dataset_path)
+    # labels_folder = '/data/shared/ishan_stuff/labels_unlocked/mace_off_large_SpiceMonomers'
+    # dataset_path = '/data/shared/ishan_stuff/spice_separated/DES370K_Monomers'
+
+
+    # record_labels(labels_folder, dataset_path)
 
 
 

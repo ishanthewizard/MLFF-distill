@@ -25,7 +25,7 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /data/shared/ishan_stuff/spice_separated/DES370K_Monomers/val
+    src: /data/shared/ishan_stuff/spice_separated/DES370K_Monomers/test
   test:
     src: /data/shared/ishan_stuff/spice_separated/DES370K_Monomers/test
 

@@ -17,7 +17,7 @@ from fairchem.core.common.utils import (
 
 from fairchem.core.common.flags import flags
 
-from mace.calculators import mace_off
+from mace.calculators import mace_off, mace_mp
 
 
 if __name__ == "__main__":
@@ -40,13 +40,13 @@ if __name__ == "__main__":
 
     # Set up the OCP calculator
     checkpoint_path = os.path.join(config["MODELPATH"], config["run_name"], "best_checkpoint.pt")
-    calc = OCPCalculator(
-        config_yml=args.config_yml.__str__(),
-        checkpoint_path=checkpoint_path,
-        cpu=False,
-        seed=args.seed,
-    )
-    # calc = mace_off(model="large", dispersion=False, default_dtype="float32", device='cuda')
+    # calc = OCPCalculator(
+    #     config_yml=args.config_yml.__str__(),
+    #     checkpoint_path=checkpoint_path,
+    #     cpu=False,
+    #     seed=args.seed,
+    # )
+    calc = mace_mp(model="large", dispersion=False, default_dtype="float32", device='cuda')
 
     atoms.calc = calc
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
             timestep=config["integrator_config"]["timestep"] * units.fs,
             temperature_K=config["integrator_config"]["temperature"],
             friction=config["integrator_config"]["friction"] / units.fs,
-            trajectory=os.path.join(os.path.dirname(checkpoint_path), f"equilibration{idx}.traj"),
+            # trajectory=os.path.join(os.path.dirname(checkpoint_path), f"equilibration{idx}.traj"),
         )
     else:
         """Velocity Verlet is becoming unstable for Solvated Amino Acids for some reason"""
@@ -72,12 +72,12 @@ if __name__ == "__main__":
         )
     
 
-    dyn.attach(
-            MDLogger(
-                dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
-            ),
-            interval=config["save_freq"],
-        )
+    # dyn.attach(
+    #         MDLogger(
+    #             dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
+    #         ),
+    #         interval=config["save_freq"],
+    #     )
 
     dyn.run(config["steps"])
     print("Done")

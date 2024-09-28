@@ -25,7 +25,7 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /data/shared/ishan_stuff/spice_separated/Solvated_Amino_Acids/val
+    src: /data/shared/ishan_stuff/spice_separated/Solvated_Amino_Acids/test
   test:
     src: /data/shared/ishan_stuff/spice_separated/Solvated_Amino_Acids/test
 
