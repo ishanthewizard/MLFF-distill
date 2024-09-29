@@ -18,27 +18,11 @@ def evaluate_model(trainer, eval_loss):
     losses = []
     trainer.model.eval()
     start = None
-    start_record_idx = 15
+    start_record_idx = 0
     batch_size = trainer.config["optim"].get("eval_batch_size", trainer.config["optim"]["batch_size"])
     print(f"BATCH SIZE: {batch_size}")
     print(f"TRAINER EPOCH: {trainer.epoch}")
     print(f"Trainer best val metric{trainer.best_val_metric}")
-    # Use torch.no_grad to disable gradient tracking
-    
-    # trainer.test_dataset = registry.get_dataset_class(
-    #     test_config.get("format", "lmdb")
-    # )(test_config)
-    # self.test_sampler = self.get_sampler(
-    #     self.test_dataset,
-    #     self.config["optim"].get(
-    #         "eval_batch_size", self.config["optim"]["batch_size"]
-    #     ),
-    #     shuffle=False,
-    # )
-    # self.test_loader = self.get_dataloader(
-    #     self.test_dataset,
-    #     self.test_sampler,
-    # )
     
     
     
@@ -65,18 +49,20 @@ if __name__ == "__main__":
     # config_path = 'configs/SPICE/solvated_amino_acids/painn/painn-small.yml' # you need to supply this at the command line
     # checkpoint_path = 'checkpoints/2024-09-08-10-29-36-solvated-PaiNN-DIST/best_checkpoint.pt'
     # test_dataset  = '/data/ishan-amin/spice_separated/Iodine/test'
-    batch_size = 4
+    
     parser: argparse.ArgumentParser = flags.get_parser()
     parser.add_argument("--nersc", action="store_true", help="Run with NERSC")
     parser.add_argument("--eval_loss", action="store_true", default=False)
+    parser.add_argument("--batch-size", default=32)
     args: argparse.Namespace
     override_args: list[str]
     args, override_args = parser.parse_known_args()
+    batch_size = int(args.batch_size)
     config = build_config(args, override_args)
     # config['dataset']['test'] = {'src' : test_dataset}
     config['is_debug'] = True
     config['optim']['eval_batch_size'] = batch_size
-    config['dataset']['test'] = {'src': config['dataset']['val']['src'][:-3] + 'test'}
+    config['dataset']['test'] = {'src': config['dataset']['val']['src'][:-3] + 'train'}
     print(config['dataset']['test'])
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id

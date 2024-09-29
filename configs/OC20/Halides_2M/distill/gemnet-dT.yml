@@ -9,6 +9,7 @@ dataset:
     # teacher_checkpoint_path:  /pscratch/sd/i/ishan_a/OC20_teacher_checkpoints/eq2_31M_ec4_allmd.pt
     # teacher_labels_folder: /pscratch/sd/i/ishan_a/OC20_labels/Halides_eq2_31M_ec4_allmd
     teacher_labels_folder: /pscratch/sd/i/ishan_a/OC20_labels/Halides_gemnet_oc_base_s2ef_all_md
+    teacher_labels_folder: labels/Halides_gemnet_oc_base_s2ef_all_md
 
     label_force_batch_size: 1
     label_jac_batch_size: 1

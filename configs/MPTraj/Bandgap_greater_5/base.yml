@@ -10,8 +10,8 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Bandgap_greater_than_5/train
-    # src: /data/shared/MPTrj/lmdb/train
+    # src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Bandgap_greater_than_5/train
+    src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Bandgap_greater_than_5/train
     key_mapping:
       corrected_total_energy: energy
       force: forces
@@ -25,8 +25,8 @@ dataset:
             stdev: 1
   val:
     # src: /data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5/val
-    src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Bandgap_greater_than_5/val
-    # src: /data/shared/MPTrj/lmdb/val
+    # src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Bandgap_greater_than_5/test
+    src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Bandgap_greater_than_5/val
 
 
 outputs:

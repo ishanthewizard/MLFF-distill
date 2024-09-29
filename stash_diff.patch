@@ -1,0 +1,12 @@
+diff --git a/src/distill_trainer.py b/src/distill_trainer.py
+index d3ae2eb..f6d53b7 100644
+--- a/src/distill_trainer.py
++++ b/src/distill_trainer.py
+@@ -367,7 +367,6 @@ class DistillTrainer(OCPTrainer):
+             if self.force_mae < self.teacher_force_mae:
+                 logging.info("EXCEEDED TEACHER ACCURACY!!")
+                 # self.loss_functions[-1][1]['coefficient'] = 0
+-
+             percent_higher = ((self.force_mae - self.teacher_force_mae) / self.teacher_force_mae) *100
+             threshold = 5
+             if percent_higher < threshold: 
