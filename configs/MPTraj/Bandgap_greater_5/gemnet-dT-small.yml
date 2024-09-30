@@ -18,7 +18,7 @@ model:
   num_concat: 1
   num_atom: 2
   cutoff: 6.0
-  max_neighbors: 20
+  max_neighbors: 50
   rbf:
     name: gaussian
   envelope:

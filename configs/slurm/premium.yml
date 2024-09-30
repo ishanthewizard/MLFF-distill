@@ -2,5 +2,5 @@ includes:
   - configs/slurm/base.yml
 
 slurm:
-  qos: regular
+  qos: premium
   time: "48:00:00"

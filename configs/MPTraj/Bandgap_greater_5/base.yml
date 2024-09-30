@@ -3,6 +3,7 @@ includes:
   # - configs/slurm/debug.yml
 logger: 
   name: wandb
+  entity: ishan-amin
   project: MPTraj
 
 trainer: ocp
