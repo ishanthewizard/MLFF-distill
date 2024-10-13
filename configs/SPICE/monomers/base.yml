@@ -1,9 +1,9 @@
 includes:
-  - configs/slurm/regular.yml
+  - configs/slurm/premium.yml
   # - configs/slurm/debug.yml
 logger: 
   name: wandb
-  project: spice
+  project: spice-ABELATE
 
 trainer: ocp
 
@@ -24,7 +24,7 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/SPICE/spice_separated/DES370K_Monomers/val
+    src: /data/ishan-amin/SPICE/spice_separated/DES370K_Monomers/test
     # src: /pscratch/sd/i/ishan_a/SPICE/spice_separated/DES370K_Monomers/val
 
 

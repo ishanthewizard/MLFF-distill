@@ -246,11 +246,7 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
     grad_outputs = torch.zeros((num_samples, total_num_atoms, 3)).to(forces.device)
     for i, atoms_in_mol in enumerate(batch.natoms):
         submask = mask[cumulative_sums[i]:cumulative_sums[i+1]]
-        if np.random.rand() > 0.5:
-            samples = sample_with_mask(atoms_in_mol, num_samples, submask)
-        else:
-            samples =sample_with_mask(atoms_in_mol, num_samples, batch.tags[cumulative_sums[i]:cumulative_sums[i+1]] == 2)
-        # samples = sample_with_mask(atoms_in_mol, num_samples, submask)
+        samples = sample_with_mask(atoms_in_mol, num_samples, submask)
         
         by_molecule.append(samples) # swap below and above line, crucial
         offset_samples = samples.clone()  # Create a copy of the samples array to avoid modifying the original

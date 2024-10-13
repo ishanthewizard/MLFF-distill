@@ -14,10 +14,11 @@ import argparse
 def get_accuracy(dataset_path, model='large'):
     # Load model
     calc = mace_off(model=model, dispersion=False,  default_dtype="float32", device="cuda")
-    # Counting parameters
+    # # Counting parameters
     # total_params = sum(p.numel() for p in calc.parameters())
     # print(f"Total trainable parameters: {total_params}")
-    # print("TOTAL_PARAMS:", calc.parameters)
+    # # print("TOTAL_PARAMS:", calc.parameters)
+    # breakpoint()
     
     # Load the dataset
     dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})

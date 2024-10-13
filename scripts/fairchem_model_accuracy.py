@@ -18,13 +18,11 @@ def evaluate_model(trainer, eval_loss):
     losses = []
     trainer.model.eval()
     start = None
-    start_record_idx = 0
+    start_record_idx = 3
     batch_size = trainer.config["optim"].get("eval_batch_size", trainer.config["optim"]["batch_size"])
     print(f"BATCH SIZE: {batch_size}")
     print(f"TRAINER EPOCH: {trainer.epoch}")
     print(f"Trainer best val metric{trainer.best_val_metric}")
-    
-    
     
     
     with torch.no_grad():
@@ -37,10 +35,10 @@ def evaluate_model(trainer, eval_loss):
                 losses.append(torch.abs(forces - batch["forces"]).mean().item())
             # print_cuda_memory_usage()
 
-    iter_per_s = (len(trainer.test_loader) - start_record_idx) / (time.time() -  start)
+    iter_per_s = (len(trainer.test_dataset) - start_record_idx * batch_size) / (time.time() -  start)
     print("LEN DATASET:", len(trainer.test_dataset))
-    print(f"INTERATIONS PER SECOND: {iter_per_s}")
-    print(f"THROUGHPUT PER SECOND: {iter_per_s * batch_size}")
+    print(f"THROUGHPUT SAMP PER SECOND: {round(iter_per_s)}") #technically this doesn't exactly work for hugh batch sizes because te last one could be wrong
+    print(f"THROUGHPUT NS PER DAY: {round(iter_per_s * .0864, 1)}") 
     if eval_loss:
         print(f"FORCE MAE: {np.mean(np.array(losses)) * 1000} meV")
         # print(f"FORCE MAE MEDIAN: {np.median(np.array(losses)) * 1000} meV")
@@ -53,7 +51,7 @@ if __name__ == "__main__":
     parser: argparse.ArgumentParser = flags.get_parser()
     parser.add_argument("--nersc", action="store_true", help="Run with NERSC")
     parser.add_argument("--eval_loss", action="store_true", default=False)
-    parser.add_argument("--batch-size", default=32)
+    parser.add_argument("--batch-size", default=64)
     args: argparse.Namespace
     override_args: list[str]
     args, override_args = parser.parse_known_args()
