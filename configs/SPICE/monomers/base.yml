@@ -1,6 +1,5 @@
 includes:
   - configs/slurm/premium.yml
-  # - configs/slurm/debug.yml
 logger: 
   name: wandb
   project: spice-ABELATE
@@ -10,22 +9,20 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/SPICE/spice_separated/DES370K_Monomers/train
-    # src: /pscratch/sd/i/ishan_a/SPICE/spice_separated/DES370K_Monomers/train
+    src: data/SPICE/spice_separated/DES370K_Monomers/train
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
         energy: 
-            mean: -15358.563880754844
+            mean: 0
             stdev: 1
         forces: 
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/SPICE/spice_separated/DES370K_Monomers/test
-    # src: /pscratch/sd/i/ishan_a/SPICE/spice_separated/DES370K_Monomers/val
+    src: data/SPICE/spice_separated/DES370K_Monomers/val
 
 
 outputs:

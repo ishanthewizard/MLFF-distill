@@ -1,6 +1,5 @@
 includes:
-  - configs/slurm/regular.yml
-  # - configs/slurm/debug.yml
+  - configs/slurm/premium.yml
 logger: 
   name: wandb
   project: MPTraj
@@ -10,9 +9,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium/train
-    # src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Yttrium/train
-    # src: /data/shared/MPTrj/lmdb/train
+    src: data/MPtraj/mptraj_seperated_all_splits/Yttrium/train
     key_mapping:
       corrected_total_energy: energy
       force: forces
@@ -22,9 +19,7 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium/val
-    # src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Yttrium/val
-    # src: /data/shared/MPTrj/lmdb/val
+    src: data/MPtraj/mptraj_seperated_all_splits/Yttrium/val
 
 
 outputs:

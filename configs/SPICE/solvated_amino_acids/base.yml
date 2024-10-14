@@ -10,22 +10,20 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: /data/ishan-amin/SPICE/spice_separated/Solvated_Amino_Acids/train
-    # src: /pscratch/sd/i/ishan_a/spice_separated/Solvated_Amino_Acids/train
+    src: data/SPICE/spice_separated/Solvated_Amino_Acids/train
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
         energy: 
-            mean: -60224.1484375
+            mean: 0
             stdev: 1
         forces: 
             mean: 0
             stdev: 1
   val:
-    src: /data/ishan-amin/SPICE/spice_separated/Solvated_Amino_Acids/val
-    # src: /pscratch/sd/i/ishan_a/spice_separated/Solvated_Amino_Acids/val
+    src: data/SPICE/spice_separated/Solvated_Amino_Acids/val
 
 
 outputs:
