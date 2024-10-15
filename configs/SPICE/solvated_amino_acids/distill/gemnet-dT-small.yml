@@ -30,8 +30,11 @@ optim:
   eval_batch_size: 32
   force_jac_sample_size: 1
   hard_mining: True
-  hard_mining_epoch_start: 0
-  hard_mining_epoch_reset_frequency: 50
+  hard_mining_epoch_start: 0 # Start hard mining from the beginning
+  hard_mining_epoch_reset_frequency: 100000 # Never reset
   hard_mining_visited_threshold: 0.75
+  hard_mining_temperature: 0.1
+  hard_mining_ema: True
+  hard_mining_ema_beta: 0.9
   print_memory_usage: False
   vectorize_jacs: True

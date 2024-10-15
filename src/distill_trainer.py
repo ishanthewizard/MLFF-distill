@@ -321,6 +321,7 @@ class DistillTrainer(OCPTrainer):
                 force_jac_hash_map=self.force_jac_loss_dict,
                 hard_mining=self.config['optim'].get('hard_mining', False),
                 hard_mining_visited_threshold=self.config['optim'].get('hard_mining_visited_threshold', 0.1),
+                hard_mining_temperature=self.config['optim'].get('hard_mining_temperature', 0.1),
                 collater = self.ocp_collater,
                 forward = self._forward
                 )
@@ -329,26 +330,33 @@ class DistillTrainer(OCPTrainer):
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
             
-            epochs_since_hard_mining_start = self.epoch - self.config['optim'].get("hard_mining_epoch_start", 0)
-            if epochs_since_hard_mining_start  % self.config['optim'].get("hard_mining_epoch_reset_frequency", 50) == 0:
+            epochs_since_hard_mining_start = int(self.epoch - self.config['optim'].get("hard_mining_epoch_start", 0))
+            if epochs_since_hard_mining_start  % self.config['optim'].get("hard_mining_epoch_reset_frequency", 50) == 0 and epochs_since_hard_mining_start > 0:
                 # reset hash map
                 self.force_jac_loss_dict = {}
-            if self.epoch > self.config['optim'].get("hard_mining_epoch_start", 0):
+            if self.config['optim'].get("hard_mining", False) and self.epoch >= self.config['optim'].get("hard_mining_epoch_start", 0):
                 atomic_number_hashes = get_atomic_number_hashes(batch)
-                
                 for atomic_number_hash, hessian_idx, _loss in zip(atomic_number_hashes, sampled_hessian_idxs, per_sample_loss):
-                    hessian_idx = hessian_idx.squeeze()
-                    if atomic_number_hash not in self.force_jac_loss_dict:
-                        
+                    # TODO: the loss is a mean over the sampled rows, so it's kind of weird for s !=1
+                    _loss = _loss.detach()
+                    if atomic_number_hash not in self.force_jac_loss_dict:                        
                         count = torch.zeros((len(atomic_number_hash), 3)).to(self.device)
                         data = torch.zeros((len(atomic_number_hash), 3)).to(self.device)
-                        count[hessian_idx[0], hessian_idx[1]] = 1
-                        data[hessian_idx[0], hessian_idx[1]] = _loss
+                        count[hessian_idx[:, 0], hessian_idx[:, 1]] = 1
+                        data[hessian_idx[:, 0], hessian_idx[:, 1]] = _loss
                     else:
-                        
                         count, data = self.force_jac_loss_dict[atomic_number_hash]
-                        data[hessian_idx[0], hessian_idx[1]] = (count[hessian_idx[0], hessian_idx[1]] * data[hessian_idx[0], hessian_idx[1]] + _loss) / (count[hessian_idx[0], hessian_idx[1]] + 1)
-                        count[hessian_idx[0], hessian_idx[1]] += 1
+                        
+                        if self.config['optim'].get('hard_mining_ema', False):
+                            # Update the EMA for the specific Hessian indices
+                            beta = self.config['optim'].get('hard_mining_ema_beta', 0.9)
+                            if count[hessian_idx[:, 0], hessian_idx[:, 1]] == 0:
+                                data[hessian_idx[:, 0], hessian_idx[:, 1]] = _loss
+                            else:     
+                                data[hessian_idx[:, 0], hessian_idx[:, 1]] = beta * data[hessian_idx[:, 0], hessian_idx[:, 1]] + (1 - beta) * _loss
+                        else:
+                            data[hessian_idx[:, 0], hessian_idx[:, 1]] = (count[hessian_idx[:, 0], hessian_idx[:, 1]] * data[hessian_idx[:, 0], hessian_idx[:, 1]] + _loss) / (count[hessian_idx[:, 0], hessian_idx[:, 1]] + 1)
+                        count[hessian_idx[:, 0], hessian_idx[:, 1]] += 1
                     self.force_jac_loss_dict[atomic_number_hash] = (count, data)
 
 

@@ -44,7 +44,7 @@ def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True):
     return jacs_per_mol
 
 
-def sample_with_mask(n, num_samples, mask, running_force_jac_loss, hard_mining):
+def sample_with_mask(n, num_samples, mask, running_force_jac_loss, hard_mining, hard_mining_temperature=0.1):
     if mask.shape[0] != n:
         raise ValueError("Mask length must be equal to the number of rows in the grid (n)")
     
@@ -63,7 +63,7 @@ def sample_with_mask(n, num_samples, mask, running_force_jac_loss, hard_mining):
         data = data.flatten()[valid_indices]
         data[data==0] = 1.1 * data.max() # slighly upweight probability of unvisited rows (loss=0)
         # sample according to loss
-        probabilities = torch.softmax(data / 0.1, dim=0)
+        probabilities = torch.softmax(data / hard_mining_temperature, dim=0)
         chosen_indices = torch.multinomial(probabilities, num_samples, replacement=False)
 
     else:
@@ -109,6 +109,7 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
         return full_jac
 
 def get_samples_biased(true_jac, num_samples):
+    # get biased samples based on the norm of the rows of the jacobian
     temperature = 7
     num_free_atoms = true_jac.shape[0]
     num_samples = min(num_samples, 3*num_free_atoms)
@@ -131,7 +132,7 @@ def get_samples_biased(true_jac, num_samples):
     return samples
 
 
-def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should_mask, looped=False, finite_differences=False, hard_mining=False, hard_mining_visited_threshold=0.1, forward=None, collater=None):
+def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should_mask, looped=False, finite_differences=False, hard_mining=False, hard_mining_visited_threshold=0.1, hard_mining_temperature=0.1, forward=None, collater=None):
     forces = out['forces']
     natoms = batch.natoms
     total_num_atoms = forces.shape[0]
@@ -147,7 +148,7 @@ def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should
     for i, (atoms_in_mol, atomic_hash) in enumerate(zip(batch.natoms, atomic_number_hashes)):
         submask = mask[cumulative_sums[i]:cumulative_sums[i+1]]
         force_jac_loss_hist = force_jac_hash_map[atomic_hash] if atomic_hash in force_jac_hash_map else None
-        samples = sample_with_mask(atoms_in_mol, num_samples, submask, force_jac_loss_hist, hard_mining = hard_mining and warmup_over[i])
+        samples = sample_with_mask(atoms_in_mol, num_samples, submask, force_jac_loss_hist, hard_mining = hard_mining and warmup_over[i], hard_mining_temperature=hard_mining_temperature)
         
         by_molecule.append(samples) # swap below and above line, crucial
         offset_samples = samples.clone()  # Create a copy of the samples array to avoid modifying the original
