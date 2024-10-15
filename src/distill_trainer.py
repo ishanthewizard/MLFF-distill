@@ -43,7 +43,7 @@ from fairchem.core.modules.scaling.compat import load_scales_compat
 from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.modules.scheduler import LRScheduler
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
-from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian, custom_sigmoid 
+from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian, get_atomic_number_hashes
 from . import CombinedDataset, SimpleDataset
 from fairchem.core.common import distutils
 from fairchem.core.modules.loss import L2MAELoss
@@ -114,6 +114,8 @@ class DistillTrainer(OCPTrainer):
             self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - true_label).mean().item()
         self.teacher_force_mae /= len(self.val_dataset)
         print("TEACHER FORCE MAE:", self.teacher_force_mae)
+        # initialize hash map to store running average of force jacobian loss per system
+        self.force_jac_loss_dict = {}
 
     def insert_teach_datasets(self, main_dataset, dataset_type, indxs=None):
         #dataset_type either equals 'train' or 'val'
@@ -276,7 +278,6 @@ class DistillTrainer(OCPTrainer):
             threshold = 5
             if percent_higher < threshold: 
                 self.loss_functions[-1][1]['coefficient'] = 0.25 * self.original_fjac_coeff
-                # self.loss_functions[-1][1]['coefficient'] = custom_sigmoid(percent_higher, threshold) * self.original_fjac_coeff
             
     def _forward(self, batch):
         if not self.is_validating:
@@ -309,7 +310,7 @@ class DistillTrainer(OCPTrainer):
         self.update_loss_coefficients()
         should_mask = self.output_targets['forces']["train_on_free_atoms"]
         if self.loss_functions[-1][1]['coefficient'] != 0:
-            force_jac_loss = get_force_jac_loss(
+            force_jac_loss, per_sample_loss, sampled_hessian_idxs = get_force_jac_loss(
                 out=out, 
                 batch=batch, 
                 num_samples=self.config['optim']['force_jac_sample_size'], 
@@ -317,6 +318,9 @@ class DistillTrainer(OCPTrainer):
                 should_mask=should_mask, 
                 finite_differences= self.config['optim'].get('finite_differences', False),
                 looped=(not self.config['optim']["vectorize_jacs"]),
+                force_jac_hash_map=self.force_jac_loss_dict,
+                hard_mining=self.config['optim'].get('hard_mining', False),
+                hard_mining_visited_threshold=self.config['optim'].get('hard_mining_visited_threshold', 0.1),
                 collater = self.ocp_collater,
                 forward = self._forward
                 )
@@ -324,6 +328,30 @@ class DistillTrainer(OCPTrainer):
                 raise Exception("FORCE JAC LOSS IS NAN")
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
+            
+            epochs_since_hard_mining_start = self.epoch - self.config['optim'].get("hard_mining_epoch_start", 0)
+            if epochs_since_hard_mining_start  % self.config['optim'].get("hard_mining_epoch_reset_frequency", 50) == 0:
+                # reset hash map
+                self.force_jac_loss_dict = {}
+            if self.epoch > self.config['optim'].get("hard_mining_epoch_start", 0):
+                atomic_number_hashes = get_atomic_number_hashes(batch)
+                
+                for atomic_number_hash, hessian_idx, _loss in zip(atomic_number_hashes, sampled_hessian_idxs, per_sample_loss):
+                    hessian_idx = hessian_idx.squeeze()
+                    if atomic_number_hash not in self.force_jac_loss_dict:
+                        
+                        count = torch.zeros((len(atomic_number_hash), 3)).to(self.device)
+                        data = torch.zeros((len(atomic_number_hash), 3)).to(self.device)
+                        count[hessian_idx[0], hessian_idx[1]] = 1
+                        data[hessian_idx[0], hessian_idx[1]] = _loss
+                    else:
+                        
+                        count, data = self.force_jac_loss_dict[atomic_number_hash]
+                        data[hessian_idx[0], hessian_idx[1]] = (count[hessian_idx[0], hessian_idx[1]] * data[hessian_idx[0], hessian_idx[1]] + _loss) / (count[hessian_idx[0], hessian_idx[1]] + 1)
+                        count[hessian_idx[0], hessian_idx[1]] += 1
+                    self.force_jac_loss_dict[atomic_number_hash] = (count, data)
+
+
         else:
             batch['force_jac_loss'] = torch.tensor(0)
         for loss_fn in self.loss_functions:

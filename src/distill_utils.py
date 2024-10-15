@@ -6,6 +6,11 @@ import logging
 from fairchem.core.common.data_parallel import  OCPCollater
 from fairchem.core.common import distutils
 
+def get_atomic_number_hashes(batch):
+    split_atomic_numbers = torch.split(batch.atomic_numbers, list(batch.ptr[1:] - batch.ptr[:-1]))
+    atomic_number_hashes = ["".join([str(a.item()) for a in list(atomic_numbers)]) for atomic_numbers in split_atomic_numbers]
+    return atomic_number_hashes
+
 def print_cuda_memory_usage():
     allocated = torch.cuda.memory_allocated() / (1024 ** 3)  # Convert bytes to GB
     reserved = torch.cuda.memory_reserved() / (1024 ** 3)    # Convert bytes to GB
@@ -39,7 +44,7 @@ def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True):
     return jacs_per_mol
 
 
-def sample_with_mask(n, num_samples, mask):
+def sample_with_mask(n, num_samples, mask, running_force_jac_loss, hard_mining):
     if mask.shape[0] != n:
         raise ValueError("Mask length must be equal to the number of rows in the grid (n)")
     
@@ -53,7 +58,16 @@ def sample_with_mask(n, num_samples, mask):
     valid_indices = valid_rows.repeat_interleave(3) * 3 + torch.tensor([0, 1, 2]).repeat(valid_rows.size(0)).to(mask.device)
 
     # Sample unique indices from the valid indices
-    chosen_indices = valid_indices[torch.randperm(valid_indices.size(0))[:num_samples]]
+    if running_force_jac_loss is not None and hard_mining:
+        count, data = running_force_jac_loss
+        data = data.flatten()[valid_indices]
+        data[data==0] = 1.1 * data.max() # slighly upweight probability of unvisited rows (loss=0)
+        # sample according to loss
+        probabilities = torch.softmax(data / 0.1, dim=0)
+        chosen_indices = torch.multinomial(probabilities, num_samples, replacement=False)
+
+    else:
+        chosen_indices = valid_indices[torch.randperm(valid_indices.size(0))[:num_samples]]
 
     # Convert flat indices back to row and column indices
     row_indices = chosen_indices // 3
@@ -117,7 +131,7 @@ def get_samples_biased(true_jac, num_samples):
     return samples
 
 
-def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False, finite_differences=False, forward=None, collater=None):
+def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should_mask, looped=False, finite_differences=False, hard_mining=False, hard_mining_visited_threshold=0.1, forward=None, collater=None):
     forces = out['forces']
     natoms = batch.natoms
     total_num_atoms = forces.shape[0]
@@ -127,9 +141,13 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
     
     by_molecule = []
     grad_outputs = torch.zeros((num_samples, total_num_atoms, 3)).to(forces.device)
-    for i, atoms_in_mol in enumerate(batch.natoms):
+    atomic_number_hashes = get_atomic_number_hashes(batch)
+    visited_counts = [force_jac_hash_map[atomic_hash][0] if atomic_hash in force_jac_hash_map else torch.zeros(10) for atomic_hash in atomic_number_hashes]
+    warmup_over = [(count > 0).count_nonzero().item() / count.numel() > hard_mining_visited_threshold for count in visited_counts]
+    for i, (atoms_in_mol, atomic_hash) in enumerate(zip(batch.natoms, atomic_number_hashes)):
         submask = mask[cumulative_sums[i]:cumulative_sums[i+1]]
-        samples = sample_with_mask(atoms_in_mol, num_samples, submask)
+        force_jac_loss_hist = force_jac_hash_map[atomic_hash] if atomic_hash in force_jac_hash_map else None
+        samples = sample_with_mask(atoms_in_mol, num_samples, submask, force_jac_loss_hist, hard_mining = hard_mining and warmup_over[i])
         
         by_molecule.append(samples) # swap below and above line, crucial
         offset_samples = samples.clone()  # Create a copy of the samples array to avoid modifying the original
@@ -173,7 +191,6 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
     custom_loss = lambda jac, true_jac: torch.norm(jac - true_jac, p=2, dim=-1).sum(dim=1).mean(dim=0)
     losses = [custom_loss(jac, true_jac) for jac, true_jac in zip(jacs_per_mol, true_jacs_per_mol)]
     valid_losses = [loss * 1e-8 if true_jac.abs().max().item() > 10000 else loss for loss, true_jac in zip(losses, true_jacs_per_mol)]  # filter weird hessians
-    
     loss = sum(valid_losses)
     
     num_samples = sum(num_free_atoms_per_mol)
@@ -182,7 +199,7 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
         # across DDP replicas
     loss  = loss * distutils.get_world_size() / num_samples
     assert hasattr(loss, "grad_fn")
-    return loss 
+    return loss, [v/num_samples for v in valid_losses], by_molecule
 
 
 def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collater, looped=False, h=0.0001):
