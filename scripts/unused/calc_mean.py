@@ -3,10 +3,12 @@ from tqdm import tqdm
 import numpy as np
 
 # dataset_path = '/data/shared/MLFF/MD22/95_lmdb/Ac-Ala3-NHMe/train/'
-# dataset_path = '/data/ishan-amin/spice_separated/Solvated_Amino_Acids/train'
+dataset_path = 'data/SPICE/spice_seperated_w_energies/Iodine/train'
+# dataset_path = '/data/shared/MLFF/SPICE/maceoff_split/train/'
+# dataset_path = 'data/SPICE/spice_separated/Solvated_Amino_Acids/train'
 # dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons/train'
 # dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Bandgap_greater_than_5/train'
-dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium/train'
+# dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium/train'
 print(registry)
 config = {"src": dataset_path}
 dataset = registry.get_dataset_class("lmdb")(config)
@@ -17,11 +19,12 @@ forces_values = []
 
 # Iterate over all samples to gather data
 for sample in tqdm(dataset):
-    y_values.append(sample.corrected_total_energy.numpy().flatten())
+    # y_values.append(sample.corrected_total_energy.numpy().flatten())
+    # y_values.append(sample.energy_per_atom.item())
+    y_values.append(sample.reference_energy.item())
     forces_values.append(sample['force'].numpy().flatten())
 
 # Convert lists to numpy arrays
-y_values = np.concatenate(y_values)
 forces_values = np.concatenate(forces_values)
 
 # Calculate means and standard deviations

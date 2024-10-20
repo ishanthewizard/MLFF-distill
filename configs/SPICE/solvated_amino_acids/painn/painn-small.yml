@@ -22,7 +22,7 @@ optim:
   num_workers: 4
   optimizer: AdamW
   optimizer_params: {"eps": 1.e-7, "weight_decay": 0.000002, "amsgrad": True}
-  lr_initial: 1.e-3
+  lr_initial: 1.e-3 
   scheduler: ReduceLROnPlateau
   patience: 10
   factor: 0.8

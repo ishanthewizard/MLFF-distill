@@ -2,27 +2,29 @@ includes:
   - configs/slurm/premium.yml
 logger: 
   name: wandb
-  project: spice-ABELATE
+  project: spice-Energy
 
 trainer: ocp
 
 dataset:
   train:
     format: lmdb
-    src: data/SPICE/spice_separated/DES370K_Monomers/train
+    src: data/SPICE/spice_seperated_w_energies/DES370K_Monomers/train
     key_mapping:
-      y: energy
+      reference_energy: energy
       force: forces
     transforms:
       normalizer:
         energy: 
-            mean: 0
-            stdev: 1
+            mean: -140.80356519035792 # eric number
+            stdev: 69.1667169308504   # eric number
+            # mean: -1500.67354  # true mean for monomers: -1500.67354
+            # stdev: 3261.3593    # true std for monomers: 3261.3593 - note that these are energy per atom
         forces: 
-            mean: 0
-            stdev: 1
+            mean: 0 
+            stdev: 1          # true std: .9473
   val:
-    src: data/SPICE/spice_separated/DES370K_Monomers/val
+    src: data/SPICE/spice_seperated_w_energies/DES370K_Monomers/val
 
 
 outputs:
@@ -38,7 +40,7 @@ outputs:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 0
+      coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100

@@ -3,27 +3,29 @@ includes:
   # - configs/slurm/debug.yml
 logger: 
   name: wandb
-  project: spice
+  project: spice-Energy
 
 trainer: ocp
 
 dataset:
   train:
     format: lmdb
-    src: data/SPICE/spice_separated/Solvated_Amino_Acids/train
+    src: data/SPICE/spice_seperated_w_energies/Solvated_Amino_Acids/train
     key_mapping:
-      y: energy
+      reference_energy: energy
       force: forces
     transforms:
       normalizer:
         energy: 
-            mean: 0
-            stdev: 1
+            mean: -140.80356519035792
+            stdev: 69.1667169308504
+            # mean: -685.126   # actual for solvated: -685.126 (energy PER ATOM)
+            # stdev: 36.221  # actual for solvated:  36.221  (energy PER ATOM)
         forces: 
-            mean: 0
-            stdev: 1
+            mean: 0   # actual for forces: 0
+            stdev: 1  # actual for std: 1.549
   val:
-    src: data/SPICE/spice_separated/Solvated_Amino_Acids/val
+    src: data/SPICE/spice_seperated_w_energies/Solvated_Amino_Acids/val
 
 
 outputs:
@@ -39,7 +41,7 @@ outputs:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 0
+      coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100
