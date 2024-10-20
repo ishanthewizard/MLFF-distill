@@ -1,0 +1,13 @@
+diff --git a/configs/OC20/Halides_2M/painn/painn_h128_L4yml b/configs/OC20/Halides_2M/painn/painn_h128_L4yml
+index 54bc9a1..f35f826 100644
+--- a/configs/OC20/Halides_2M/painn/painn_h128_L4yml
++++ b/configs/OC20/Halides_2M/painn/painn_h128_L4yml
+@@ -3,7 +3,7 @@ includes:
+ 
+ model:
+   name: painn
+-  hidden_channels: 512 #changed from 512
++  hidden_channels: 128 #changed from 512
+   num_layers: 4 # down from 6
+   num_rbf: 128
+   cutoff: 12.0

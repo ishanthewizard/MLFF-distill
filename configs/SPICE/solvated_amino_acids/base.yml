@@ -17,10 +17,8 @@ dataset:
     transforms:
       normalizer:
         energy: 
-            mean: -140.80356519035792
-            stdev: 69.1667169308504
-            # mean: -685.126   # actual for solvated: -685.126 (energy PER ATOM)
-            # stdev: 36.221  # actual for solvated:  36.221  (energy PER ATOM)
+            mean: -322.07 #  actual formation energy value for solvated
+            stdev: 20.60  # actual formation energy value for solvated
         forces: 
             mean: 0   # actual for forces: 0
             stdev: 1  # actual for std: 1.549

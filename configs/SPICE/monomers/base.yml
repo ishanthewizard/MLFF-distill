@@ -16,10 +16,8 @@ dataset:
     transforms:
       normalizer:
         energy: 
-            mean: -140.80356519035792 # eric number
-            stdev: 69.1667169308504   # eric number
-            # mean: -1500.67354  # true mean for monomers: -1500.67354
-            # stdev: 3261.3593    # true std for monomers: 3261.3593 - note that these are energy per atom
+            mean: -52.56 # proper formation number for monomers
+            stdev: 17.29  # proper formation number for monomers
         forces: 
             mean: 0 
             stdev: 1          # true std: .9473

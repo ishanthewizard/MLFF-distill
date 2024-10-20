@@ -28,7 +28,7 @@ model:
   output_init: HeOrthogonal
   activation: silu
   scale_file: configs/md22/Ac-Ala3/gemnet-dT-scale.json
-  extensive: True # note: check this every time
+  extensive: True 
   otf_graph: True
   regress_forces: True
   direct_forces: True
