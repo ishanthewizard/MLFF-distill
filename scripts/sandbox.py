@@ -85,12 +85,13 @@ from torch.utils.data import Subset
 # main_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Bandgap_greater_than_5'
 # main_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons'
 # main_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium'
-main_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium/'
+main_path = '/data/shared/MPTrj/lmdb/'
 train = os.path.join(main_path, 'train')
 # val = os.path.join(main_path, 'val')
 # test = os.path.join(main_path, 'test')
 
 train_dataset = registry.get_dataset_class("lmdb")({"src": train})
+breakpoint()
 # val_dataset = registry.get_dataset_class("lmdb")({"src": val})
 # test_dataset = registry.get_dataset_class("lmdb")({"src": test})
 # total =  len(train_dataset) + len(val_dataset) + len(test_dataset)
