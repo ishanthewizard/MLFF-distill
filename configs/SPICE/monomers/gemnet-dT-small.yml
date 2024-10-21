@@ -6,9 +6,9 @@ model:
   num_spherical: 7
   num_radial: 6
   num_blocks: 4 # normal!
-  emb_size_atom: 8 #smaller
-  emb_size_edge: 8 #smaller
-  emb_size_trip: 8 #smaller
+  emb_size_atom: 64 #smaller
+  emb_size_edge: 64 #smaller
+  emb_size_trip: 32 #smaller
   emb_size_rbf: 16
   emb_size_cbf: 16
   emb_size_bil_trip: 64
@@ -28,7 +28,7 @@ model:
   output_init: HeOrthogonal
   activation: silu
   scale_file: configs/md22/Ac-Ala3/gemnet-dT-scale.json
-  extensive: True
+  extensive: True 
   otf_graph: True
   regress_forces: True
   direct_forces: True

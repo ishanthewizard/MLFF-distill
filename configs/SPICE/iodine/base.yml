@@ -17,8 +17,8 @@ dataset:
     transforms:
       normalizer:
         energy: 
-            mean: 0
-            stdev: 1
+            mean: -129.40 # actual formation energy value for iodine
+            stdev: 69.63  # actual formation energy value for iodine
         forces: 
             mean: 0
             stdev: 1

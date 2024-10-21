@@ -7,46 +7,27 @@ LICENSE file in the root directory of this source tree.
 
 from __future__ import annotations
 
-import contextlib
-import datetime
-import errno
 import logging
 import os
-import random
-from abc import ABC, abstractmethod
-from itertools import chain
-import sys
 from typing import TYPE_CHECKING
 import time
-from fairchem.core.common.utils import load_config
 import numpy as np
-import numpy.typing as npt
+
+from src.distill_utils import get_energy_jac_loss
 import torch
-import torch.nn as nn
-import yaml
-from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
-import lmdb
 
 from fairchem.core import __version__
-from fairchem.core.common import distutils, gp_utils
-from fairchem.core.common.data_parallel import BalancedBatchSampler, OCPCollater
+from fairchem.core.common import distutils 
+from fairchem.core.common.data_parallel import  OCPCollater
 from fairchem.core.common.registry import registry
-from fairchem.core.common.typing import assert_is_instance as aii
-from fairchem.core.common.typing import none_throws
-from fairchem.core.modules.evaluator import Evaluator
-from fairchem.core.modules.exponential_moving_average import ExponentialMovingAverage
-from fairchem.core.modules.loss import DDPLoss
-from fairchem.core.modules.normalizer import Normalizer
-from fairchem.core.modules.scaling.compat import load_scales_compat
-from fairchem.core.modules.scaling.util import ensure_fitted
-from fairchem.core.modules.scheduler import LRScheduler
+
+
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
 from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian, get_atomic_number_hashes
 from . import CombinedDataset, SimpleDataset
 from fairchem.core.common import distutils
-from fairchem.core.modules.loss import L2MAELoss
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -102,10 +83,23 @@ class DistillTrainer(OCPTrainer):
             name=name,
             gp_gpus=gp_gpus,
         )
+        
+        
+        
+        self.is_validating = False
         self.force_mae =  None
+        self.modify_train_val_datasets()
         self.start_time = time.time()
-        self.original_fjac_coeff = self.loss_functions[-1][1]['coefficient']
+
         # Compute teacher MAE
+        self.calculate_teacher_loss()
+        self.force_jac_loss_fn = self.loss_functions.pop()
+        self.teacher_force_loss_fn = self.loss_functions.pop()
+        assert self.force_jac_loss_fn[0] == 'force_jacs'
+        assert self.teacher_force_loss_fn[0] == 'teacher_forces' 
+        self.original_fjac_coeff = self.force_jac_loss_fn[1]['coefficient']
+    
+    def calculate_teacher_loss(self):
         self.teacher_force_mae = 0
         for datapoint in tqdm(self.val_dataset):
             true_label = datapoint['forces']
@@ -116,12 +110,54 @@ class DistillTrainer(OCPTrainer):
         print("TEACHER FORCE MAE:", self.teacher_force_mae)
         # initialize hash map to store running average of force jacobian loss per system
         self.force_jac_loss_dict = {}
+        
+    def modify_train_val_datasets(self):
+        train_indxs = val_indxs = None
+        if "split" in self.config["dataset"]:
+            train_indxs = np.random.default_rng(seed=0).choice(
+                    len(self.train_dataset), 
+                    self.config["dataset"]["split"], 
+                    replace=False
+            )
+        if "split" in self.config["val_dataset"]:
+                    # to make sampling deterministic, seed rng
+            val_indxs = np.random.default_rng(seed=0).choice(
+                len(self.val_dataset), 
+                self.config["val_dataset"]["split"], 
+                replace=False
+            )
+        
+        self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train', train_indxs ) # ADDED LINE
+
+        self.train_sampler = self.get_sampler(
+            self.train_dataset,
+            self.config["optim"]["batch_size"],
+            shuffle=True,
+        )
+        self.train_loader = self.get_dataloader(
+            self.train_dataset,
+            self.train_sampler,
+        )
+
+        self.val_dataset = self.insert_teach_datasets(self.val_dataset, 'val', val_indxs)
+
+        self.val_sampler = self.get_sampler(
+            self.val_dataset,
+            self.config["optim"].get(
+                "eval_batch_size", self.config["optim"]["batch_size"]
+            ),
+            shuffle=False,
+        )
+        self.val_loader = self.get_dataloader(
+            self.val_dataset,
+            self.val_sampler,
+        )
 
     def insert_teach_datasets(self, main_dataset, dataset_type, indxs=None):
         #dataset_type either equals 'train' or 'val'
-        self.is_validating = False
+        
         labels_folder = self.config['dataset']['teacher_labels_folder']
-
+        
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
         if indxs is not None:
             teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
@@ -133,138 +169,6 @@ class DistillTrainer(OCPTrainer):
             force_jac_dataset = None
         return CombinedDataset(main_dataset,  teacher_force_dataset, force_jac_dataset)
 
-    def load_datasets(self) -> None:
-        self.ocp_collater = OCPCollater(
-            self.config["model_attributes"].get("otf_graph", False)
-        )
-        self.train_loader = None
-        self.val_loader = None
-        self.test_loader = None
-
-        # load train, val, test datasets
-        if self.config["dataset"].get("src", None):
-            logging.info(
-                f"Loading dataset: {self.config['dataset'].get('format', 'lmdb')}"
-            )
-
-            self.train_dataset = registry.get_dataset_class(
-                self.config["dataset"].get("format", "lmdb")
-            )(self.config["dataset"])
-            
-            #  # REMOVE LATER!!!
-            # missing_indexes = np.load('Nonmetals_missing.npy')
-            # self.train_dataset = Subset(self.train_dataset, missing_indexes)
-            #  #END REMOVE
- 
-            #LOAD IN VAL EARLIER:
-            if self.config["val_dataset"].get("use_train_settings", True):
-                val_config = self.config["dataset"].copy()
-                val_config.pop("split", None) # Aded
-                val_config.update(self.config["val_dataset"])
-            else:
-                val_config = self.config["val_dataset"]
-
-            self.val_dataset = registry.get_dataset_class(
-                val_config.get("format", "lmdb")
-            )(val_config)
-            # END LOAD IN VAL
-            # Ryan's code
-            train_indxs = val_indxs = None
-            if "split" in val_config:
-                    logging.info(f"original size {len(self.val_dataset)}, target size {val_config['split']}")
-                    # to make sampling deterministic, seed rng
-                    if len(self.val_dataset) >= val_config["split"]:
-                        val_indxs = np.random.default_rng(seed=0).choice(
-                            len(self.val_dataset), 
-                            val_config["split"], 
-                            replace=False
-                        )
-                        self.val_dataset = Subset(self.val_dataset, torch.tensor(val_indxs))
-                        logging.info("Subsetted validation set.")
-                    else:
-                        logging.info("Original size must be greater than target size!")
-            # END RYAN's CODE
-            # RYAN'S CODE:
-            if "split" in self.config["dataset"]:
-                # to make sampling deterministic, seed rng
-                logging.info(f"original size {len(self.train_dataset)}, target size {self.config['dataset']['split']}")
-                if len(self.train_dataset) >= self.config["dataset"]["split"]:
-                    train_indxs = np.random.default_rng(seed=0).choice(
-                        len(self.train_dataset), 
-                        self.config["dataset"]["split"], 
-                        replace=False
-                    )
-                    self.train_dataset = Subset(self.train_dataset, torch.tensor(train_indxs))
-                    logging.info("Subsetted train set.")
-                else:
-                    logging.info("Original size must be greater than target size!")
-            # END RYAN's CODE
-            self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train', train_indxs ) # ADDED LINE
-
-            self.train_sampler = self.get_sampler(
-                self.train_dataset,
-                self.config["optim"]["batch_size"],
-                shuffle=True,
-            )
-            self.train_loader = self.get_dataloader(
-                self.train_dataset,
-                self.train_sampler,
-            )
-            if self.config.get("val_dataset", None):
-                ## START ISHAN CODE
-                self.val_dataset = self.insert_teach_datasets(self.val_dataset, 'val', val_indxs)
-                # END ISHAN CODE
-                self.val_sampler = self.get_sampler(
-                    self.val_dataset,
-                    self.config["optim"].get(
-                        "eval_batch_size", self.config["optim"]["batch_size"]
-                    ),
-                    shuffle=False,
-                )
-                self.val_loader = self.get_dataloader(
-                    self.val_dataset,
-                    self.val_sampler,
-                )
-
-            if self.config.get("test_dataset", None):
-                if self.config["test_dataset"].get("use_train_settings", True):
-                    test_config = self.config["dataset"].copy()
-                    test_config.update(self.config["test_dataset"])
-                else:
-                    test_config = self.config["test_dataset"]
-
-                self.test_dataset = registry.get_dataset_class(
-                    test_config.get("format", "lmdb")
-                )(test_config)
-                self.test_sampler = self.get_sampler(
-                    self.test_dataset,
-                    self.config["optim"].get(
-                        "eval_batch_size", self.config["optim"]["batch_size"]
-                    ),
-                    shuffle=False,
-                )
-                self.test_loader = self.get_dataloader(
-                    self.test_dataset,
-                    self.test_sampler,
-                )
-
-        # load relaxation dataset
-        if "relax_dataset" in self.config["task"]:
-            self.relax_dataset = registry.get_dataset_class("lmdb")(
-                self.config["task"]["relax_dataset"]
-            )
-            self.relax_sampler = self.get_sampler(
-                self.relax_dataset,
-                self.config["optim"].get(
-                    "eval_batch_size", self.config["optim"]["batch_size"]
-                ),
-                shuffle=False,
-            )
-            self.relax_loader = self.get_dataloader(
-                self.relax_dataset,
-                self.relax_sampler,
-            )
-
     def update_loss_coefficients(self):
         # self.force_mae, self.teacher_force_mae are good to go
         if self.force_mae == None:
@@ -272,13 +176,12 @@ class DistillTrainer(OCPTrainer):
         if self.step % 20 == 0:
             if self.force_mae < self.teacher_force_mae:
                 logging.info("EXCEEDED TEACHER ACCURACY!!")
-                # self.loss_functions[-1][1]['coefficient'] = 0
 
             percent_higher = ((self.force_mae - self.teacher_force_mae) / self.teacher_force_mae) *100
             threshold = 5
             if percent_higher < threshold: 
-                self.loss_functions[-1][1]['coefficient'] = 0.25 * self.original_fjac_coeff
-            
+                self.force_jac_loss_fn[1]['coefficient'] = 0.5 * self.original_fjac_coeff
+           
     def _forward(self, batch):
         if not self.is_validating:
             batch.pos.requires_grad_(True)
@@ -303,13 +206,23 @@ class DistillTrainer(OCPTrainer):
         batch_size = batch.natoms.numel()
         fixed = batch.fixed
         mask = fixed == 0
-
-        loss = []
-        #ISHAN ADDED CODE!!
-        out['teacher_forces'] = out['forces']
-        self.update_loss_coefficients()
         should_mask = self.output_targets['forces']["train_on_free_atoms"]
-        if self.loss_functions[-1][1]['coefficient'] != 0:
+        self.update_loss_coefficients()
+        
+        loss = [super()._compute_loss(out, batch)]
+        batch['force_jac_loss'] = torch.tensor(0)
+        
+        
+        # # NEW!!! Energy stuff to see if this even works. if it works we'll make it efficient 
+        # energy_jac_loss = get_energy_jac_loss(
+        #     out=out,
+        #     batch=batch,
+        #     energy_std = self.normalizers['energy'].std
+        # )
+        # loss.append(15* energy_jac_loss)
+        
+        
+        if self.force_jac_loss_fn[1]['coefficient'] !=0:
             force_jac_loss, per_sample_loss, sampled_hessian_idxs = get_force_jac_loss(
                 out=out, 
                 batch=batch, 
@@ -324,9 +237,7 @@ class DistillTrainer(OCPTrainer):
                 hard_mining_temperature=self.config['optim'].get('hard_mining_temperature', 0.1),
                 collater = self.ocp_collater,
                 forward = self._forward
-                )
-            if torch.any(torch.isnan(force_jac_loss)):
-                raise Exception("FORCE JAC LOSS IS NAN")
+            )
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
             
@@ -360,44 +271,16 @@ class DistillTrainer(OCPTrainer):
                     self.force_jac_loss_dict[atomic_number_hash] = (count, data)
 
 
-        else:
-            batch['force_jac_loss'] = torch.tensor(0)
-        for loss_fn in self.loss_functions:
-            target_name, loss_info = loss_fn
-            if loss_info['coefficient'] == 0: #Added this, don't bother
-                continue
-            if target_name == 'force_jacs':
-                loss.append(loss_info["coefficient"] * force_jac_loss)
-                batch['force_jac_loss'] = force_jac_loss
-                continue
-            target = batch[target_name]
-            pred = out[target_name]
-
-            natoms = batch.natoms
-            natoms = torch.repeat_interleave(natoms, natoms)
-            if (target_name != 'force_jacs' and target_name != 'teacher_forces'): # added this
-                if (
-                    self.output_targets[target_name]["level"] == "atom"
-                    and self.output_targets[target_name]["train_on_free_atoms"]
-                ):
-                    target = target[mask]
-                    pred = pred[mask]
-                    natoms = natoms[mask]
-
-                num_atoms_in_batch = natoms.numel()
-                if self.normalizers.get(target_name, False):
-                    target = self.normalizers[target_name].norm(target)
-
-                ### reshape accordingly: num_atoms_in_batch, -1 or num_systems_in_batch, -1
-                if self.output_targets[target_name]["level"] == "atom":
-                    target = target.view(num_atoms_in_batch, -1)
-                else:
-                    target = target.view(batch_size, -1)
-
-            mult = loss_info["coefficient"]
-            curr_loss = loss_info["fn"](
-                        pred,
-                        target,
+            loss.append(force_jac_loss * self.force_jac_loss_fn[1]['coefficient'])
+            batch['force_jac_loss'] = force_jac_loss
+        if self.teacher_force_loss_fn[1]['coefficient'] != 0:
+            batch_size = batch.natoms.numel()
+            natoms = torch.repeat_interleave(batch.natoms, batch.natoms)
+            
+            mult = self.teacher_force_loss_fn[1]["coefficient"]
+            curr_loss = self.teacher_force_loss_fn[1]["fn"](
+                        out['forces'],
+                        batch['teacher_forces'],
                         natoms=natoms,
                         batch_size=batch_size,
             )
@@ -405,7 +288,6 @@ class DistillTrainer(OCPTrainer):
                 mult
                 * curr_loss
             )
-        # Sanity check to make sure the compute graph is correct.
         for lc in loss:
             if torch.any(torch.isnan(lc)):
                 raise Exception("loss is nan")

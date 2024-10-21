@@ -203,6 +203,23 @@ def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should
     return loss, [v/num_samples for v in valid_losses], by_molecule
 
 
+def get_energy_jac_loss(out, batch, energy_std):
+    true_jac = -1 * batch['forces']
+    energy_jac = torch.autograd.grad(out['energy'].sum(), batch.pos, create_graph=True, retain_graph=True)[0]
+    energy_jac *= energy_std
+    
+    custom_loss = lambda jac, true_jac: torch.norm(jac - true_jac, p=2, dim=-1).sum(dim=0)
+    loss = custom_loss(energy_jac, true_jac)
+    
+    num_samples = sum(batch.natoms)
+    num_samples = distutils.all_reduce(num_samples, device=true_jac.device)
+    loss  = loss * distutils.get_world_size() / num_samples
+    
+    return loss
+    
+    
+
+
 def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collater, looped=False, h=0.0001):
     # Store original positions
     original_pos = batch.pos.clone()

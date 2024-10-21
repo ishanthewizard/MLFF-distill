@@ -16,6 +16,5 @@ for sample in my_dataset:
     if len(sample.pos) == 1:
         for eric_samp in eric_dataset:
             if eric_samp.mp_id == sample.mp_id:
-                breakpoint()
                 print(sample.pos)
                 print(eric_samp.pos)

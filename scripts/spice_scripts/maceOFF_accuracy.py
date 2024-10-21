@@ -11,7 +11,7 @@ from src.distill_utils import print_cuda_memory_usage
 import argparse
 
 
-def get_accuracy(dataset_path, model='large'):
+def get_accuracy(dataset_path, model='small'):
     # Load model
     calc = mace_off(model=model, dispersion=False,  default_dtype="float32", device="cuda")
     # # Counting parameters
@@ -31,8 +31,10 @@ def get_accuracy(dataset_path, model='large'):
     num_atoms = []
     force_mae_loss = 0
     numel = 0
+    energy_mae_loss = 0
+    numel_energy = 0
     for sample in tqdm(dataset):
-        # true_energy = sample.y.item()
+        true_energy = sample.y.item()
         true_force = sample.force.numpy()
         
         atomic_numbers = sample.atomic_numbers.numpy()
@@ -40,12 +42,15 @@ def get_accuracy(dataset_path, model='large'):
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy())
         atoms.calc = calc
 
-        # predicted_energy = atoms.get_potential_energy()
+        predicted_energy = atoms.get_potential_energy()
         predicted_force = atoms.get_forces()
+        energy_mae_loss += abs(predicted_energy - true_energy)
+        # numel_energy += len(atomic_numbers)
         force_mae_loss += np.abs(predicted_force - true_force).sum()
         numel += len(sample.pos) * 3
     force_mae_loss /= numel
-    print("FORCE MAE LOSS:", force_mae_loss)    
+    print("FORCE MAE LOSS:", force_mae_loss)  
+    print("ENERGY MAE LOSS:", energy_mae_loss / len(dataset) * 1000)  
     
     num_atoms = np.array(num_atoms)
     print("MEAN:", np.mean(num_atoms), "MIN:", min(num_atoms), "MAX:", max(num_atoms))
