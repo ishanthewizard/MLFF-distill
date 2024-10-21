@@ -51,8 +51,8 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-@registry.register_trainer("distill")
-class DistillTrainer(OCPTrainer):
+@registry.register_trainer("labels")
+class LabelsTrainer(OCPTrainer):
     def __init__(
         self,
         task,

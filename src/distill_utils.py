@@ -186,7 +186,6 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
 
 def get_energy_jac_loss(out, batch, energy_std):
     true_jac = -1 * batch['forces']
-    breakpoint()
     energy_jac = torch.autograd.grad(out['energy'].sum(), batch.pos, create_graph=True, retain_graph=True)[0]
     energy_jac *= energy_std
     
