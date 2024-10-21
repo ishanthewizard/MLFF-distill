@@ -181,8 +181,25 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
         # Multiply by world size since gradients are averaged
         # across DDP replicas
     loss  = loss * distutils.get_world_size() / num_samples
-    assert hasattr(loss, "grad_fn")
     return loss 
+
+
+def get_energy_jac_loss(out, batch, energy_std):
+    true_jac = -1 * batch['forces']
+    breakpoint()
+    energy_jac = torch.autograd.grad(out['energy'].sum(), batch.pos, create_graph=True, retain_graph=True)[0]
+    energy_jac *= energy_std
+    
+    custom_loss = lambda jac, true_jac: torch.norm(jac - true_jac, p=2, dim=-1).sum(dim=0)
+    loss = custom_loss(energy_jac, true_jac)
+    
+    num_samples = sum(batch.natoms)
+    num_samples = distutils.all_reduce(num_samples, device=true_jac.device)
+    loss  = loss * distutils.get_world_size() / num_samples
+    
+    return loss
+    
+    
 
 
 def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collater, looped=False, h=0.0001):

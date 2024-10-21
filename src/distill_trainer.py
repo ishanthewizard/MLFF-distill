@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 import time
 import numpy as np
 
+from src.distill_utils import get_energy_jac_loss
 import torch
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
@@ -208,6 +209,19 @@ class DistillTrainer(OCPTrainer):
         
         loss = [super()._compute_loss(out, batch)]
         batch['force_jac_loss'] = torch.tensor(0)
+        
+        
+        # NEW!!! Energy stuff to see if this even works. if it works we'll make it efficient 
+        energy_jac_loss = get_energy_jac_loss(
+            out=out,
+            batch=batch,
+            energy_std = self.normalizers['energy'].std
+        )
+        loss.append(15* energy_jac_loss)
+        
+        
+        
+        
         if self.force_jac_loss_fn[1]['coefficient'] !=0:
             force_jac_loss = get_force_jac_loss(
                 out=out, 
