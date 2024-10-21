@@ -9,7 +9,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: data/SPICE/spice_seperated_w_energies/DES370K_Monomers/train
+    src: data/SPICE/spice_separated/DES370K_Monomers/train
     key_mapping:
       reference_energy: energy
       force: forces
@@ -22,7 +22,7 @@ dataset:
             mean: 0 
             stdev: 1          # true std: .9473
   val:
-    src: data/SPICE/spice_seperated_w_energies/DES370K_Monomers/val
+    src: data/SPICE/spice_separated/DES370K_Monomers/val
 
 
 outputs:

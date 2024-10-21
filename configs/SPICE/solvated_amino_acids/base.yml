@@ -10,7 +10,7 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: data/SPICE/spice_seperated_w_energies/Solvated_Amino_Acids/train
+    src: data/SPICE/spice_separated/Solvated_Amino_Acids/train
     key_mapping:
       reference_energy: energy
       force: forces
@@ -23,7 +23,7 @@ dataset:
             mean: 0   # actual for forces: 0
             stdev: 1  # actual for std: 1.549
   val:
-    src: data/SPICE/spice_seperated_w_energies/Solvated_Amino_Acids/val
+    src: data/SPICE/spice_separated/Solvated_Amino_Acids/val
 
 
 outputs:
