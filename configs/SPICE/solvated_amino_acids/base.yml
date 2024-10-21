@@ -3,7 +3,7 @@ includes:
   # - configs/slurm/debug.yml
 logger: 
   name: wandb
-  project: spice-Energy
+  project: spice
 
 trainer: ocp
 

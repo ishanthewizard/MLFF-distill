@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/mace_off_large_SpiceIodine
+    teacher_labels_folder: labels/SPICE_labels/mace_off_large_SpiceIodine
 
 loss_functions:
   - energy:
