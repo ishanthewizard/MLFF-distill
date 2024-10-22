@@ -2,6 +2,7 @@ includes:
   - configs/slurm/regular.yml
 logger: 
   name: wandb
+  entity: ishan-amin
   project: trans1x
 
 trainer: ocp

@@ -20,7 +20,7 @@ def print_cuda_memory_usage():
     print((f"CUDA memory reserved: {reserved:.2f} GB"))
 
 
-def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True):
+def get_teacher_jacobian(forces, batch, model = None, vectorize=True, should_mask=True, finite_differences=False):
     natoms = batch.natoms
     total_num_atoms = sum(batch.natoms)
     cumulative_sums = [0] + torch.cumsum(natoms, 0).tolist()
@@ -31,13 +31,24 @@ def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True):
     mask_per_mol = [mask[cum_sum:cum_sum + nat] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
     num_free_atoms_per_mol = [sum(sub_mask) for sub_mask in mask_per_mol]
     max_free_atom_per_mol = max(num_free_atoms_per_mol)
-    grad_outputs = torch.zeros((max_free_atom_per_mol, 3, total_num_atoms, 3)).to(forces.device)
+    grad_outputs = torch.zeros((max_free_atom_per_mol, 3, total_num_atoms, 3)).to(batch.pos.device)
     for i, free_atoms_in_mol in enumerate(num_free_atoms_per_mol):
         indices = torch.arange(free_atoms_in_mol)
         offset_indices = torch.nonzero(mask_per_mol[i]).flatten() + cumulative_sums[i]
         assert len(offset_indices) == free_atoms_in_mol
-        grad_outputs[indices, :, offset_indices, :] = torch.eye(3)[None, :, :].to(forces.device)
-    jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
+        grad_outputs[indices, :, offset_indices, :] = torch.eye(3)[None, :, :].to(batch.pos.device)
+    
+    if not finite_differences:
+        jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
+
+    else:
+        jac = get_jacobian_finite_difference(
+            batch= batch, 
+            grad_outputs=grad_outputs, 
+            collater=OCPCollater(), 
+            forward= model, 
+            looped=(not vectorize))
+
 
     jacs_per_mol = [jac[:n_fr_at, :,  cum_sum:cum_sum + nat, :] for cum_sum, n_fr_at, nat in zip(cumulative_sums[:-1], num_free_atoms_per_mol, natoms)]
 
@@ -87,7 +98,7 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
                 inputs=pos,
                 grad_outputs=grad_output,
                 create_graph=create_graph,
-                retain_graph=True
+                retain_graph=True,
             )[0]
     if not looped:
         if len(grad_outputs.shape) == 4:
@@ -220,9 +231,10 @@ def get_energy_jac_loss(out, batch, energy_std):
     
 
 
-def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collater, looped=False, h=0.0001):
+def get_jacobian_finite_difference(batch, grad_outputs, forward, collater = OCPCollater(), looped=False, h=0.0001):
     # Store original positions
     original_pos = batch.pos.clone()
+    # TODO: does this work with a batch size > 1?
 
     # Create a list to store all perturbed batches
     perturbed_batches = []
@@ -230,9 +242,11 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
     # Total number of atoms
     total_num_atoms = batch.pos.shape[0]
 
-    for output in grad_outputs:
+    for output in grad_outputs.reshape(-1, total_num_atoms, 3):
+        
         # Create forward perturbation
         perturbed_batch_forward = batch.clone()
+        
         perturbed_batch_forward.pos = original_pos + h * output
 
         # Create backward perturbation
@@ -247,7 +261,11 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
     if not looped:
         large_batch = collater(perturbed_batches)
         # Perform forward pass for all perturbed batches at once
-        perturbed_forces = forward(large_batch)['forces']
+        out = forward(large_batch)
+        if isinstance(out, dict):
+            perturbed_forces = out['forces']
+        elif isinstance(out, tuple):
+            perturbed_forces = out[1]
     else:
         perturbed_forces = []
         for batch in perturbed_batches:
@@ -256,14 +274,16 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
     # Split the large batch's forces into individual forward and backward forces
     hessian_columns = []
     for i in range(0, len(perturbed_batches), 2):
+        
         forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
         backward_force = perturbed_forces[(i + 1) * total_num_atoms:(i + 2) * total_num_atoms]
         hessian_col = (forward_force - backward_force) / (2 * h)
         hessian_columns.append(hessian_col)
 
+    
     # Stack columns to form the Jacobian matrix
     #technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
-    return torch.stack(hessian_columns, dim=0) 
+    return torch.stack(hessian_columns, dim=0).reshape(total_num_atoms, 3, total_num_atoms, 3)
 
 
     
