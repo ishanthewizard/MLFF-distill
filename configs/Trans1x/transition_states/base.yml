@@ -1,30 +1,28 @@
 includes:
-  - configs/slurm/premium.yml
-  # - configs/slurm/debug.yml
+  - configs/slurm/regular.yml
 logger: 
   name: wandb
-  entity: ishan-amin
-  project: spice
+  project: trans1x
 
 trainer: ocp
 
 dataset:
   train:
     format: lmdb
-    src: data/SPICE/spice_separated/Solvated_Amino_Acids/train
+    src: data/transition1x/lmdb_transitiononly/train
     key_mapping:
-      reference_energy: energy
+      y: energy
       force: forces
     transforms:
       normalizer:
         energy: 
-            mean: -322.07 #  actual formation energy value for solvated
-            stdev: 20.60  # actual formation energy value for solvated
+            mean: 0.0
+            stdev: 1.787466168382901
         forces: 
-            mean: 0   # actual for forces: 0
-            stdev: 1  # actual for std: 1.549
+            mean: 0.0
+            stdev: 0.3591422140598297
   val:
-    src: data/SPICE/spice_separated/Solvated_Amino_Acids/val
+    src: data/transition1x/lmdb_transitiononly/val
 
 
 outputs:
@@ -40,7 +38,7 @@ outputs:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 5
+      coefficient: 0
   - forces:
       fn: l2mae
       coefficient: 100
