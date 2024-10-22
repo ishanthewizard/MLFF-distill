@@ -1,11 +1,15 @@
 includes:
-- configs/Trans1x/transition_states/painn/painn-small.yml
+- configs/Trans1x/transition_states_0.4_0.6/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/jmp-small_transitionstates
+    teacher_labels_folder: labels/jmp-small_transitionstates_0.4_0.6
+    label_force_batch_size: 32
+    label_jac_batch_size: 4
+    vectorize_teach_jacs: True
+
 loss_functions:
   - energy:
       fn: mae
@@ -22,8 +26,8 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 16
+  batch_size: 4
   eval_batch_size: 32
-  force_jac_sample_size: 4
+  force_jac_sample_size: 10
   print_memory_usage: False
   vectorize_jacs: True

@@ -1,5 +1,5 @@
 includes:
-- configs/Trans1x/transition_states/base.yml
+- configs/Trans1x/transition_states_0.4_0.6/base.yml
 
 model:
   name: gemnet_t

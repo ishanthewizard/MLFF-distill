@@ -1,6 +1,6 @@
 # Make sure to run without AMP.
 includes:
-- configs/Trans1x/transition_states/base.yml
+- configs/Trans1x/all/base.yml
 
 model:
   name: painn
@@ -9,7 +9,7 @@ model:
   num_rbf: 128
   cutoff: 12.0
   max_neighbors: 50
-  scale_file: configs/Trans1x/transition_states/painn/painn-small-scale.pt
+  scale_file: configs/Trans1x/all/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
   use_pbc: True

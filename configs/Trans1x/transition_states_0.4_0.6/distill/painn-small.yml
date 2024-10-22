@@ -1,11 +1,11 @@
 includes:
-- configs/Trans1x/transition_states/painn/painn-small.yml
+- configs/Trans1x/transition_states_0.4_0.6/painn/painn-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/jmp-small_transitionstates
+    teacher_labels_folder: labels/jmp-small_transitionstates_0.4_0.6
 loss_functions:
   - energy:
       fn: mae
