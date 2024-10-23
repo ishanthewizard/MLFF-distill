@@ -241,6 +241,8 @@ def get_jacobian_finite_difference(batch, grad_outputs, forward, collater = OCPC
 
     # Total number of atoms
     total_num_atoms = batch.pos.shape[0]
+    num_free_atoms = grad_outputs.shape[0]
+    
 
     for output in grad_outputs.reshape(-1, total_num_atoms, 3):
         
@@ -261,7 +263,8 @@ def get_jacobian_finite_difference(batch, grad_outputs, forward, collater = OCPC
     if not looped:
         large_batch = collater(perturbed_batches)
         # Perform forward pass for all perturbed batches at once
-        out = forward(large_batch)
+        with torch.no_grad():
+            out = forward(large_batch)
         if isinstance(out, dict):
             perturbed_forces = out['forces']
         elif isinstance(out, tuple):
@@ -279,11 +282,10 @@ def get_jacobian_finite_difference(batch, grad_outputs, forward, collater = OCPC
         backward_force = perturbed_forces[(i + 1) * total_num_atoms:(i + 2) * total_num_atoms]
         hessian_col = (forward_force - backward_force) / (2 * h)
         hessian_columns.append(hessian_col)
-
     
     # Stack columns to form the Jacobian matrix
     #technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
-    return torch.stack(hessian_columns, dim=0).reshape(total_num_atoms, 3, total_num_atoms, 3)
+    return torch.stack(hessian_columns, dim=0).reshape(num_free_atoms, 3, total_num_atoms, 3)
 
 
     
