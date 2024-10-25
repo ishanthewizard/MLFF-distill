@@ -1,11 +1,11 @@
 includes:
-- configs/Trans1x/transition_states/gemnet-dT-small.yml
+- configs/Trans1x/transition_states_0.45_0.55/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/jmp-large_transitiononly
+    teacher_labels_folder: labels/jmp-large_0.49_0.51
     label_force_batch_size: 32
     label_jac_batch_size: 4
     vectorize_teach_jacs: True

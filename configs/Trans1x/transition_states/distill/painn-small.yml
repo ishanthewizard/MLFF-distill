@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/jmp-small_transitionstates
+    teacher_labels_folder: labels/jmp-large_transitiononly
 loss_functions:
   - energy:
       fn: mae

@@ -143,7 +143,7 @@ def get_samples_biased(true_jac, num_samples):
     return samples
 
 
-def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should_mask, looped=False, finite_differences=False, hard_mining=False, hard_mining_visited_threshold=0.1, hard_mining_temperature=0.1, forward=None, collater=None):
+def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should_mask, force_normalizer, looped=False, finite_differences=False, hard_mining=False, hard_mining_visited_threshold=0.1, hard_mining_temperature=0.1, forward=None, collater=None):
     forces = out['forces']
     natoms = batch.natoms
     total_num_atoms = forces.shape[0]
@@ -177,6 +177,7 @@ def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should
             collater=collater, 
             forward= forward, 
             looped=looped)
+    
     # Decomposing the Jacobian tensor by molecule in a batch
     mask_per_mol = [mask[cum_sum:cum_sum + nat] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)]
     num_free_atoms_per_mol = torch.tensor([sum(sub_mask) for sub_mask in mask_per_mol], device=natoms.device)
@@ -200,7 +201,8 @@ def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should
         true_jacs_per_mol.append(subsampled_curr)
     
     # just copying what DDPLoss does for our special case
-    custom_loss = lambda jac, true_jac: torch.norm(jac - true_jac, p=2, dim=-1).sum(dim=1).mean(dim=0)
+    # normalize the true force jacobian
+    custom_loss = lambda jac, true_jac: torch.norm(jac - force_normalizer.norm(true_jac), p=2, dim=-1).sum(dim=1).mean(dim=0)
     losses = [custom_loss(jac, true_jac) for jac, true_jac in zip(jacs_per_mol, true_jacs_per_mol)]
     valid_losses = [loss * 1e-8 if true_jac.abs().max().item() > 10000 else loss for loss, true_jac in zip(losses, true_jacs_per_mol)]  # filter weird hessians
     loss = sum(valid_losses)

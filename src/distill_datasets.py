@@ -28,6 +28,9 @@ class CombinedDataset(Dataset):
     def __getitem__(self, idx):
         main_batch = self.main_dataset[idx]
         num_atoms = main_batch.natoms
+
+        if "fixed" not in main_batch.keys():
+            main_batch.fixed = torch.zeros_like(main_batch.atomic_numbers, dtype=torch.bool)
         
         teacher_forces = self.teach_force_dataset[idx].reshape(num_atoms, 3)
         if self.force_jac_dataset:

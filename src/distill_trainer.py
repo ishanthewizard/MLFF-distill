@@ -221,7 +221,6 @@ class DistillTrainer(OCPTrainer):
         # )
         # loss.append(15* energy_jac_loss)
         
-        
         if self.force_jac_loss_fn[1]['coefficient'] !=0:
             force_jac_loss, per_sample_loss, sampled_hessian_idxs = get_force_jac_loss(
                 out=out, 
@@ -229,6 +228,7 @@ class DistillTrainer(OCPTrainer):
                 num_samples=self.config['optim']['force_jac_sample_size'], 
                 mask= mask, 
                 should_mask=should_mask, 
+                force_normalizer=self.normalizers['forces'],
                 finite_differences= self.config['optim'].get('finite_differences', False),
                 looped=(not self.config['optim']["vectorize_jacs"]),
                 force_jac_hash_map=self.force_jac_loss_dict,
