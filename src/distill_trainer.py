@@ -101,8 +101,8 @@ class DistillTrainer(OCPTrainer):
         self.teacher_force_mae = 0
         for datapoint in tqdm(self.val_dataset):
             true_label = datapoint['forces']
-            if 'forces' in self.normalizers:
-                true_label = self.normalizers['forces'].norm(true_label)
+            # if 'forces' in self.normalizers:
+            #     true_label = self.normalizers['forces'].norm(true_label)
             self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - true_label).mean().item()
         self.teacher_force_mae /= len(self.val_dataset)
         print("TEACHER FORCE MAE:", self.teacher_force_mae)

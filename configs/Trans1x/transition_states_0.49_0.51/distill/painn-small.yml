@@ -10,13 +10,6 @@ dataset:
 model:
   use_teacher_atom_embeddings: False
 
-outputs:
-  final_node_features:
-    irrep_dim: 1
-    level: atom
-    train_on_free_atoms: True
-    eval_on_free_atoms: True
-
 loss_functions:
   - energy:
       fn: mae
@@ -24,15 +17,12 @@ loss_functions:
   - forces:
       fn: l2mae
       coefficient: 100
-
   - final_node_features:
       fn: mse
       coefficient: 0
-    
   - teacher_forces:
       fn: l2mae
       coefficient: 0
-
   - force_jacs:
       fn: l2mae
       coefficient: 400
