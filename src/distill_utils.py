@@ -170,6 +170,7 @@ def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should
     if not finite_differences:
         jac = get_jacobian(forces, batch.pos, grad_outputs, create_graph=True, looped=looped)
     else:
+        import pdb; pdb.set_trace()
         jac = get_jacobian_finite_difference(
             forces=forces, 
             batch= batch, 

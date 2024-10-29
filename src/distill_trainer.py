@@ -280,7 +280,7 @@ class DistillTrainer(OCPTrainer):
             mult = self.teacher_force_loss_fn[1]["coefficient"]
             curr_loss = self.teacher_force_loss_fn[1]["fn"](
                         out['forces'],
-                        batch['teacher_forces'],
+                        self.normalizers['forces'].norm(batch['teacher_forces']),
                         natoms=natoms,
                         batch_size=batch_size,
             )
