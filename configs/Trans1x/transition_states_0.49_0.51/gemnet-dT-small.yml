@@ -32,6 +32,9 @@ model:
   otf_graph: True
   regress_forces: True
   direct_forces: True
+  emb_size_teacher: 256
+  teacher_atom_embedding_path: labels/jmp-large_atom_embeddings.npy
+
 
 optim:
   batch_size: 128

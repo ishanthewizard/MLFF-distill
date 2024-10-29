@@ -9,16 +9,20 @@ import logging
 from torch.utils.data import Sampler
 from tqdm import tqdm
 class CombinedDataset(Dataset):
-    def __init__(self, main_dataset, teach_force_dataset, force_jac_dataset=None):
+    def __init__(self, main_dataset, teach_force_dataset, force_jac_dataset=None, final_node_feature_dataset=None):
         if  len(main_dataset) != len(teach_force_dataset):
             logging.info("WARNING: TEACH FORCE DATASET DIFFERENT SIZE")
             raise Exception("DIFF SIZE!!")
         if force_jac_dataset and len(main_dataset) != len(force_jac_dataset):
             logging.info("WARNING: FORCE JACOBIAN DIFFERENT SIZE")
             raise Exception("DIFF SIZE!!")
+        if final_node_feature_dataset and len(main_dataset) != len(final_node_feature_dataset):
+            logging.info("WARNING: FINAL NODE FEATURE DATASET DIFFERENT SIZE")
+            raise Exception("DIFF SIZE!!")
         self.main_dataset = main_dataset
         self.teach_force_dataset = teach_force_dataset
         self.force_jac_dataset = force_jac_dataset 
+        self.final_node_feature_dataset = final_node_feature_dataset
         if  isinstance(self.main_dataset, _HasMetadata):
             self.metadata_path = self.main_dataset.metadata_path 
 
@@ -39,8 +43,16 @@ class CombinedDataset(Dataset):
             force_jacs = self.force_jac_dataset[idx] # DON'T RESHAPE! We'll do it later, easier for atoms of different lengths
         else: 
             force_jacs = None
+        
+        if self.final_node_feature_dataset:
+            final_node_features = self.final_node_feature_dataset[idx]
+        else:
+            final_node_features = None
+
         main_batch.teacher_forces = teacher_forces
         main_batch.force_jacs = force_jacs
+        if final_node_features is not None:
+            main_batch.final_node_features = final_node_features.reshape(teacher_forces.shape[0], -1)
         return main_batch
 
     def close_db(self):
