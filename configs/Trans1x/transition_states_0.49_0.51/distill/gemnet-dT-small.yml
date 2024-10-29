@@ -26,8 +26,8 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 4
+  batch_size: 128
   eval_batch_size: 32
-  force_jac_sample_size: 10
+  force_jac_sample_size: 4
   print_memory_usage: False
   vectorize_jacs: True
