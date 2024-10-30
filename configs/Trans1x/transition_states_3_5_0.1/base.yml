@@ -1,0 +1,56 @@
+includes:
+  - configs/slurm/regular.yml
+logger: 
+  name: wandb
+  entity: ishan-amin
+  project: trans1x
+
+trainer: ocp
+
+dataset:
+  train:
+    format: lmdb
+    src: data/transition1x/lmdb_3_5_0.1/train
+    key_mapping:
+      y: energy
+      force: forces
+    transforms:
+      normalizer:
+        energy: 
+            mean: 0.0
+            stdev: 1.787466168382901
+        forces: 
+            mean: 0.0
+            stdev: 0.3591422140598297
+  val:
+    src: data/transition1x/lmdb_3_5_0.1/val
+
+
+outputs:
+  energy:
+    shape: 1
+    level: system
+  forces:
+    irrep_dim: 1
+    level: atom
+    train_on_free_atoms: True
+    eval_on_free_atoms: True
+
+loss_functions:
+  - energy:
+      fn: mae
+      coefficient: 0
+  - forces:
+      fn: l2mae
+      coefficient: 100
+evaluation_metrics:
+  metrics:
+    energy:
+      - mae
+    forces:
+      - mae
+      - cosine_similarity
+      - magnitude_error
+    misc:
+      - energy_forces_within_threshold
+  primary_metric: forces_mae

@@ -1,0 +1,50 @@
+includes:
+- configs/Trans1x/transition_states_0.49_0.51/painn/painn-small.yml
+
+trainer: src.distill_trainer.DistillTrainer
+
+dataset:
+  train:
+    teacher_labels_folder: labels/jmp-large_0.49_0.51
+
+model:
+  use_teacher_atom_embeddings: False
+
+loss_functions:
+  - energy:
+      fn: mae
+      coefficient: 0
+  - forces:
+      fn: l2mae
+      coefficient: 100
+  - final_node_features:
+      fn: mse
+      coefficient: 0
+  - teacher_forces:
+      fn: l2mae
+      coefficient: 0
+  - force_jacs:
+      fn: l2mae
+      coefficient: 400
+      reduction: mean_all
+
+evaluation_metrics:
+  metrics:
+    energy:
+      - mae
+    forces:
+      - mae
+      - cosine_similarity
+      - magnitude_error
+    final_node_features:
+      - mse
+    misc:
+      - energy_forces_within_threshold
+  primary_metric: forces_mae
+
+optim:
+  batch_size: 128
+  eval_batch_size: 32
+  force_jac_sample_size: 4
+  print_memory_usage: False
+  vectorize_jacs: True
