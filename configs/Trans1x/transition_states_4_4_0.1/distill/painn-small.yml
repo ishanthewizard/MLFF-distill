@@ -1,14 +1,21 @@
 includes:
-- configs/Trans1x/transition_states_0.49_0.51/painn/painn-small.yml
+- configs/Trans1x/transition_states_4_4_0.1/painn/painn-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/jmp-large_0.49_0.51
+    teacher_labels_folder: labels/jmp-small_4_4_0.1
 
 model:
   use_teacher_atom_embeddings: False
+
+outputs:
+  final_node_features:
+    irrep_dim: 1
+    level: atom
+    train_on_free_atoms: True
+    eval_on_free_atoms: True
 
 loss_functions:
   - energy:

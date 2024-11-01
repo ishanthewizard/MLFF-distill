@@ -436,6 +436,8 @@ class PaiNN(BaseModel):
         outputs = {"energy": torch.zeros(len(data.natoms), device=x.device)}
         if self.baseline:
             outputs['final_node_features'] = self.final_node_feature_projection(x)
+        else:
+            outputs['final_node_features'] = torch.zeros((x.shape[0], self.emb_size_teacher), device=x.device)
 
         if self.regress_forces:
             if self.direct_forces:
