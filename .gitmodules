@@ -1,8 +1,4 @@
 [submodule "fairchem"]
 	path = fairchem
 	url = https://github.com/FAIR-Chem/fairchem.git
-[submodule "JMP"]
-	path = JMP
-	url = https://github.com/facebookresearch/JMP.git
-	ignore = dirty
 
