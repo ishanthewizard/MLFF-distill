@@ -42,7 +42,7 @@ class CombinedDataset(Dataset):
             # force_jacs  = self.force_jac_dataset[idx].reshape(num_free_atoms, 3, num_atoms, 3) 
             force_jacs = self.force_jac_dataset[idx] # DON'T RESHAPE! We'll do it later, easier for atoms of different lengths
             # TODO: this is a temp fix for not transposing the force jacs in the dataset
-            force_jacs = force_jacs.reshape(num_free_atoms, 3, num_free_atoms, 3).permute(2, 3, 0, 1).reshape(-1)
+            # force_jacs_new = force_jacs.reshape(num_free_atoms, 3, num_free_atoms, 3).permute(2, 3, 0, 1).reshape(-1)
         else: 
             force_jacs = None
         

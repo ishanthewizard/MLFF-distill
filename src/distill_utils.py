@@ -93,7 +93,6 @@ def sample_with_mask(n, num_samples, mask, running_force_jac_loss, hard_mining, 
 def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
     # This function should: take the derivatives of forces with respect to positions. 
     # Grad_outputs should be supplied. if it's none, then
-    import pdb; pdb.set_trace()
     def compute_grad(grad_output):
         return torch.autograd.grad(
                 outputs=forces.squeeze(),
@@ -108,7 +107,6 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
             compute_jacobian = torch.vmap(torch.vmap(compute_grad))
         else: # training
             compute_jacobian = torch.vmap(compute_grad)
-        import pdb; pdb.set_trace()
         return compute_jacobian(grad_outputs)
     else:
         num_atoms = forces.shape[0]
@@ -233,8 +231,6 @@ def get_energy_jac_loss(out, batch, energy_std):
     
     return loss
     
-    
-
 
 def get_jacobian_finite_difference(batch, grad_outputs, forward, collater = OCPCollater(), looped=False, h=0.0001):
     # Store original positions
