@@ -212,12 +212,13 @@ class DistillTrainer(OCPTrainer):
         
         
         # NEW!!! Energy stuff to see if this even works. if it works we'll make it efficient 
-        # energy_jac_loss = get_energy_jac_loss(
-        #     out=out,
-        #     batch=batch,
-        #     energy_std = self.normalizers['energy'].std
-        # )
-        # loss.append(40* energy_jac_loss)
+        if self.config['optim'].get('distill_energy', True):
+            energy_jac_loss = get_energy_jac_loss(
+                out=out,
+                batch=batch,
+                energy_std = self.normalizers['energy'].std
+            )
+            loss.append(15* energy_jac_loss)
         
         
         
