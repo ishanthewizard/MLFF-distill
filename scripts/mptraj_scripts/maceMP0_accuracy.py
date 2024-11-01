@@ -29,9 +29,10 @@ def get_accuracy(dataset_path, model='large'):
     print(len(dataset))
     num_atoms = []
     force_mae_loss = 0
+    energy_mae_loss = 0
     numel = 0
     for sample in tqdm(dataset):
-        # true_energy = sample.y.item()
+        true_energy = sample.corrected_total_energy.item()
         true_force = sample.force.numpy()
         
         atomic_numbers = sample.atomic_numbers.numpy()
@@ -39,12 +40,14 @@ def get_accuracy(dataset_path, model='large'):
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy(), cell=sample.cell.numpy()[0], pbc=True)
         atoms.calc = calc
 
-        # predicted_energy = atoms.get_potential_energy()
+        predicted_energy = atoms.get_potential_energy()
         predicted_force = atoms.get_forces()
         force_mae_loss += np.abs(predicted_force - true_force).sum()
+        energy_mae_loss += np.abs(predicted_energy - true_energy)  / len(atomic_numbers)
         numel += len(sample.pos) * 3
     force_mae_loss /= numel
-    print("FORCE MAE LOSS:", force_mae_loss)    
+    print("FORCE MAE LOSS:", force_mae_loss) 
+    print("ENERGY MAE:", energy_mae_loss / len(dataset))   
     
     num_atoms = np.array(num_atoms)
     print("MEAN:", np.mean(num_atoms), "MIN:", min(num_atoms), "MAX:", max(num_atoms))
