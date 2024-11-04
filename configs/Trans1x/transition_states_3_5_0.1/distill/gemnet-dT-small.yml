@@ -8,7 +8,7 @@ model:
 
 dataset:
   train:
-    teacher_labels_folder: labels/jmp-large_3_5_0.1
+    teacher_labels_folder: labels/jmp-small_3_5_0.1
     label_force_batch_size: 32
     label_jac_batch_size: 4
     vectorize_teach_jacs: True

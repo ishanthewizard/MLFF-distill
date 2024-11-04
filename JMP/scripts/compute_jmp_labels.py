@@ -213,14 +213,22 @@ def compute_jmp_labels(config, data_path, ckpt_path, split="train"):
 
         with torch.enable_grad():
             batch.pos.requires_grad = True
-            forces = model(batch)[1]
-        
-            output = [
-                0.3591422140598297 * jac
-                for jac in get_teacher_jacobian(
-                    forces, batch, model, finite_differences=False
-                )
-            ]        
+            try:
+                forces = model(batch)[1]
+            
+                output = [
+                    0.3591422140598297 * jac
+                    for jac in get_teacher_jacobian(
+                        forces, batch, model, finite_differences=False
+                    )
+                ]
+
+            except Exception as e:
+                # If the Jacobian computation fails, return a dummy Hessian tensor
+                # Only works for batch size 1
+                print(f"Error: {e}, returning dummy Hessian")
+                dummy_hessian = torch.zeros(batch.pos.shape[0], batch.pos.shape[1], batch.pos.shape[0], batch.pos.shape[1])
+                output = [dummy_hessian]        
         return output
 
     dataloader = DataLoader(
@@ -259,12 +267,14 @@ def compute_jmp_labels(config, data_path, ckpt_path, split="train"):
     subgrp_name = args.data_path.split("lmdb_")[-1]
     # Save teacher jacobians, forces, and node embeddings
 
-    # if split == "train":
-    #     print("Computing teacher jacobians")
-    #     lmdb_path = f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/force_jacobians/data.lmdb"
-    #     record_labels_parallel(
-    #         dataset, 1, model.collate_fn, lmdb_path, teacher_jacobian_fn
-    #     )
+    if split == "train":
+        print("Computing teacher jacobians")
+        lmdb_path = f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/force_jacobians/data.lmdb"
+        # ensure that lmdb path does not exist
+        assert not os.path.exists(lmdb_path), f"{lmdb_path} already exists"
+        record_labels_parallel(
+            dataset, 1, model.collate_fn, lmdb_path, teacher_jacobian_fn
+        )
 
     print("Computing teacher forces and node embeddings")
     lmdb_paths = [
@@ -287,7 +297,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint_path",
         type=str,
-        default="/data/shared/ishan_stuff/jmp-s.pt",
+        default="/data/shared/ishan_stuff/jmp-l.pt",
         help="Path to the checkpoint.",
     )
     parser.add_argument(

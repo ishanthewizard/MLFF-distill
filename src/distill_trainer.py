@@ -96,6 +96,8 @@ class DistillTrainer(OCPTrainer):
         assert self.force_jac_loss_fn[0] == 'force_jacs'
         assert self.teacher_force_loss_fn[0] == 'teacher_forces' 
         self.original_fjac_coeff = self.force_jac_loss_fn[1]['coefficient']
+
+        self.force_jac_epoch_start = self.config['optim'].get('force_jac_epoch_start', 0)
     
     def calculate_teacher_loss(self):
         self.teacher_force_mae = 0
@@ -221,7 +223,7 @@ class DistillTrainer(OCPTrainer):
         # )
         # loss.append(15* energy_jac_loss)
         
-        if self.force_jac_loss_fn[1]['coefficient'] !=0:
+        if self.force_jac_loss_fn[1]['coefficient'] !=0 and self.epoch >= self.force_jac_epoch_start:
             force_jac_loss, per_sample_loss, sampled_hessian_idxs = get_force_jac_loss(
                 out=out, 
                 batch=batch, 

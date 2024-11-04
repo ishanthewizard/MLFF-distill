@@ -136,11 +136,11 @@ class PretrainConfig(BaseConfig):
     """The percentage of edges to drop. If None, no edges are dropped."""
 
     embedding: EmbeddingConfig = EmbeddingConfig(
-        num_elements=BackboneConfig.base().num_elements,
-        embedding_size=BackboneConfig.base().emb_size_atom,
+        num_elements=BackboneConfig.large().num_elements,
+        embedding_size=BackboneConfig.large().emb_size_atom,
     )
     """Configuration for the embedding layer."""
-    backbone: BackboneConfig = BackboneConfig.base()
+    backbone: BackboneConfig = BackboneConfig.large()
     """Configuration for the backbone."""
     output: OutputConfig = OutputConfig(num_mlps=5)
     """Configuration for the output head."""

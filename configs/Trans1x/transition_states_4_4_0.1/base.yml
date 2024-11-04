@@ -5,7 +5,7 @@ logger:
   entity: ishan-amin
   project: trans1x
 
-trainer: ocp
+trainer: ocp #src.jmp_labels_trainer.JMPLabelsTrainer
 
 dataset:
   train:
