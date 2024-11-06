@@ -14,7 +14,8 @@ from collections.abc import Iterable, Mapping
 from functools import partial
 from logging import getLogger
 from pathlib import Path
-from typing import Annotated, Any, Generic, Literal, TypeAlias, assert_never, cast
+from typing import Annotated, Any, Generic, Literal, TypeAlias,  cast
+from typing_extensions import assert_never
 
 import torch
 import torch.nn as nn

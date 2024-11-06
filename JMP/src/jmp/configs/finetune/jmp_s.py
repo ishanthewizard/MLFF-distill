@@ -21,8 +21,7 @@ from ...tasks.finetune.base import (
 )
 from ...utils.param_specific_util import make_parameter_specific_optimizer_config
 
-
-def jmp_l_ft_config_(
+def jmp_s_ft_config_(
     config: FinetuneConfigBase,
     ckpt_path: Path,
     ema_backbone: bool = True,
@@ -36,7 +35,7 @@ def jmp_l_ft_config_(
     config.trainer.default_root_dir = "/home/sanjeevr/MLFF-distill"
 
     # Set backbone config
-    config.backbone = BackboneConfig.large()
+    config.backbone = BackboneConfig.base()
     config.embedding.embedding_size = config.backbone.emb_size_atom
     config.backbone.scale_basis = False
 
@@ -62,6 +61,7 @@ def jmp_l_ft_config_(
         rlp=RLPConfig(patience=3, factor=0.8),
     )
     # LLRD Settings
+    
     config.parameter_specific_optimizers = make_parameter_specific_optimizer_config(
         config,
         config.backbone.num_blocks,
@@ -71,8 +71,6 @@ def jmp_l_ft_config_(
             "blocks_1": 0.40,
             "blocks_2": 0.30,
             "blocks_3": 0.40,
-            "blocks_4": 0.55,
-            "blocks_5": 0.625,
         },
     )
 
@@ -102,3 +100,4 @@ def jmp_l_ft_config_(
     else:
         config.backbone.regress_forces = True
         config.backbone.direct_forces = True
+

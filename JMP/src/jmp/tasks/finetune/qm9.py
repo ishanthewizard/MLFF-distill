@@ -7,7 +7,8 @@ LICENSE file in the root directory of this source tree.
 """
 
 from collections.abc import Callable
-from typing import Annotated, Literal, TypeAlias, assert_never, final
+from typing import Annotated, Literal, TypeAlias, final
+from typing_extensions import assert_never
 
 import torch
 import torch.nn as nn

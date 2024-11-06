@@ -32,6 +32,11 @@ from jmp.tasks.pretrain.module import (
     PretrainDatasetConfig,
     TaskConfig,
 )
+from jmp.configs.finetune.jmp_l import jmp_l_ft_config_
+from jmp.configs.finetune.jmp_s import jmp_s_ft_config_
+from jmp.configs.finetune.md22 import jmp_l_md22_config_
+from jmp.tasks.finetune.base import FinetuneConfigBase, FinetuneModelBase
+from jmp.tasks.finetune.md22 import MD22Config, MD22Model
 from src.distill_utils import get_teacher_jacobian
 
 
@@ -43,7 +48,7 @@ def record_labels_parallel(dataset, batch_size, collate_fn, file_paths, fn):
     rank = distutils.get_rank()
     world_size = distutils.get_world_size()
 
-    dataset_size = len(dataset)
+    dataset_size = 10 #len(dataset)
     indices_per_worker = dataset_size // world_size
     start_idx = rank * indices_per_worker
     end_idx = start_idx + indices_per_worker if rank < world_size - 1 else dataset_size
@@ -146,13 +151,16 @@ def jmp_l_config(data_path):
     return config.finalize()
 
 
-def compute_jmp_labels(config, data_path, ckpt_path, split="train"):
-    if "jmp-s" in ckpt_path:
-        model_name = "jmp-small"
-    elif "jmp-l" in ckpt_path:
+def compute_jmp_labels(config, data_path, ckpt_path, mode, molecule, split="train"):
+    
+    if "jmp-l" in ckpt_path:
         model_name = "jmp-large"
+    else:
+        model_name = "jmp-small"
     ckpt_path = Path(ckpt_path)
-    model = PretrainModel(config)
+    
+    config, model_cls = config[0]
+    model = model_cls(config)
     # Load the checkpoint
     state_dict = torch.load(ckpt_path)
     sd = state_dict["state_dict"].copy()
@@ -166,13 +174,14 @@ def compute_jmp_labels(config, data_path, ckpt_path, split="train"):
         elif "output.out_forces.3" in k:
             new_k = k.replace("output.out_forces.3", "output.out_forces.0")
             new_sd[new_k] = sd[k]
-        elif "output.out_forces" in k or "output.out_energy" in k:
+        elif "output.out_forces" in k or "output.out_energy" in k or "task_steps" in k:
             pass
         else:
             new_sd[k] = sd[k]
-
-    model.load_state_dict(new_sd, strict=False)
+    
+    model.load_state_dict(new_sd, strict=True)
     model.to("cuda")
+
 
     if split == "train":
         dataset = model.train_dataset()
@@ -188,7 +197,10 @@ def compute_jmp_labels(config, data_path, ckpt_path, split="train"):
     force_maes = []
 
     # Save the atom embeddings
-    atom_embeddings = model.embedding.atom_embedding(torch.arange(120).cuda().long())
+    if hasattr(model.embedding, "atom_embedding"):
+        atom_embeddings = model.embedding.atom_embedding(torch.arange(120).cuda().long())
+    else:
+        atom_embeddings = model.embedding(torch.arange(120).cuda().long())
     np.save(
         f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_atom_embeddings.npy",
         atom_embeddings.cpu().detach().numpy(),
@@ -196,7 +208,8 @@ def compute_jmp_labels(config, data_path, ckpt_path, split="train"):
 
     # Define the functions to record
     def get_separated_forces_and_node_embeddings(batch):
-        _, all_forces, all_node_embeddings = model(batch)
+        with torch.no_grad():
+            _, all_forces, all_node_embeddings = model(batch)
         natoms = batch.natoms
         separated_forces = [
             0.3591422140598297 * all_forces[sum(natoms[:i]) : sum(natoms[: i + 1])]
@@ -214,12 +227,16 @@ def compute_jmp_labels(config, data_path, ckpt_path, split="train"):
         with torch.enable_grad():
             batch.pos.requires_grad = True
             try:
-                forces = model(batch)[1]
-            
+                out = model(batch)
+                if isinstance(out, tuple):
+                    forces = out[1]
+                elif isinstance(out, dict):
+                    forces = out['force']
+
                 output = [
-                    0.3591422140598297 * jac
+                    0.3591422140598297 * jac.detach()
                     for jac in get_teacher_jacobian(
-                        forces, batch, model, finite_differences=False
+                        forces, batch, model, finite_differences=True, vectorize=False
                     )
                 ]
 
@@ -238,33 +255,10 @@ def compute_jmp_labels(config, data_path, ckpt_path, split="train"):
         collate_fn=model.collate_fn,
     )
 
-    # Initialize accumulators and counters
-    # force_maes = 0
-    # force_l2_norms = 0
-    # count = 0
-    # progress_bar = tqdm(dataloader)
-    # for batch in progress_bar:
-    #     batch = batch.cuda()
-
-    #     forces = model(batch)[1]
-
-    #     # Calculate the errors for the current batch
-    #     batch_force_mae = 0.3591422140598297 * torch.abs(forces.squeeze() - batch.force.squeeze()).mean().item()
-    #     batch_force_l2_norm = 0.3591422140598297 * torch.norm(forces.squeeze() - batch.force.squeeze(), dim=-1).mean().item()
-
-    #     # Update accumulators and count
-    #     force_maes += batch_force_mae
-    #     force_l2_norms += batch_force_l2_norm
-    #     count += 1
-
-    #     # Calculate running averages
-    #     running_avg_force_mae = force_maes / count
-    #     running_avg_force_l2_norm = force_l2_norms / count
-
-    #     # Update tqdm bar with running averages
-    #     progress_bar.set_postfix(force_mae=running_avg_force_mae, force_l2_norm=running_avg_force_l2_norm)
-
-    subgrp_name = args.data_path.split("lmdb_")[-1]
+    if mode == "pretrain":
+        subgrp_name = args.data_path.split("lmdb_")[-1]
+    else:
+        subgrp_name = molecule
     # Save teacher jacobians, forces, and node embeddings
 
     if split == "train":
@@ -272,22 +266,23 @@ def compute_jmp_labels(config, data_path, ckpt_path, split="train"):
         lmdb_path = f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/force_jacobians/data.lmdb"
         # ensure that lmdb path does not exist
         assert not os.path.exists(lmdb_path), f"{lmdb_path} already exists"
+        
         record_labels_parallel(
             dataset, 1, model.collate_fn, lmdb_path, teacher_jacobian_fn
         )
 
-    print("Computing teacher forces and node embeddings")
-    lmdb_paths = [
-        f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/{split}_forces/data.lmdb",
-        f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/{split}_final_node_features/data.lmdb",
-    ]
-    record_labels_parallel(
-        dataset,
-        32,
-        model.collate_fn,
-        lmdb_paths,
-        get_separated_forces_and_node_embeddings,
-    )
+    # print("Computing teacher forces and node embeddings")
+    # lmdb_paths = [
+    #     f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/{split}_forces/data.lmdb",
+    #     f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/{split}_final_node_features/data.lmdb",
+    # ]
+    # record_labels_parallel(
+    #     dataset,
+    #     32,
+    #     model.collate_fn,
+    #     lmdb_paths,
+    #     get_separated_forces_and_node_embeddings,
+    # )
 
     print("Done!")
 
@@ -297,7 +292,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint_path",
         type=str,
-        default="/data/shared/ishan_stuff/jmp-l.pt",
+        default="/data/shared/ishan_stuff/jmp-s.pt",
         help="Path to the checkpoint.",
     )
     parser.add_argument(
@@ -314,8 +309,49 @@ if __name__ == "__main__":
         help="Dataset split to compute the labels for.",
     )
 
+    parser.add_argument(
+        "--mode",
+        type=str,
+        default="pretrain",
+        help="Pretrain or finetune.",
+    )
+
+    parser.add_argument(
+        "--molecule",
+        type=str,
+        help="Molecule.",
+    )
+
+    parser.add_argument(
+        "--direct_forces",
+        action="store_true",
+        help="Whether to directly predict forces instead of gradient-based.",
+    )
+
+
+
+
+
+    
+
     args = parser.parse_args()
-    config = jmp_l_config(data_path=args.data_path)
-    configs: list[tuple[PretrainConfig, type[PretrainModel]]] = []
-    configs.append((config, PretrainModel))
-    compute_jmp_labels(config, args.data_path, args.checkpoint_path, args.split)
+
+    if args.mode == "finetune":
+        configs: list[tuple[FinetuneConfigBase, type[FinetuneModelBase]]] = []
+        config = MD22Config.draft()
+        # if "-l" in args.checkpoint_path:
+        #     jmp_l_ft_config_(config, args.checkpoint_path)
+        # else:
+        jmp_s_ft_config_(config, args.checkpoint_path, disable_force_output_heads = not args.direct_forces)
+        
+        # This loads the MD22-specific configuration
+        jmp_l_md22_config_(config, args.molecule, Path(args.data_path), direct_forces=args.direct_forces)
+        config = config.finalize()  # Actually construct the config object
+        configs.append((config, MD22Model))
+
+    elif args.mode == "pretrain":
+        config = jmp_l_config(data_path=args.data_path)
+        configs: list[tuple[PretrainConfig, type[PretrainModel]]] = []
+        configs.append((config, PretrainModel))
+    
+    compute_jmp_labels(configs, args.data_path, args.checkpoint_path, args.mode, args.molecule, args.split)

@@ -14,7 +14,7 @@ from typing import cast
 
 import numpy as np
 import torch
-from matbench.bench import MatbenchBenchmark, MatbenchTask
+from matbench_discovery.bench import MatbenchBenchmark, MatbenchTask
 from pymatgen.core.structure import Structure
 from torch_geometric.data import Data
 from typing_extensions import TypeVar

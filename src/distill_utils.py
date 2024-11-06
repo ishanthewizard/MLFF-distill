@@ -5,6 +5,7 @@ import time
 import logging
 from fairchem.core.common.data_parallel import  OCPCollater
 from fairchem.core.common import distutils
+from tqdm import tqdm
 
 def get_atomic_number_hashes(batch):
     split_atomic_numbers = torch.split(batch.atomic_numbers, list(batch.ptr[1:] - batch.ptr[:-1]))
@@ -197,6 +198,11 @@ def get_force_jac_loss(out, batch, num_samples, force_jac_hash_map, mask, should
         fixed_cumsum = torch.cumsum(fixed_atoms, dim=0)
         num_free_atoms = num_free_atoms_per_mol[i]
         curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(num_free_atoms, 3, natoms[i], 3)
+        
+        # make sure the hessian is symmetric
+        # curr = 0.5 * (curr.reshape(num_free_atoms*3, natoms[i]*3) + curr.reshape(num_free_atoms*3, natoms[i]*3).T)
+        # curr = curr.reshape(num_free_atoms, 3, natoms[i], 3)
+
         curr = curr[:, :, mask_per_mol[i], :] # filter out the masked columns 
         subsampled_curr = curr[(samples[:, 0] - fixed_cumsum[samples[:, 0]]).long(), samples[:, 1]] # get the sampled rows
         true_jacs_per_mol.append(subsampled_curr)
@@ -266,13 +272,21 @@ def get_jacobian_finite_difference(batch, grad_outputs, forward, collater = OCPC
         with torch.no_grad():
             out = forward(large_batch)
         if isinstance(out, dict):
-            perturbed_forces = out['forces']
+            if 'forces' in out:
+                perturbed_forces = out['forces']
+            elif 'force' in out:
+                perturbed_forces = out['force']
         elif isinstance(out, tuple):
             perturbed_forces = out[1]
     else:
         perturbed_forces = []
-        for batch in perturbed_batches:
-            perturbed_forces.append(forward(batch)['forces'])
+        for batch in tqdm(perturbed_batches):
+            with torch.no_grad():
+                out = forward(batch)
+            if 'forces' in out:
+                perturbed_forces.append(out['forces'].detach())
+            elif 'force' in out:
+                perturbed_forces.append(out['force'].detach())
         perturbed_forces = torch.cat(perturbed_forces, dim=0)
     # Split the large batch's forces into individual forward and backward forces
     hessian_columns = []

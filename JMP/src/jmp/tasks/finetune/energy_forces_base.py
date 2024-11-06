@@ -183,15 +183,17 @@ class EnergyForcesModelBase(
     def forward(self, data: BaseData):
         preds: dict[str, torch.Tensor] = {}
         with ExitStack() as stack:
-            if self.config.gradient_forces or (
-                self.config.pretrain_output_head.enabled
-                and self.config.pretrain_output_head.gradient_forces
-            ):
-                stack.enter_context(torch.inference_mode(mode=False))
-                stack.enter_context(torch.enable_grad())
+            # if self.config.gradient_forces or (
+            #     self.config.pretrain_output_head.enabled
+            #     and self.config.pretrain_output_head.gradient_forces
+            # ):
+            stack.enter_context(torch.inference_mode(mode=False))
+            stack.enter_context(torch.enable_grad())
 
-                data.pos.requires_grad_(True)
-                data = self.generate_graphs_transform(data)
+            data.pos.requires_grad_(True)
+            data = self.generate_graphs_transform(data)
+
+            
 
             atomic_numbers = data.atomic_numbers - 1
             h = self.embedding(atomic_numbers)
@@ -212,7 +214,8 @@ class EnergyForcesModelBase(
                     reduce="sum",
                 )
                 preds["y"] = rearrange(output, "b 1 -> b")
-
+            
+            # import pdb; pdb.set_trace()
             if self.out_forces is not None:
                 output = self.out_forces(out["forces"])
                 output = output * out["V_st"]
@@ -220,7 +223,7 @@ class EnergyForcesModelBase(
                     output, out["idx_t"], dim=0, dim_size=n_atoms, reduce="sum"
                 )
                 preds["force"] = output
-
+            
             if self.config.gradient_forces:
                 assert "force" not in preds, f"force already in preds: {preds.keys()}"
                 assert (

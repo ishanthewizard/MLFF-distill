@@ -50,6 +50,7 @@ def jmp_l_md22_config_(
     config: MD22Config,
     molecule: DC.MD22Molecule,
     base_path: Path,
+    direct_forces: bool = False,
 ):
     # Optimizer settings
     config.optimizer = AdamWConfig(
@@ -73,10 +74,11 @@ def jmp_l_md22_config_(
 
     # Gradient forces
     config.model_type = "forces"
-    config.gradient_forces = True
+    config.gradient_forces = not direct_forces
     config.trainer.inference_mode = False
 
     # Set up normalization
     if (normalization_config := STATS.get(molecule)) is None:
         raise ValueError(f"Normalization for {molecule} not found")
     config.normalization = normalization_config
+

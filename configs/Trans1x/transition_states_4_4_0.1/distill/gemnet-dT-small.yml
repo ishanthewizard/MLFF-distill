@@ -35,7 +35,7 @@ loss_functions:
       coefficient: 0
   - force_jacs:
       fn: l2mae
-      coefficient: 100
+      coefficient: 400
       reduction: mean_all
 
 evaluation_metrics:
