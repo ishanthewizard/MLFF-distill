@@ -21,7 +21,7 @@ def print_cuda_memory_usage():
     print((f"CUDA memory reserved: {reserved:.2f} GB"))
 
 
-def get_teacher_jacobian(forces, batch, model = None, vectorize=True, should_mask=True, finite_differences=False):
+def get_teacher_jacobian(forces, batch, model = None, vectorize=True, minibatch_size = -1, should_mask=True, finite_differences=False):
     natoms = batch.natoms
     total_num_atoms = sum(batch.natoms)
     cumulative_sums = [0] + torch.cumsum(natoms, 0).tolist()
@@ -41,7 +41,7 @@ def get_teacher_jacobian(forces, batch, model = None, vectorize=True, should_mas
     
     if not finite_differences:
         
-        jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
+        jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize), minibatch_size = minibatch_size) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
 
     else:
         jac = get_jacobian_finite_difference(
@@ -91,7 +91,7 @@ def sample_with_mask(n, num_samples, mask, running_force_jac_loss, hard_mining, 
     
     return samples
 
-def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
+def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False, minibatch_size=-1):
     # This function should: take the derivatives of forces with respect to positions. 
     # Grad_outputs should be supplied. if it's none, then
     def compute_grad(grad_output):
@@ -102,21 +102,29 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
                 create_graph=create_graph,
                 retain_graph=True,
             )[0]
-    
+    num_atoms = forces.shape[0]
+
     if not looped:
-        if len(grad_outputs.shape) == 4: # label gen
+        if len(grad_outputs.shape) == 4: # label generation
             compute_jacobian = torch.vmap(torch.vmap(compute_grad))
+            full_jac = torch.zeros(grad_outputs.shape[0], 3, num_atoms, 3).to(forces.device)
+            if minibatch_size < 0:
+                minibatch_size = grad_outputs.shape[0]
+            num_batches = grad_outputs.shape[0] // minibatch_size
+            for i in tqdm(range(num_batches)):
+                full_jac[i*minibatch_size:(i+1)*minibatch_size] = compute_jacobian(grad_outputs[i*minibatch_size:(i+1)*minibatch_size])
+            return full_jac
         else: # training
             compute_jacobian = torch.vmap(compute_grad)
-        return compute_jacobian(grad_outputs)
+            
+            return compute_jacobian(grad_outputs)
     else:
-        num_atoms = forces.shape[0]
-        if len(grad_outputs.shape) == 4:
+        if len(grad_outputs.shape) == 4: # label generation
             full_jac = torch.zeros(grad_outputs.shape[0], 3, num_atoms, 3).to(forces.device)
-            for i in range(grad_outputs.shape[0]):
+            for i in tqdm(range(grad_outputs.shape[0])):
                 for j in range(3):
                     full_jac[i, j] = compute_grad(grad_outputs[i, j])
-        else:
+        else: # training
             full_jac = torch.zeros(grad_outputs.shape[0], num_atoms, 3).to(forces.device)
             for i in range(grad_outputs.shape[0]):
                     full_jac[i] = compute_grad(grad_outputs[i])

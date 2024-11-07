@@ -257,6 +257,9 @@ class EnergyForcesModelBase(
                     all_energies, all_forces
                 )
 
+        if "final_node_embeddings" in out.keys():
+            preds["final_node_embeddings"] = out["final_node_embeddings"]
+
         return preds
 
     @override

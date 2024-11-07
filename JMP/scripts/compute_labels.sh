@@ -1,8 +1,20 @@
-# python compute_jmp_labels.py
-# python compute_jmp_labels.py --split val
+python compute_jmp_labels.py \
+    --data_path /data/shared/ishan_stuff/md22 \
+    --checkpoint_path /data/shared/ishan_stuff/buckyball_catcher_jmp-s.ckpt \
+    --split val \
+    --mode finetune \
+    --molecule buckyball-catcher \
+    --direct_forces
 
-# python compute_jmp_labels.py --data_path /data/shared/ishan_stuff/transition1x/lmdb_3_5_0.1 --split val
-python compute_jmp_labels.py --data_path /data/shared/ishan_stuff/transition1x/lmdb_3_5_0.1
+python compute_jmp_labels.py \
+    --data_path /data/shared/ishan_stuff/md22 \
+    --checkpoint_path /data/shared/ishan_stuff/buckyball_catcher_jmp-s.ckpt \
+    --split train \
+    --mode finetune \
+    --molecule buckyball-catcher \
+    --direct_forces
+
+
 
 
 

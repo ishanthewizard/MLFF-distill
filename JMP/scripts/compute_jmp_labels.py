@@ -48,7 +48,7 @@ def record_labels_parallel(dataset, batch_size, collate_fn, file_paths, fn):
     rank = distutils.get_rank()
     world_size = distutils.get_world_size()
 
-    dataset_size = 10 #len(dataset)
+    dataset_size = len(dataset)
     indices_per_worker = dataset_size // world_size
     start_idx = rank * indices_per_worker
     end_idx = start_idx + indices_per_worker if rank < world_size - 1 else dataset_size
@@ -182,6 +182,10 @@ def compute_jmp_labels(config, data_path, ckpt_path, mode, molecule, split="trai
     model.load_state_dict(new_sd, strict=True)
     model.to("cuda")
 
+    # get normalization constants
+    mean = config.normalization['force'].mean
+    std = config.normalization['force'].std
+
 
     if split == "train":
         dataset = model.train_dataset()
@@ -209,10 +213,17 @@ def compute_jmp_labels(config, data_path, ckpt_path, mode, molecule, split="trai
     # Define the functions to record
     def get_separated_forces_and_node_embeddings(batch):
         with torch.no_grad():
-            _, all_forces, all_node_embeddings = model(batch)
+            out = model(batch)
+            if isinstance(out, tuple):
+                _, all_forces, all_node_embeddings = out
+            elif isinstance(out, dict):
+                all_forces = out['force']
+                all_node_embeddings = out['final_node_embeddings']
+        all_forces = all_forces.detach()
+        all_node_embeddings = all_node_embeddings.detach()
         natoms = batch.natoms
         separated_forces = [
-            0.3591422140598297 * all_forces[sum(natoms[:i]) : sum(natoms[: i + 1])]
+            std * all_forces[sum(natoms[:i]) : sum(natoms[: i + 1])] + mean
             for i in range(len(natoms))
         ]
         separated_node_embeddings = [
@@ -234,9 +245,9 @@ def compute_jmp_labels(config, data_path, ckpt_path, mode, molecule, split="trai
                     forces = out['force']
 
                 output = [
-                    0.3591422140598297 * jac.detach()
+                    std * jac.detach()
                     for jac in get_teacher_jacobian(
-                        forces, batch, model, finite_differences=True, vectorize=False
+                        forces, batch, model, finite_differences=False, vectorize=False, minibatch_size = 1
                     )
                 ]
 
@@ -248,18 +259,24 @@ def compute_jmp_labels(config, data_path, ckpt_path, mode, molecule, split="trai
                 output = [dummy_hessian]        
         return output
 
-    dataloader = DataLoader(
-        dataset,
-        batch_size=32,
-        shuffle=False,
-        collate_fn=model.collate_fn,
-    )
-
     if mode == "pretrain":
         subgrp_name = args.data_path.split("lmdb_")[-1]
     else:
         subgrp_name = molecule
     # Save teacher jacobians, forces, and node embeddings
+
+    print("Computing teacher forces and node embeddings")
+    lmdb_paths = [
+        f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/{split}_forces/data.lmdb",
+        f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/{split}_final_node_features/data.lmdb",
+    ]
+    record_labels_parallel(
+        dataset,
+        1,
+        model.collate_fn,
+        lmdb_paths,
+        get_separated_forces_and_node_embeddings,
+    )
 
     if split == "train":
         print("Computing teacher jacobians")
@@ -270,19 +287,6 @@ def compute_jmp_labels(config, data_path, ckpt_path, mode, molecule, split="trai
         record_labels_parallel(
             dataset, 1, model.collate_fn, lmdb_path, teacher_jacobian_fn
         )
-
-    # print("Computing teacher forces and node embeddings")
-    # lmdb_paths = [
-    #     f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/{split}_forces/data.lmdb",
-    #     f"/data/shared/ishan_stuff/labels_unlocked/{model_name}_{subgrp_name}/{split}_final_node_features/data.lmdb",
-    # ]
-    # record_labels_parallel(
-    #     dataset,
-    #     32,
-    #     model.collate_fn,
-    #     lmdb_paths,
-    #     get_separated_forces_and_node_embeddings,
-    # )
 
     print("Done!")
 
@@ -337,10 +341,10 @@ if __name__ == "__main__":
     if args.mode == "finetune":
         configs: list[tuple[FinetuneConfigBase, type[FinetuneModelBase]]] = []
         config = MD22Config.draft()
-        # if "-l" in args.checkpoint_path:
-        #     jmp_l_ft_config_(config, args.checkpoint_path)
-        # else:
-        jmp_s_ft_config_(config, args.checkpoint_path, disable_force_output_heads = not args.direct_forces)
+        if "-l" in args.checkpoint_path:
+            jmp_l_ft_config_(config, args.checkpoint_path, disable_force_output_heads = not args.direct_forces)
+        else:
+            jmp_s_ft_config_(config, args.checkpoint_path, disable_force_output_heads = not args.direct_forces)
         
         # This loads the MD22-specific configuration
         jmp_l_md22_config_(config, args.molecule, Path(args.data_path), direct_forces=args.direct_forces)
