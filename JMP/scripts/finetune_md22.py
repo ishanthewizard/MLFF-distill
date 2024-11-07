@@ -81,6 +81,7 @@ if __name__ == "__main__":
     jmp_l_md22_config_(config, args.molecule, Path(args.data_path), direct_forces=args.direct_forces)
     
     config = config.finalize()  # Actually construct the config object
+    config.trainer.num_nodes = 1
     print(config)
 
     configs.append((config, MD22Model))

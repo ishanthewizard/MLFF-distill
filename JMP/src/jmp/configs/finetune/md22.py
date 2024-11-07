@@ -61,7 +61,7 @@ def jmp_l_md22_config_(
     )
 
     # Set data config
-    config.batch_size = 4
+    config.batch_size = 1
 
     # Set up dataset
     config.train_dataset = DC.md22_config(molecule, base_path, "train")

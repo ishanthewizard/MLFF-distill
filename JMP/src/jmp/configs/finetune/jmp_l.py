@@ -33,7 +33,7 @@ def jmp_l_ft_config_(
     config.trainer.set_float32_matmul_precision = "medium"
     config.trainer.supports_parameter_hooks = False
     config.trainer.supports_skip_batch_exception = False
-    config.trainer.default_root_dir = "/home/sanjeevr/MLFF-distill"
+    config.trainer.default_root_dir = "/global/homes/s/sanjeevr/MLFF-distill"
 
     # Set backbone config
     config.backbone = BackboneConfig.large()
