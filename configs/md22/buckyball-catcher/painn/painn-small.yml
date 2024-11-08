@@ -17,7 +17,7 @@ model:
   emb_size_teacher: 256
 
 optim:
-  batch_size: 16
+  batch_size: 4
   eval_batch_size: 32
   load_balancing: atoms
   num_workers: 4

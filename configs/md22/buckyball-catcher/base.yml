@@ -1,5 +1,5 @@
 includes:
-  - configs/slurm/regular.yml
+  - configs/slurm/premium.yml
 logger: 
   name: wandb
   entity: ishan-amin
