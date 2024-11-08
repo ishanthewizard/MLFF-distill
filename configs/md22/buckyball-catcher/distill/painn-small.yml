@@ -21,7 +21,7 @@ outputs:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 1
+      coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100
@@ -37,8 +37,8 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 16
+  batch_size: 4
   eval_batch_size: 32
-  force_jac_sample_size: 4
+  force_jac_sample_size: 1
   print_memory_usage: False
   vectorize_jacs: True

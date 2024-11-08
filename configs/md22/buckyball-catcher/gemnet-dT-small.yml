@@ -32,6 +32,7 @@ model:
   otf_graph: True
   regress_forces: True
   direct_forces: True
+  emb_size_teacher: 256
 
 optim:
   batch_size: 32
