@@ -42,7 +42,6 @@ def transform(
         @override
         def __getitem__(self, idx):
             nonlocal copy_data, transform
-
             assert transform is not None, "Transform must be defined."
             data = self.__wrapped__.__getitem__(idx)
             if copy_data:

@@ -336,8 +336,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # TODO: need to fix hardcoded normalization throughout this script (was assuming Transition 1x)
-
     if args.mode == "finetune":
         configs: list[tuple[FinetuneConfigBase, type[FinetuneModelBase]]] = []
         config = MD22Config.draft()

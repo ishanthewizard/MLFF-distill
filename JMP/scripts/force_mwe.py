@@ -84,6 +84,7 @@ def compute_grads(config, data_path, ckpt_path):
     batch = batch.to("cuda")
     batch.pos.requires_grad = True
 
+    import pdb; pdb.set_trace()
     energy, forces, _ = model(batch)
 
     # Attempt to compute the gradient of the energy or force w.r.t. to the position

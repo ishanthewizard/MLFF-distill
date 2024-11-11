@@ -189,19 +189,18 @@ class EnergyForcesModelBase(
             # ):
             stack.enter_context(torch.inference_mode(mode=False))
             stack.enter_context(torch.enable_grad())
-
             data.pos.requires_grad_(True)
+            
             data = self.generate_graphs_transform(data)
 
-            
+            # import pdb; pdb.set_trace()
 
-            atomic_numbers = data.atomic_numbers - 1
+            atomic_numbers = data.atomic_numbers - 1    
             h = self.embedding(atomic_numbers)
             out: GOCBackboneOutput = self.backbone(data, h=h)
 
             n_molecules = int(torch.max(data.batch).item() + 1)
             n_atoms = data.atomic_numbers.shape[0]
-
             if self.out_energy is not None:
                 output = self.out_energy(out["energy"])  # (n_atoms, 1)
 
