@@ -3,6 +3,7 @@ wandb
 checkpoints/
 teacher_checkpoints/
 student_checkpoints/
+md22_student_checkpoints/
 results
 labels/
 mace/

@@ -10,20 +10,20 @@ trainer: ocp
 dataset:
   train:
     format: lmdb
-    src: data/md22/lmdb/buckyball-catcher/train
+    src: data/md22/lmdb/double-walled_nanotube/train
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
         energy: 
-            mean:  -124776.7
-            stdev: 1.0899031 #0.64662045 # make this change for GemNet-T runs
+            mean:  -338224.16
+            stdev: 1.0137014 #3.3810701 # make this change for GemNet-T runs
         forces: 
             mean: 0
-            stdev: 1.0899031
+            stdev: 1.0137014
   val:
-    src: data/md22/lmdb/buckyball-catcher/val
+    src: data/md22/lmdb/double-walled_nanotube/val
 
 outputs:
   energy:
