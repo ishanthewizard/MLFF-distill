@@ -98,6 +98,7 @@ class PaiNN(BaseModel):
         self.use_pbc = use_pbc
         self.teacher_atom_embedding_path = teacher_atom_embedding_path
         self.use_teacher_atom_embeddings = use_teacher_atom_embeddings
+        self.emb_size_teacher = emb_size_teacher
         self.baseline = baseline
 
         # Borrowed from GemNet.
@@ -140,7 +141,7 @@ class PaiNN(BaseModel):
         load_scales_compat(self, scale_file)
 
         # Distillation-specific projections
-        self.baseline = True # TEMP
+        # self.baseline = True # TEMP
         if self.baseline:
             self.final_node_feature_projection = torch.nn.Linear(hidden_channels, emb_size_teacher)
             self.atom_embedding_projection = torch.nn.Linear(emb_size_teacher, hidden_channels)

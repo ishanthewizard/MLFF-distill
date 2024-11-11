@@ -1,12 +1,12 @@
 includes:
-- configs/md22/buckyball-catcher/gemnet-T-small.yml
+- configs/md22/buckyball-catcher/painn/painn-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_checkpoint_path: data/buckyball-catcher_jmp-s.ckpt
-    teacher_labels_folder: labels/jmp-small_buckyball-catcher
+    teacher_checkpoint_path: data/buckyball-catcher_jmp-l.ckpt
+    teacher_labels_folder: labels/jmp-large_buckyball-catcher
     label_force_batch_size: 32
     label_jac_batch_size: 64
     vectorize_teach_jacs: False
