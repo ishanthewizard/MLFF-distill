@@ -183,13 +183,13 @@ class EnergyForcesModelBase(
     def forward(self, data: BaseData):
         preds: dict[str, torch.Tensor] = {}
         with ExitStack() as stack:
-            # if self.config.gradient_forces or (
-            #     self.config.pretrain_output_head.enabled
-            #     and self.config.pretrain_output_head.gradient_forces
-            # ):
-            stack.enter_context(torch.inference_mode(mode=False))
-            stack.enter_context(torch.enable_grad())
-            data.pos.requires_grad_(True)
+            if self.config.gradient_forces or (
+                self.config.pretrain_output_head.enabled
+                and self.config.pretrain_output_head.gradient_forces
+            ):
+                stack.enter_context(torch.inference_mode(mode=False))
+                stack.enter_context(torch.enable_grad())
+                data.pos.requires_grad_(True)
             
             data = self.generate_graphs_transform(data)
 

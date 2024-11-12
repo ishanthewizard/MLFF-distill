@@ -99,6 +99,8 @@ if __name__ == "__main__":
     if "jmp" in config.keys():
         jmp = True
         jmp_args = config["jmp"]
+        if "exp_name" not in jmp_args.keys():
+            jmp_args["exp_name"] = ""
 
         jmp_config = MD22Config.draft()
         
@@ -144,27 +146,26 @@ if __name__ == "__main__":
 
         
         def get_forces(atoms):
-            
             batch = atoms_to_batch([atoms], collate_fn=model.collate_fn)
             batch = batch.to("cuda")
             with torch.no_grad():
                 forces = model(batch)['force']
-            # Normalize the forces
+            # Un-normalize the forces
             forces = forces * std_force + mean_force
             return forces.detach().cpu().numpy()
         
         def get_potential_energy(atoms):
             batch = atoms_to_batch([atoms], collate_fn=model.collate_fn)
             batch = batch.to("cuda")
+            with torch.no_grad():
+                energy = model(batch)['y']
             
-            energy = model(batch)['energy']
-            
-            # Normalize the forces
+            # Un-normalize the energies
             energy = energy * std_energy + mean_energy
-            return forces
+            return energy.detach().cpu().numpy()
 
         # override the calculator functions with the custom JMP ones
-        # calc.get_potential_energy = get_potential_energy # TODO: need to re-finetune JMP with energies :(
+        calc.get_potential_energy = get_potential_energy
         calc.get_forces = get_forces
 
     # Initialize atom velocities
@@ -175,9 +176,9 @@ if __name__ == "__main__":
         traj_path = os.path.dirname(checkpoint_path) 
     else:
         if "-l" in jmp_args["checkpoint_path"]:
-            traj_path = os.path.join(os.path.dirname(jmp_args["checkpoint_path"]), "jmp_l_sims", jmp_args["molecule"])
+            traj_path = os.path.join(os.path.dirname(jmp_args["checkpoint_path"]), "jmp_l_sims", jmp_args["molecule"], jmp_args["exp_name"])
         else:
-            traj_path = os.path.join(os.path.dirname(jmp_args["checkpoint_path"]), "jmp_s_sims", jmp_args["molecule"])
+            traj_path = os.path.join(os.path.dirname(jmp_args["checkpoint_path"]), "jmp_s_sims", jmp_args["molecule"], jmp_args["exp_name"])
     
     os.makedirs(traj_path, exist_ok=True)
             
