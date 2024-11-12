@@ -23,8 +23,8 @@ def get_accuracy(dataset_path, model='large'):
     dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
     
 
-    # indxs = np.random.default_rng(seed=123).choice(len(dataset), 1000, replace=False)
-    # dataset = Subset(dataset, torch.tensor(indxs))
+    indxs = np.random.default_rng(seed=123).choice(len(dataset), 1000, replace=False)
+    dataset = Subset(dataset, torch.tensor(indxs))
     
     print(len(dataset))
     num_atoms = []
@@ -33,6 +33,7 @@ def get_accuracy(dataset_path, model='large'):
     numel = 0
     for sample in tqdm(dataset):
         true_energy = sample.corrected_total_energy.item()
+        #  true_energy  = sample.y.item()
         true_force = sample.force.numpy()
         
         atomic_numbers = sample.atomic_numbers.numpy()
@@ -43,11 +44,11 @@ def get_accuracy(dataset_path, model='large'):
         predicted_energy = atoms.get_potential_energy()
         predicted_force = atoms.get_forces()
         force_mae_loss += np.abs(predicted_force - true_force).sum()
-        energy_mae_loss += np.abs(predicted_energy - true_energy)  / len(atomic_numbers)
+        energy_mae_loss += np.abs(predicted_energy - true_energy) 
         numel += len(sample.pos) * 3
     force_mae_loss /= numel
-    print("FORCE MAE LOSS:", force_mae_loss) 
-    print("ENERGY MAE:", energy_mae_loss / len(dataset))   
+    print("FORCE MAE LOSS:", force_mae_loss * 1000) 
+    print("ENERGY MAE:", energy_mae_loss / len(dataset) * 1000)   
     
     num_atoms = np.array(num_atoms)
     print("MEAN:", np.mean(num_atoms), "MIN:", min(num_atoms), "MAX:", max(num_atoms))

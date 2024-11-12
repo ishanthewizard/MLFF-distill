@@ -9,47 +9,68 @@ import torch
 import numpy as np
 import lmdb
 from torch.utils.data import Subset
+from ase.io import read
 # breakpoint()
 
+preprocessed_datapath = '/data/shared/MPTrj/original'
+mp_id = 1006278
+look_at = f'mp-{mp_id}.extxyz'
+file_path = os.path.join(preprocessed_datapath, look_at)
+for atoms in read(file_path, index=":"):
+    print(atoms.get_positions())
+    breakpoint()
+    # for key, val in atoms.info.items():
+    #     print(key, val)
 
-# List of main paths and corresponding DB paths
-main_paths = {
-    'DES370K_Monomers': 'data/SPICE/spice_seperated_w_energies/DES30K_Monomers',
-    'Solvated_Amino_Acids': 'data/SPICE/spice_seperated_w_energies/Solvated_Amino_Acids',
-    'Iodine': 'data/SPICE/spice_seperated_w_energies/Iodine'
-}
+# files = [os.path.join(preprocessed_datapath, f) for f in os.listdir(preprocessed_datapath) if f.endswith('.extxyz')]
+# lmdb_output_dir = Path(lmdb_output_dir)
 
-# Function to process a given dataset and save to LMDB
-def process_dataset(main_path, db_path, split):
-    os.makedirs(os.path.join(db_path, split))
-    dataset_path = os.path.join(main_path, split)
-    dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
+# meta_info = write_lmdb(files,  lmdb_output_dir)
+# process_meta(meta_info, lmdb_output_dir)
+
+# print("Done!")
+
+
+
+
+# # List of main paths and corresponding DB paths
+# main_paths = {
+#     'DES370K_Monomers': 'data/SPICE/spice_seperated_w_energies/DES30K_Monomers',
+#     'Solvated_Amino_Acids': 'data/SPICE/spice_seperated_w_energies/Solvated_Amino_Acids',
+#     'Iodine': 'data/SPICE/spice_seperated_w_energies/Iodine'
+# }
+
+# # Function to process a given dataset and save to LMDB
+# def process_dataset(main_path, db_path, split):
+#     os.makedirs(os.path.join(db_path, split))
+#     dataset_path = os.path.join(main_path, split)
+#     dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
     
-    output_db_path = os.path.join(db_path, split, 'data.lmdb')
-    env = lmdb.open(output_db_path, 
-                    map_size=int(1099511627776 * 2),
-                    subdir=False,
-                    meminit=False,
-                    map_async=True,)  # 2TB map size
-    for i, sample in tqdm(enumerate(dataset), desc=f"Processing {split} dataset for {main_path.split('/')[-1]}"):
-        # Compute energy per atom and update sample output (assuming `sample.y` is energy and `sample.natoms` is number of atoms)
-        sample.energy_per_atom = sample.y / sample.natoms.item()
-        # Convert the sample to bytes and store in LMDB
-        txn = env.begin(write=True)
-        txn.put(f"{i}".encode("ascii"), pickle.dumps(sample, protocol=-1))
-        txn.commit()
+#     output_db_path = os.path.join(db_path, split, 'data.lmdb')
+#     env = lmdb.open(output_db_path, 
+#                     map_size=int(1099511627776 * 2),
+#                     subdir=False,
+#                     meminit=False,
+#                     map_async=True,)  # 2TB map size
+#     for i, sample in tqdm(enumerate(dataset), desc=f"Processing {split} dataset for {main_path.split('/')[-1]}"):
+#         # Compute energy per atom and update sample output (assuming `sample.y` is energy and `sample.natoms` is number of atoms)
+#         sample.energy_per_atom = sample.y / sample.natoms.item()
+#         # Convert the sample to bytes and store in LMDB
+#         txn = env.begin(write=True)
+#         txn.put(f"{i}".encode("ascii"), pickle.dumps(sample, protocol=-1))
+#         txn.commit()
         
 
     
-    env.sync()
-    env.close()
+#     env.sync()
+#     env.close()
 
 
 # Iterate over each main path and process both train and val datasets
-for dataset_name, db_path in main_paths.items():
-    main_path = f'data/SPICE/spice_separated/{dataset_name}'
-    for split in ['train', 'val']:
-        process_dataset(main_path, db_path, split)
+# for dataset_name, db_path in main_paths.items():
+#     main_path = f'data/SPICE/spice_separated/{dataset_name}'
+#     for split in ['train', 'val']:
+#         process_dataset(main_path, db_path, split)
 
 
 

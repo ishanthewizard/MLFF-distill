@@ -41,7 +41,7 @@ def get_accuracy(dataset_path, model='small'):
         num_atoms.append(len(atomic_numbers))
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy())
         atoms.calc = calc
-
+        print(sample.atomic_numbers)
         predicted_energy = atoms.get_potential_energy()
         predicted_force = atoms.get_forces()
         energy_mae_loss += abs(predicted_energy - true_energy)
