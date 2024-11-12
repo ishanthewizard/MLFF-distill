@@ -193,7 +193,6 @@ class EnergyForcesModelBase(
             
             data = self.generate_graphs_transform(data)
 
-            # import pdb; pdb.set_trace()
 
             atomic_numbers = data.atomic_numbers - 1    
             h = self.embedding(atomic_numbers)

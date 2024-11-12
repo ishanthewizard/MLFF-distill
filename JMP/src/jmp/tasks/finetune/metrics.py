@@ -308,9 +308,10 @@ class FinetuneMetrics(nn.Module):
         metrics: dict[str, torchmetrics.Metric] = {}
 
         for key, mae in self.maes.items():
+
             if (mp := self.provider(key, batch, preds)) is None:
                 continue
-
+            
             mae(mp.predicted, mp.ground_truth)
             metrics[f"{key}_mae"] = mae
 

@@ -66,6 +66,7 @@ class FMTaskMetrics(nn.Module):
     @override
     def forward(self, batch: Batch, energy: torch.Tensor, forces: torch.Tensor):
         metrics: dict[str, torchmetrics.Metric] = {}
+        import pdb; pdb.set_trace()
 
         self._energy_mae(batch, energy, self.energy_mae)
         self._forces_mae(batch, forces, self.forces_mae)
@@ -137,7 +138,7 @@ class FMTaskMetrics(nn.Module):
         if transform is not None:
             energy_target = transform(energy_target)
             energy_pred = transform(energy_pred)
-
+        
         energy_mae(energy_pred, energy_target)
 
 

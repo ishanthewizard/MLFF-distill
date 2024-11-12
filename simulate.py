@@ -171,7 +171,16 @@ if __name__ == "__main__":
     MaxwellBoltzmannDistribution(atoms, temperature_K=config["integrator_config"]["temperature"])
     Stationary(atoms)  # zero the center of mass velocity
 
-    traj_path = os.path.dirname(checkpoint_path) if not jmp else os.path.dirname(jmp_args["checkpoint_path"])
+    if not jmp:
+        traj_path = os.path.dirname(checkpoint_path) 
+    else:
+        if "-l" in jmp_args["checkpoint_path"]:
+            traj_path = os.path.join(os.path.dirname(jmp_args["checkpoint_path"]), "jmp_l_sims", jmp_args["molecule"])
+        else:
+            traj_path = os.path.join(os.path.dirname(jmp_args["checkpoint_path"]), "jmp_s_sims", jmp_args["molecule"])
+    
+    os.makedirs(traj_path, exist_ok=True)
+            
     if config["nvt"]:
         dyn = Langevin(
             atoms,
@@ -191,7 +200,7 @@ if __name__ == "__main__":
 
     dyn.attach(
             MDLogger(
-                dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
+                dyn, atoms, os.path.join(traj_path, f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
             ),
             interval=config["save_freq"],
         )

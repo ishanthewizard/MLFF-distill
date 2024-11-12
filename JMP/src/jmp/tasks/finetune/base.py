@@ -783,7 +783,8 @@ class FinetuneModelBase(LightningModuleBase[TConfig], Generic[TConfig]):
         batch: BaseData,
         preds: dict[str, torch.Tensor],
     ) -> MetricPair | None:
-        if (pred := preds.get(prop)) is None or (
+
+        if (pred := preds.get(prop).to(torch.float32)) is None or (
             target := getattr(batch, prop, None)
         ) is None:
             return None

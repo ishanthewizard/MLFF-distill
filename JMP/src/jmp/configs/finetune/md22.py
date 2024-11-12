@@ -61,7 +61,7 @@ def jmp_l_md22_config_(
     )
 
     # Set data config
-    config.batch_size = 1
+    config.batch_size = 2
 
     # Set up dataset
     config.train_dataset = DC.md22_config(molecule, base_path, "train")
@@ -73,7 +73,7 @@ def jmp_l_md22_config_(
     config.primary_metric = PrimaryMetricConfig(name="force_mae", mode="min")
 
     # Gradient forces
-    config.model_type = "forces"
+    config.model_type = "energy_forces"
     config.gradient_forces = not direct_forces
     config.trainer.inference_mode = False
 
