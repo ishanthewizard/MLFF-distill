@@ -10,7 +10,7 @@ dataset:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 20
+      coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100
