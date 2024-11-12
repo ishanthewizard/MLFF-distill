@@ -17,7 +17,7 @@ dataset:
       normalizer:
         energy: 
             mean: -52.56 # proper formation number for monomers
-            stdev: 17.29  # proper formation number for monomers
+            stdev: 1 #17.29  # proper formation number for monomers
         forces: 
             mean: 0 
             stdev: 1          # true std: .9473

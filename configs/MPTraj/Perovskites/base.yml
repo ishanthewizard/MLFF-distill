@@ -20,7 +20,7 @@ dataset:
             # mean: -201.6314239501953 # for all mptraj (from eric)
             # stdev: 203.66830444335938 # for all mptraj (from eric)
             mean: -43.733 #true for perovskites
-            stdev: 70.217 #true for perovskites
+            stdev: 1 #70.217 #true for perovskites
         forces: 
             mean: 0
             stdev: 1

@@ -66,7 +66,7 @@ for atoms in read(file_path, index=":"):
 #     env.close()
 
 
-# Iterate over each main path and process both train and val datasets
+# # Iterate over each main path and process both train and val datasets
 # for dataset_name, db_path in main_paths.items():
 #     main_path = f'data/SPICE/spice_separated/{dataset_name}'
 #     for split in ['train', 'val']:
