@@ -18,7 +18,7 @@ dataset:
       normalizer:
         energy: 
             mean: -322.07 #  actual formation energy value for solvated
-            stdev: 20.60  # actual formation energy value for solvated
+            stdev: 20.60 #idk how to actually deal with the scaling issue, so we'll go with 1.  20.60 is actual formation energy value for solvated
         forces: 
             mean: 0   # actual for forces: 0
             stdev: 1  # actual for std: 1.549

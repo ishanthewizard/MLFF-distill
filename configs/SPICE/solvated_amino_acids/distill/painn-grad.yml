@@ -1,5 +1,5 @@
 includes:
-- configs/SPICE/solvated_amino_acids/painn/painn-small.yml
+- configs/SPICE/solvated_amino_acids/painn/painn-grad.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
@@ -22,7 +22,7 @@ loss_functions:
       coefficient: 0
   - force_jacs:
       fn: l2mae
-      coefficient: 400
+      coefficient: 200
       reduction: mean_all
 
 optim:
@@ -31,4 +31,4 @@ optim:
   force_jac_sample_size: 1
   print_memory_usage: False
   vectorize_jacs: True
-  distill_energy: True
+  distill_energy: False
