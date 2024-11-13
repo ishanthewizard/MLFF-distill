@@ -4,7 +4,7 @@ includes:
 logger: 
   name: wandb
   entity: ishan-amin
-  project: spice
+  project: spice-Energy
 
 trainer: ocp
 
