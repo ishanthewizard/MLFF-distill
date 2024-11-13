@@ -85,6 +85,10 @@ class eSCN(BaseModel):
         basis_width_scalar: float = 1.0,
         distance_resolution: float = 0.02,
         show_timing_info: bool = False,
+        teacher_atom_embedding_path: str | None = None,
+        use_teacher_atom_embeddings: bool = False,
+        emb_size_teacher: int = 224,
+        baseline: bool = False,
     ) -> None:
         if mmax_list is None:
             mmax_list = [2]
@@ -119,6 +123,10 @@ class eSCN(BaseModel):
         self.sphere_channels_all: int = self.num_resolutions * self.sphere_channels
         self.basis_width_scalar = basis_width_scalar
         self.distance_function = distance_function
+        self.teacher_atom_embedding_path = teacher_atom_embedding_path
+        self.use_teacher_atom_embeddings = use_teacher_atom_embeddings
+        self.baseline = baseline
+        self.emb_size_teacher = emb_size_teacher
 
         # variables used for display purposes
         self.counter = 0
@@ -223,11 +231,23 @@ class eSCN(BaseModel):
             )
         self.sphharm_weights = nn.ParameterList(sphharm_weights)
 
+        # Distillation-specific projections
+        if self.baseline:
+            self.final_node_feature_projection = torch.nn.Linear(emb_size_atom, emb_size_teacher)
+            self.atom_embedding_projection = torch.nn.Linear(emb_size_teacher, emb_size_atom)
+            self.teacher_atom_embeddings = torch.tensor(np.load(self.teacher_atom_embedding_path), dtype=torch.float32, device='cuda')
+
     @conditional_grad(torch.enable_grad())
     def forward(self, data):
         device = data.pos.device
         self.batch_size = len(data.natoms)
         self.dtype = data.pos.dtype
+
+        if "cell" not in data.keys():
+            # create a dummy cell tensor
+            data.cell = 50 * torch.eye(3, device=data.pos.device).unsqueeze(0).repeat(data.batch.max() + 1, 1, 1)
+        if "fixed" not in data.keys():
+            data.fixed = torch.zeros_like(data.atomic_numbers, dtype=torch.bool)
 
         start_time = time.time()
         atomic_numbers = data.atomic_numbers.long()
@@ -330,7 +350,15 @@ class eSCN(BaseModel):
             )
             offset = offset + num_coefficients
 
+        outputs = {}
+        if self.baseline:
+            outputs['final_node_features'] = self.final_node_feature_projection(x_pt.reshape(x_pt.shape[0], -1))
+        else:
+            outputs['final_node_features'] = torch.zeros((x_pt.shape[0], self.emb_size_teacher), device=x_pt.device)
+
         x_pt = x_pt.view(-1, self.sphere_channels_all)
+
+        
 
         ###############################################################
         # Energy estimation
@@ -341,7 +369,9 @@ class eSCN(BaseModel):
         # Scale energy to help balance numerical precision w.r.t. forces
         energy = energy * 0.001
 
-        outputs = {"energy": energy}
+        outputs["energy"] = energy
+
+        
         ###############################################################
         # Force estimation
         ###############################################################
