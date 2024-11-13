@@ -33,7 +33,7 @@ from .layers.spherical_basis import CircularBasisLayer
 from .utils import inner_product_normalized, mask_neighbors, ragged_range, repeat_blocks
 
 
-@registry.register_model("gemnet_t")
+@registry.register_model("gemnet_t_baseline")
 class GemNetT(nn.Module, GraphModelMixin):
     """
     GemNet-T, triplets-only variant of GemNet
