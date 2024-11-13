@@ -4,11 +4,14 @@ includes:
 logger: 
   name: wandb
   project: MPTraj-Energy
+  entity: ishan-amin
 
 trainer: ocp
 
 dataset:
   train:
+    no_shuffle: True
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/MPtraj_labels/mace_mp_all_splits_Perovskites_noIons
     format: lmdb
     src: data/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons/train
     key_mapping:

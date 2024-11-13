@@ -3,12 +3,14 @@ includes:
   # - configs/slurm/debug.yml
 logger: 
   name: wandb
+  entity: ishan-amin
   project: MPTraj
 
 trainer: ocp
 
 dataset:
   train:
+    no_shuffle: True
     format: lmdb
     src: data/mptraj_seperated_all_splits/Bandgap_greater_than_5/train
     key_mapping:

@@ -2,12 +2,15 @@ includes:
   - configs/slurm/premium.yml
 logger: 
   name: wandb
-  project: spice-Energy
+  entity: ishan-amin
+  project: spice
 
 trainer: ocp
 
 dataset:
   train:
+    no_shuffle: True
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/mace_off_large_SpiceMonomers
     format: lmdb
     src: data/SPICE/spice_separated/DES370K_Monomers/train
     key_mapping:

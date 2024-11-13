@@ -5,10 +5,19 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: data/labels/SPICE_labels/mace_off_large_SpiceAminos
     label_force_batch_size: 32
     label_jac_batch_size: 4
     vectorize_teach_jacs: True
+
+model:
+  use_teacher_atom_embeddings: False
+
+outputs:
+  final_node_features:
+    irrep_dim: 1
+    level: atom
+    train_on_free_atoms: True
+    eval_on_free_atoms: True
 
 loss_functions:
   - energy:
@@ -20,10 +29,29 @@ loss_functions:
   - teacher_forces:
       fn: l2mae
       coefficient: 0
+  - final_node_features:
+      fn: mse
+      coefficient: 0
   - force_jacs:
       fn: l2mae
       coefficient: 400
       reduction: mean
+
+
+evaluation_metrics:
+  metrics:
+    energy:
+      - mae
+    forces:
+      - mae
+      - cosine_similarity
+      - magnitude_error
+    final_node_features:
+      - mse
+    misc:
+      - energy_forces_within_threshold
+  primary_metric: forces_mae
+  
 
 optim:
   batch_size: 8

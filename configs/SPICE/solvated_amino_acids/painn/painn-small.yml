@@ -12,8 +12,9 @@ model:
   scale_file: configs/SPICE/solvated_amino_acids/painn/new_fairchem_painn.pt
   regress_forces: True
   direct_forces: True
-  use_pbc: True # Let's try true for this....
+  use_pbc: True
   otf_graph: True
+  emb_size_teacher: 224
 
 optim:
   batch_size: 8

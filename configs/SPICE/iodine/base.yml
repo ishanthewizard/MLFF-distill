@@ -3,12 +3,14 @@ includes:
   # - configs/slurm/debug.yml
 logger: 
   name: wandb
+  entity: ishan-amin
   project: spice
 
 trainer: ocp
 
 dataset:
   train:
+    no_shuffle: True
     format: lmdb
     src: data/SPICE/spice_separated/Iodine/train
     key_mapping:

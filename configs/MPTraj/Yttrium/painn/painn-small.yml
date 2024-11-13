@@ -15,6 +15,7 @@ model:
   use_pbc: True # IMPORTANT
   otf_graph: True
   num_elements: 100
+  emb_size_teacher: 256
 
 optim:
   batch_size: 16

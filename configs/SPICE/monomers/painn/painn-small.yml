@@ -14,6 +14,7 @@ model:
   direct_forces: True
   use_pbc: True #changed from original - let's see if this helps
   otf_graph: True
+  emb_size_teacher: 224
 
 optim:
   batch_size: 16

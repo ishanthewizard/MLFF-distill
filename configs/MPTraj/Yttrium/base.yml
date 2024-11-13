@@ -1,15 +1,31 @@
 includes:
   - configs/slurm/premium.yml
+
+trainer: ocp
+
 logger: 
   name: wandb
+  entity: ishan-amin
   project: MPTraj
+
+
+dataset:
+  train:
+    no_shuffle: True
+    teacher_checkpoint_path:  /pscratch/sd/i/ishan_a/OC20_teacher_checkpoints/gemnet_oc_large_s2ef_all_md.pt
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/OC20_labels/Nonmetals_N_in_adsorbate_gemnet_oc_large_s2ef_all_md_final
+    format: lmdb
+    src: data/MPtraj/mptraj_seperated_all_splits/Yttrium/train
 
 trainer: ocp
 
 dataset:
   train:
+    no_shuffle: True
+    teacher_labels_folder: /pscratch/sd/i/ishan_a/MPtraj_labels/mace_mp_all_splits_Yttrium
     format: lmdb
-    src: data/MPtraj/mptraj_seperated_all_splits/Yttrium/train
+    src: /pscratch/sd/i/ishan_a/mptraj_seperated_all_splits/Yttrium/train
+
     key_mapping:
       corrected_total_energy: energy
       force: forces
