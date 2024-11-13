@@ -1,6 +1,6 @@
 import bisect
 import os
-from fairchem.core.common.data_parallel import _HasMetadata
+# from fairchem.core.common.data_parallel import _HasMetadata
 from torch.utils.data import Dataset, DataLoader
 import lmdb
 import torch
@@ -19,8 +19,8 @@ class CombinedDataset(Dataset):
         self.main_dataset = main_dataset
         self.teach_force_dataset = teach_force_dataset
         self.force_jac_dataset = force_jac_dataset 
-        if  isinstance(self.main_dataset, _HasMetadata):
-            self.metadata_path = self.main_dataset.metadata_path 
+        self._metadata = self.main_dataset._metadata
+        self.metadata_hasattr = self.main_dataset.metadata_hasattr
 
     def __len__(self):
         return len(self.main_dataset)  # Assuming both datasets are the same size
@@ -28,7 +28,6 @@ class CombinedDataset(Dataset):
     def __getitem__(self, idx):
         main_batch = self.main_dataset[idx]
         num_atoms = main_batch.natoms
-        
         teacher_forces = self.teach_force_dataset[idx].reshape(num_atoms, 3)
         if self.force_jac_dataset:
             num_free_atoms = (main_batch.fixed == 0).sum().item()

@@ -1,6 +1,5 @@
 import torch 
 import numpy as np
-from fairchem.core.modules.loss import L2MAELoss
 import time
 import logging
 from fairchem.core.common.data_parallel import  OCPCollater
@@ -144,7 +143,7 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
             forces=forces, 
             batch= batch, 
             grad_outputs=grad_outputs, 
-            collater=collater, 
+            collater=None,  # tODO: fix
             forward= forward, 
             looped=looped)
     # Decomposing the Jacobian tensor by molecule in a batch

@@ -9,6 +9,7 @@ trainer: ocp
 
 dataset:
   train:
+    no_shuffle: True
     format: lmdb
     src: data/SPICE/spice_separated/Solvated_Amino_Acids/train
     key_mapping:

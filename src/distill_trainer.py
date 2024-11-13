@@ -34,58 +34,8 @@ if TYPE_CHECKING:
 
 @registry.register_trainer("distill")
 class DistillTrainer(OCPTrainer):
-    def __init__(
-        self,
-        task,
-        model,
-        outputs,
-        dataset,
-        optimizer,
-        loss_functions,
-        evaluation_metrics,
-        identifier,
-        timestamp_id=None,
-        run_dir=None,
-        is_debug=False,
-        print_every=100,
-        seed=None,
-        logger="wandb",
-        local_rank=0,
-        amp=False,
-        cpu=False,
-        slurm=None,
-        noddp=False,
-        name="ocp",
-        gp_gpus=None,
-    ):
-        if slurm is None:
-            slurm = {}
-        super().__init__(
-            task=task,
-            model=model,
-            outputs=outputs,
-            dataset=dataset,
-            optimizer=optimizer,
-            loss_functions=loss_functions,
-            evaluation_metrics=evaluation_metrics,
-            identifier=identifier,
-            timestamp_id=timestamp_id,
-            run_dir=run_dir,
-            is_debug=is_debug,
-            print_every=print_every,
-            seed=seed,
-            logger=logger,
-            local_rank=local_rank,
-            amp=amp,
-            cpu=cpu,
-            slurm=slurm,
-            noddp=noddp,
-            name=name,
-            gp_gpus=gp_gpus,
-        )
-        
-        
-        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.is_validating = False
         self.force_mae =  None
         self.modify_train_val_datasets()
@@ -102,10 +52,10 @@ class DistillTrainer(OCPTrainer):
     def calculate_teacher_loss(self):
         self.teacher_force_mae = 0
         for datapoint in tqdm(self.val_dataset):
-            true_label = datapoint['forces']
+            true_label = datapoint['forces'].to(self.device)
             if 'forces' in self.normalizers:
                 true_label = self.normalizers['forces'].norm(true_label)
-            self.teacher_force_mae += torch.abs(datapoint['teacher_forces'] - true_label).mean().item()
+            self.teacher_force_mae += torch.abs(datapoint['teacher_forces'].to(self.device) - true_label).mean().item()
         self.teacher_force_mae /= len(self.val_dataset)
         print("TEACHER FORCE MAE:", self.teacher_force_mae)
         
@@ -212,13 +162,13 @@ class DistillTrainer(OCPTrainer):
         
         
         # NEW!!! Energy stuff to see if this even works. if it works we'll make it efficient 
-        if self.config['optim'].get('distill_energy', True):
-            energy_jac_loss = get_energy_jac_loss(
-                out=out,
-                batch=batch,
-                energy_std = self.normalizers['energy'].std
-            )
-            loss.append(15* energy_jac_loss)
+        # if self.config['optim'].get('distill_energy', True):
+        #     energy_jac_loss = get_energy_jac_loss(
+        #         out=out,
+        #         batch=batch,
+        #         energy_std = self.normalizers['energy'].std
+        #     )
+        #     loss.append(15* energy_jac_loss)
         
         
         
@@ -232,7 +182,7 @@ class DistillTrainer(OCPTrainer):
                 should_mask=should_mask, 
                 finite_differences= self.config['optim'].get('finite_differences', False),
                 looped=(not self.config['optim']["vectorize_jacs"]),
-                collater = self.ocp_collater,
+                # collater = self.ocp_collater,
                 forward = self._forward
             )
             if self.config['optim'].get("print_memory_usage", False):

@@ -31,12 +31,11 @@ if TYPE_CHECKING:
 
 
 class Runner(Checkpointable):
-    def __init__(self, distributed: bool = False) -> None:
+    def __init__(self) -> None:
         self.config = None
-        self.distributed = distributed
 
     def __call__(self, config: dict) -> None:
-        with new_trainer_context(config=config, distributed=self.distributed) as ctx:
+        with new_trainer_context(config=config) as ctx:
             self.config = ctx.config
             self.task = ctx.task
             self.trainer = ctx.trainer
@@ -44,12 +43,15 @@ class Runner(Checkpointable):
             self.task.run()
 
     def checkpoint(self, *args, **kwargs):
-        new_runner = Runner(self.distributed)
+        new_runner = Runner()
         self.trainer.save(checkpoint_file="checkpoint.pt", training_state=True)
         self.config["checkpoint"] = self.task.chkpt_path
         self.config["timestamp_id"] = self.trainer.timestamp_id
         if self.trainer.logger is not None:
             self.trainer.logger.mark_preempting()
+        logging.info(
+            f'Checkpointing callback is triggered, checkpoint saved to: {self.config["checkpoint"]}, timestamp_id: {self.config["timestamp_id"]}'
+        )
         return DelayedSubmission(new_runner, self.config)
 
 
@@ -63,6 +65,7 @@ def main():
     override_args: list[str]
     args, override_args = parser.parse_known_args()
     config = build_config(args, override_args)
+
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id
 

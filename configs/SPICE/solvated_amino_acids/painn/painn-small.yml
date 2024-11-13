@@ -9,7 +9,7 @@ model:
   num_rbf: 128
   cutoff: 12.0
   max_neighbors: 50
-  scale_file: configs/SPICE/solvated_amino_acids/painn/painn-small-scale.pt
+  scale_file: configs/SPICE/solvated_amino_acids/painn/new_fairchem_painn.pt
   regress_forces: True
   direct_forces: True
   use_pbc: True # Let's try true for this....

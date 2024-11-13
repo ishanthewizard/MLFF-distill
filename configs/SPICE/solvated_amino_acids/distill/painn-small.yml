@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/SPICE_labels/mace_off_large_SpiceAminos
+    teacher_labels_folder: data/labels/SPICE_labels/mace_off_large_SpiceAminos
     label_force_batch_size: 32
     label_jac_batch_size: 4
     vectorize_teach_jacs: True
@@ -23,7 +23,7 @@ loss_functions:
   - force_jacs:
       fn: l2mae
       coefficient: 400
-      reduction: mean_all
+      reduction: mean
 
 optim:
   batch_size: 8
