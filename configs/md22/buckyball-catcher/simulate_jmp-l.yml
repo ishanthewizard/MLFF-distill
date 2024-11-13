@@ -1,7 +1,7 @@
 includes:
 - configs/md22/buckyball-catcher/distill/gemnet-T-small.yml
 trainer: ocp
-MODELPATH: /data/shared/ishan_stuff/student_checkpoints/undistilled/md22 
+MODELPATH: data/student_checkpoints/undistilled/md22 
 run_name: 2024-11-08-17-57-20-gemTSmall-buckyball-correctenergynorm # this is the path of the model used to compute energies
 jmp:
   checkpoint_path: data/buckyball_catcher_jmp-l.ckpt
