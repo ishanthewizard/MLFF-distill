@@ -36,7 +36,7 @@ model:
 
 optim:
   batch_size: 8
-  eval_batch_size: 32
+  eval_batch_size: 8
   num_workers: 4
   lr_initial: 0.001
   optimizer: AdamW

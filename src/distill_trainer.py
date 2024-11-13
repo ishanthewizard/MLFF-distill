@@ -90,6 +90,7 @@ class DistillTrainer(OCPTrainer):
         self.start_time = time.time()
 
         # Compute teacher MAE
+
         self.calculate_teacher_loss()
         self.force_jac_loss_fn = self.loss_functions.pop()
         self.teacher_force_loss_fn = self.loss_functions.pop()
