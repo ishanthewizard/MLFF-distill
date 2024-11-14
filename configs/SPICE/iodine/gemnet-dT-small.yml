@@ -28,7 +28,7 @@ model:
   output_init: HeOrthogonal
   activation: silu
   scale_file: configs/md22/Ac-Ala3/gemnet-dT-scale.json
-  extensive: True
+  extensive: True 
   otf_graph: True
   regress_forces: True
   direct_forces: True
@@ -45,7 +45,6 @@ optim:
   patience: 5
   factor: 0.8
   min_lr: 0.000001  
-  
   max_epochs: 10000
   ema_decay: 0.999
   clip_grad_norm: 10

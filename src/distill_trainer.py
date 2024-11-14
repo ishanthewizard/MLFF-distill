@@ -162,18 +162,20 @@ class DistillTrainer(OCPTrainer):
         
         
         # NEW!!! Energy stuff to see if this even works. if it works we'll make it efficient 
-        # if self.config['optim'].get('distill_energy', True):
-        #     energy_jac_loss = get_energy_jac_loss(
-        #         out=out,
-        #         batch=batch,
-        #         energy_std = self.normalizers['energy'].std
-        #     )
-        #     loss.append(15* energy_jac_loss)
+        
+        if self.config['optim'].get('energy_distill_coeff', 0) > 0:
+            energy_jac_loss = get_energy_jac_loss(
+                out=out,
+                batch=batch,
+                energy_std = self.normalizers['energy'].rmsd
+            )
+            
+            en_dist_coeff = self.config['optim']['energy_distill_coeff']
+            loss.append(en_dist_coeff* energy_jac_loss)
         
         
         
-        
-        if self.force_jac_loss_fn[1]['coefficient'] !=0:
+        if self.force_jac_loss_fn[1]['coefficient'] > 0:
             force_jac_loss = get_force_jac_loss(
                 out=out, 
                 batch=batch, 

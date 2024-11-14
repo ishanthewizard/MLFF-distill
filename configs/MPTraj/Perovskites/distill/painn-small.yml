@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/MPtraj_labels/mace_mp_all_splits_Perovskites_noIons
+    teacher_labels_folder: data/labels/MPtraj_labels/mace_mp_all_splits_Perovskites_noIons
 
 loss_functions:
   - energy:
@@ -20,11 +20,10 @@ loss_functions:
   - force_jacs:
       fn: l2mae
       coefficient: 200
-      reduction: mean_all
 
 optim:
-  batch_size: 16
-  eval_batch_size: 32
   force_jac_sample_size: 1
   print_memory_usage: False
   vectorize_jacs: True
+  energy_distill_coeff: 10
+

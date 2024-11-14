@@ -9,20 +9,20 @@ model:
   num_rbf: 128
   cutoff: 12.0
   max_neighbors: 50
-  scale_file: configs/SPICE/solvated_amino_acids/painn/painn-small-scale.pt
+  scale_file: configs/SPICE/iodine/painn/new_fairchem_painn.pt
   regress_forces: True
   direct_forces: True
-  use_pbc: True #changed from original - let's see if this helps
+  use_pbc: True 
   otf_graph: True
 
 optim:
-  batch_size: 16
+  batch_size: 8
   eval_batch_size: 32
   load_balancing: atoms
-  num_workers: 8
+  num_workers: 4
   optimizer: AdamW
   optimizer_params: {"eps": 1.e-7, "weight_decay": 0.000002, "amsgrad": True}
-  lr_initial: 1.e-3
+  lr_initial: 1.e-3 
   scheduler: ReduceLROnPlateau
   patience: 10
   factor: 0.8

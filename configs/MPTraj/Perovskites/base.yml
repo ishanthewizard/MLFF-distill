@@ -1,14 +1,14 @@
 includes:
   - configs/slurm/premium.yml
-  # - configs/slurm/debug.yml
 logger: 
   name: wandb
-  project: MPTraj-Energy
+  project: MPTrj-Energy
 
 trainer: ocp
 
 dataset:
   train:
+    no_shuffle: True
     format: lmdb
     src: data/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons/train
     key_mapping:
@@ -17,13 +17,13 @@ dataset:
     transforms:
       normalizer:
         energy: 
-            # mean: -201.6314239501953 # for all mptraj (from eric)
-            # stdev: 203.66830444335938 # for all mptraj (from eric)
-            mean: -43.733 #true for perovskites
-            stdev: 1 #70.217 #true for perovskites
+          mean: 0
+          rmsd: 0.8114597201347351 # ryan's value for MPtrj
         forces: 
-            mean: 0
-            stdev: 1
+          mean: 0
+          rmsd: 1 # need this to match mace's value
+      element_references:
+        file: configs/MPTraj/element_references.pt
   val:
     src: data/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons/val
 
@@ -40,7 +40,7 @@ outputs:
 
 loss_functions:
   - energy:
-      fn: mae
+      fn: per_atom_mae
       coefficient: 5
   - forces:
       fn: l2mae
@@ -48,7 +48,7 @@ loss_functions:
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity

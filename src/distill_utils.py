@@ -184,16 +184,15 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
 
 
 def get_energy_jac_loss(out, batch, energy_std):
-    true_jac = -1 * batch['forces']
+    neg_force_label = -1 * batch['forces']
+    neg_force_label_normed = neg_force_label / energy_std # we've been training our energies to normalized targets (labels /= std), so we need to do the same here
+    
     energy_jac = torch.autograd.grad(out['energy'].sum(), batch.pos, create_graph=True, retain_graph=True)[0]
-    energy_jac *= energy_std
     
-    custom_loss = lambda jac, true_jac: torch.norm(jac - true_jac, p=2, dim=-1).sum(dim=0)
-    loss = custom_loss(energy_jac, true_jac)
+    custom_loss = lambda jac, true_jac: torch.norm(jac - true_jac, p=2, dim=-1).sum(dim=0) 
+    loss = custom_loss(energy_jac, neg_force_label_normed)
     
-    num_samples = sum(batch.natoms)
-    num_samples = distutils.all_reduce(num_samples, device=true_jac.device)
-    loss  = loss * distutils.get_world_size() / num_samples
+    loss  = loss / sum(batch.natoms) # different options here, currently weighting all systems the same regardless of size
     
     return loss
     

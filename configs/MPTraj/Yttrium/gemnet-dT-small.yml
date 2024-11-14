@@ -32,10 +32,10 @@ model:
   extensive: True
   otf_graph: True
   regress_forces: True
-  direct_forces: True
+  direct_forces: True # note, temporarly changed
 
 optim:
-  batch_size: 16
+  batch_size: 8
   eval_batch_size: 16
   num_workers: 4
   lr_initial: 0.001
@@ -46,7 +46,6 @@ optim:
   patience: 5
   factor: 0.8
   min_lr: 0.000001  
-  
   max_epochs: 1000
   ema_decay: 0.999
   clip_grad_norm: 10

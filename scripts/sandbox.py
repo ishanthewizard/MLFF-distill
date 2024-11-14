@@ -11,6 +11,11 @@ import lmdb
 from torch.utils.data import Subset
 from ase.io import read
 # breakpoint()
+dataset_path = 'data/SPICE/spice_separated/Solvated_Amino_Acids/train'
+# dataset_path = '/data/shared/MLFF/SPICE/maceoff_split/train'
+dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
+print(dataset[0])
+breakpoint()
 
 preprocessed_datapath = '/data/shared/MPTrj/original'
 mp_id = 1006278

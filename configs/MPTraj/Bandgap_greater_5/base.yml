@@ -1,27 +1,29 @@
 includes:
   - configs/slurm/premium.yml
-  # - configs/slurm/debug.yml
 logger: 
   name: wandb
-  project: MPTraj
+  project: MPTrj-Energy
 
 trainer: ocp
 
 dataset:
   train:
+    no_shuffle: True
     format: lmdb
-    src: data/mptraj_seperated_all_splits/Bandgap_greater_than_5/train
+    src: data/MPtraj/mptraj_seperated_all_splits/Bandgap_greater_than_5/train
     key_mapping:
       corrected_total_energy: energy
       force: forces
     transforms:
       normalizer:
         energy: 
-            mean: 0
-            stdev: 1
+          mean: 0
+          rmsd: 0.8114597201347351 # ryan's value for MPtrj
         forces: 
-            mean: 0
-            stdev: 1
+          mean: 0
+          rmsd: 1 # need this to match mace's value
+      element_references:
+        file: configs/MPTraj/element_references.pt
   val:
     src: data/MPtraj/mptraj_seperated_all_splits/Bandgap_greater_than_5/val
 
@@ -38,15 +40,15 @@ outputs:
 
 loss_functions:
   - energy:
-      fn: mae
-      coefficient: 0
+      fn: per_atom_mae
+      coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity

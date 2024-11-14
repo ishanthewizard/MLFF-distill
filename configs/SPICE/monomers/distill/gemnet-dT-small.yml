@@ -5,11 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: labels/SPICE_labels/mace_off_large_SpiceMonomers
-    # teacher_labels_folder: /pscratch/sd/i/ishan_a/SPICE_labels/mace_off_large_SpiceMonomers
-    label_force_batch_size: 32
-    label_jac_batch_size: 4
-    vectorize_teach_jacs: True
+    teacher_labels_folder: data/labels/SPICE_labels/mace_off_large_SpiceMonomers
 
 loss_functions:
   - energy:
@@ -24,11 +20,9 @@ loss_functions:
   - force_jacs:
       fn: l2mae
       coefficient: 400
-      reduction: mean_all
 
 optim:
-  batch_size: 16
-  eval_batch_size: 32
   force_jac_sample_size: 1
   print_memory_usage: False
   vectorize_jacs: True
+  energy_distill_coeff: 10

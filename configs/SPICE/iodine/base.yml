@@ -1,14 +1,14 @@
 includes:
-  - configs/slurm/regular.yml
-  # - configs/slurm/debug.yml
+  - configs/slurm/premium.yml
 logger: 
   name: wandb
-  project: spice
+  project: spice-Energy
 
 trainer: ocp
 
 dataset:
   train:
+    no_shuffle: True
     format: lmdb
     src: data/SPICE/spice_separated/Iodine/train
     key_mapping:
@@ -17,11 +17,13 @@ dataset:
     transforms:
       normalizer:
         energy: 
-            mean: -129.40 # actual formation energy value for iodine
-            stdev: 69.63  # actual formation energy value for iodine
-        forces: 
             mean: 0
-            stdev: 1
+            rmsd: 0.08761493116617203 # Ryan's value for spice
+        forces: 
+            mean: 0   # 
+            rmsd: 1  # 
+      element_references:
+        file: configs/SPICE/element_references.pt
   val:
     src: data/SPICE/spice_separated/Iodine/val
 
@@ -38,15 +40,15 @@ outputs:
 
 loss_functions:
   - energy:
-      fn: mae
-      coefficient: 0
+      fn: per_atom_mae
+      coefficient: 1
   - forces:
       fn: l2mae
-      coefficient: 100
+      coefficient: 1
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity
