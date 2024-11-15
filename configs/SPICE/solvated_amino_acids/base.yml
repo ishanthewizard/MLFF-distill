@@ -44,7 +44,7 @@ loss_functions:
       coefficient: 1
   - forces:
       fn: l2mae
-      coefficient: 1
+      coefficient: 100
 evaluation_metrics:
   metrics:
     energy:

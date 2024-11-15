@@ -1,5 +1,5 @@
 includes:
-  - configs/slurm/premium.yml
+  - configs/slurm/regular.yml
 logger: 
   name: wandb
   project: spice-Energy
@@ -44,7 +44,7 @@ loss_functions:
       coefficient: 1
   - forces:
       fn: l2mae
-      coefficient: 1
+      coefficient: 100
 evaluation_metrics:
   metrics:
     energy:
