@@ -136,6 +136,7 @@ if __name__ == "__main__":
         
         model.load_state_dict(new_sd, strict=True)
         model.to("cuda")
+        import pdb; pdb.set_trace()
 
         # get normalization constants
         mean_force = jmp_config.normalization['force'].mean

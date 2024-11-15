@@ -37,7 +37,7 @@ loss_functions:
       reduction: mean_all
 
 optim:
-  batch_size: 1
+  batch_size: 4
   eval_batch_size: 4
   force_jac_sample_size: 1
   print_memory_usage: False

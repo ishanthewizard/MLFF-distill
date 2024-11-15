@@ -1,0 +1,14 @@
+includes:
+- configs/SPICE/monomers/distill/gemnet-dT-small.yml
+
+trainer: ocp
+
+MODELPATH: /data/shared/ishan_stuff/student_checkpoints/spice
+run_name: 2024-09-05-09-04-16-monomers-gemSmall-DIST
+start_idx: 0
+end_idx: 10
+seed: 123
+save_freq: 100
+steps: 100000
+fmax: 0.05
+  

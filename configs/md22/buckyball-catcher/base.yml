@@ -23,9 +23,9 @@ dataset:
             mean: 0
             stdev: 1.0899031
   val:
-    src: data/md22/lmdb/buckyball-catcher/test
-  test:
-    src: data/md22/lmdb/buckyball-catcher/test
+    src: data/md22/lmdb/buckyball-catcher/val
+  # test:
+  #   src: data/md22/lmdb/buckyball-catcher/test
 
 outputs:
   energy:

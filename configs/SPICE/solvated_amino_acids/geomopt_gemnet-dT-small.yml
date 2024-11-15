@@ -3,9 +3,10 @@ includes:
 
 MODELPATH: /data/shared/ishan_stuff/student_checkpoints/spice
 run_name: 2024-09-05-09-42-40-amino-gemSmall
-init_data_idx: 10
+start_idx: 0
+end_idx: 10
 seed: 123
 save_freq: 100
-steps: 100
+steps: 1000000
 fmax: 0.05
   

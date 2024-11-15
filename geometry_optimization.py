@@ -37,46 +37,60 @@ if __name__ == "__main__":
 
     data = LmdbDataset(config["dataset"]["test"])
 
-    idx = config["init_data_idx"]
-    init_data = data.__getitem__(idx)
-    if "cell" not in init_data:
-        init_data["cell"] = 100 * torch.eye(3)
-    atoms = data_to_atoms(init_data)
+    start_idx = config["start_idx"]
+    end_idx = config["end_idx"]
+    if end_idx == -1:
+        end_idx = len(data)
 
-    # Set up the OCP calculator
-    checkpoint_path = os.path.join(
-        config["MODELPATH"], config["run_name"], "best_checkpoint.pt"
-    )
-    calc = OCPCalculator(
-        config_yml=args.config_yml.__str__(),
-        checkpoint_path=checkpoint_path,
-        cpu=False,
-        seed=args.seed,
-    )
+    
 
-    atoms.calc = calc
+    if "mace" in config.keys():
+        calc = mace_mp(model="large", dispersion=False, default_dtype="float32", device='cuda')
+        traj_path = "data/mace_off_geom_opt"
+        os.makedirs(traj_path, exist_ok=True)
+    else:
+        # Set up the OCP calculator
+        checkpoint_path = os.path.join(
+            config["MODELPATH"], config["run_name"], "best_checkpoint.pt"
+        )
+        traj_path = os.path.dirname(checkpoint_path)
+        calc = OCPCalculator(
+            config_yml=args.config_yml.__str__(),
+            checkpoint_path=checkpoint_path,
+            cpu=False,
+            seed=args.seed,
+        )
 
-    # Run geometry optimization
+        
 
-    traj_path = os.path.dirname(checkpoint_path)
-    dyn = FIRE(
-        atoms, trajectory=os.path.join(traj_path, f"geom_opt_system{idx}.traj")
-    )
-    dyn.attach(
-        MDLogger(
-            dyn,
-            atoms,
-            os.path.join(traj_path, f"geom_opt_system{idx}.log"),
-            header=True,
-            stress=False,
-            peratom=True,
-            mode="a",
-        ),
-        interval=config["save_freq"],
-    )
+    for idx in range(start_idx, end_idx):
+        init_data = data.__getitem__(idx)
+        if "cell" not in init_data:
+            init_data["cell"] = 100 * torch.eye(3)
+        atoms = data_to_atoms(init_data)
 
-    dyn.run(steps=config["steps"], fmax=config["fmax"])
+        atoms.calc = calc
 
-    print("Geometry optimization done.")
+        # Run geometry optimization
+        
+        dyn = FIRE(
+            atoms, trajectory=os.path.join(traj_path, f"geom_opt_system{idx}.traj")
+        )
+        dyn.attach(
+            MDLogger(
+                dyn,
+                atoms,
+                os.path.join(traj_path, f"geom_opt_system{idx}.log"),
+                header=True,
+                stress=False,
+                peratom=True,
+                mode="a",
+            ),
+            interval=config["save_freq"],
+        )
+
+        dyn.run(steps=config["steps"], fmax=config["fmax"])
+
+        print("Geometry optimization done.")
 
     
