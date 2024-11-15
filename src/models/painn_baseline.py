@@ -52,7 +52,7 @@ from fairchem.core.models.gemnet.layers.radial_basis import RadialBasis
 from fairchem.core.modules.scaling import ScaleFactor
 from fairchem.core.modules.scaling.compat import load_scales_compat
 
-from .utils import get_edge_id, repeat_blocks
+from fairchem.core.models.painn.utils import get_edge_id, repeat_blocks
 
 
 @registry.register_model("painn_baseline")

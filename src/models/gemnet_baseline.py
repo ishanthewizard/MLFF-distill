@@ -23,14 +23,14 @@ from fairchem.core.common.utils import conditional_grad
 from fairchem.core.models.base import BackboneInterface, GraphModelMixin, HeadInterface
 from fairchem.core.modules.scaling.compat import load_scales_compat
 
-from .layers.atom_update_block import OutputBlock
-from .layers.base_layers import Dense
-from .layers.efficient import EfficientInteractionDownProjection
-from .layers.embedding_block import AtomEmbedding, EdgeEmbedding
-from .layers.interaction_block import InteractionBlockTripletsOnly
-from .layers.radial_basis import RadialBasis
-from .layers.spherical_basis import CircularBasisLayer
-from .utils import inner_product_normalized, mask_neighbors, ragged_range, repeat_blocks
+from fairchem.core.models.gemnet.layers.atom_update_block import OutputBlock
+from fairchem.core.models.gemnet.layers.base_layers import Dense
+from fairchem.core.models.gemnet.layers.efficient import EfficientInteractionDownProjection
+from fairchem.core.models.gemnet.layers.embedding_block import AtomEmbedding, EdgeEmbedding
+from fairchem.core.models.gemnet.layers.interaction_block import InteractionBlockTripletsOnly
+from fairchem.core.models.gemnet.layers.radial_basis import RadialBasis
+from fairchem.core.models.gemnet.layers.spherical_basis import CircularBasisLayer
+from fairchem.core.models.gemnet.utils import inner_product_normalized, mask_neighbors, ragged_range, repeat_blocks
 
 
 @registry.register_model("gemnet_t_baseline")
@@ -123,6 +123,10 @@ class GemNetT(nn.Module, GraphModelMixin):
         activation: str = "swish",
         num_elements: int = 83,
         scale_file: str | None = None,
+        teacher_atom_embedding_path: str = None,
+        use_teacher_atom_embeddings: bool = False,
+        baseline: bool = False,
+        emb_size_teacher: int = 256,
     ):
         if cbf is None:
             cbf = {"name": "spherical_harmonics"}

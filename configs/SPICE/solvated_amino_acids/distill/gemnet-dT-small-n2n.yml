@@ -10,6 +10,7 @@ dataset:
     vectorize_teach_jacs: True
 
 model:
+  name: gemnet_t_baseline
   use_teacher_atom_embeddings: False
 
 outputs:
@@ -23,20 +24,20 @@ loss_functions:
   - energy:
       fn: mae
       coefficient: 0
+      reduction: 
   - forces:
       fn: l2mae
       coefficient: 100
-  - teacher_forces:
-      fn: l2mae
-      coefficient: 0
   - final_node_features:
       fn: mse
       coefficient: 1000
+  - teacher_forces:
+      fn: l2mae
+      coefficient: 0
+
   - force_jacs:
       fn: l2mae
       coefficient: 0
-      reduction: mean_all
-
 
 evaluation_metrics:
   metrics:
@@ -54,7 +55,7 @@ evaluation_metrics:
   
 
 optim:
-  batch_size: 32
+  batch_size: 1
   eval_batch_size: 32
   force_jac_sample_size: 10
   print_memory_usage: False

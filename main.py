@@ -26,6 +26,9 @@ from fairchem.core.common.utils import (
     setup_logging,
 )
 
+from src.models.gemnet_baseline import GemNetT
+from src.models.painn_baseline import PaiNN
+
 if TYPE_CHECKING:
     import argparse
 

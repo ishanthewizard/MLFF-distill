@@ -3,10 +3,15 @@ wandb
 checkpoints/
 teacher_checkpoints/
 student_checkpoints/
+lightning_logs/
 results
 labels/
 MODELPATH
 logs
+*.png
+*.sh
+*.ckpt
+
 *.traj
 experimental
 
