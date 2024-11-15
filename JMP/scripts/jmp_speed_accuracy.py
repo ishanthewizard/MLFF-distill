@@ -70,7 +70,7 @@ def evaluate_speed_accuracy(args):
 
     
 
-    dataset = model.val_dataset()
+    dataset = model.test_dataset()
 
     dataloader = DataLoader(
         dataset,
@@ -89,6 +89,7 @@ def evaluate_speed_accuracy(args):
         if i > args.stop_record_idx:
             break
         batch = batch.to("cuda")
+        true_force = batch.force * std_force + mean_force
         if i >= args.start_record_idx and start is None:
                 start = time.time()
         with torch.no_grad():
@@ -100,16 +101,18 @@ def evaluate_speed_accuracy(args):
         pred_forces = pred_forces * std_force + mean_force
 
         # Compute the Force MAE and Energy MAE
-        force_mae +=  mae(pred_forces, batch.force)
+        _mae = mae(pred_forces, true_force)
+        force_mae +=  _mae
         # energy_mae += (pred_energy - batch.y).abs().mean()
 
-    force_mae /= args.stop_record_idx
+    
+    force_mae /= (i+1)
     # energy_mae /= len(dataloader)
 
     print(f"Force MAE (meV/A): {1000*force_mae}")
     # print(f"Energy MAE (meV): {1000*energy_mae}")
 
-    iter_per_s = ((args.stop_record_idx - args.start_record_idx) * args.batch_size) / (time.time() -  start)
+    iter_per_s = ((i+1 - args.start_record_idx) * args.batch_size) / (time.time() -  start)
     print(f"THROUGHPUT SAMP PER SECOND: {round(iter_per_s)}") #technically this doesn't exactly work for huge batch sizes because te last one could be wrong
     print(f"THROUGHPUT NS PER DAY: {round(iter_per_s * .0864, 1)}") 
 
@@ -120,7 +123,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint_path",
         type=str,
-        default="/data/shared/ishan_stuff/nanotube_jmp-l.ckpt",
+        default="/data/shared/ishan_stuff/buckyball_catcher_jmp-s.ckpt",
         help="Path to the JMP finetuned checkpoint.",
     )
     parser.add_argument(
@@ -133,7 +136,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--molecule",
         type=str,
-        default="double-walled_nanotube",
+        default="buckyball-catcher",
         help="Molecule to simulate.",
     )
 

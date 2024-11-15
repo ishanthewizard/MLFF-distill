@@ -44,7 +44,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint_path",
         type=str,
-        default="/data/shared/ishan_stuff/jmp-l.pt",
+        default="/data/shared/ishan_stuff/jmp-s.pt",
         help="Path to the pretrained checkpoint.",
     )
     parser.add_argument(

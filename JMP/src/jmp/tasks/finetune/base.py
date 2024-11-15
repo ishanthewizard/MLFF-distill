@@ -784,7 +784,7 @@ class FinetuneModelBase(LightningModuleBase[TConfig], Generic[TConfig]):
         preds: dict[str, torch.Tensor],
     ) -> MetricPair | None:
 
-        if (pred := preds.get(prop).to(torch.float32)) is None or (
+        if (pred := preds.get(prop)) is None or (
             target := getattr(batch, prop, None)
         ) is None:
             return None
@@ -792,11 +792,13 @@ class FinetuneModelBase(LightningModuleBase[TConfig], Generic[TConfig]):
         if (
             self.config.normalization
             and (norm := self.config.normalization.get(prop)) is not None
-        ):
+        ):  
+
+            pred = pred.to(torch.float32)
             # Denormalize the predictions and targets
             pred = pred * norm.std + norm.mean
             target = target * norm.std + norm.mean
-
+        
         return MetricPair(predicted=pred, ground_truth=target)
 
     @override
