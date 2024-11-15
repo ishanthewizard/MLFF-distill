@@ -23,7 +23,7 @@ dataset:
             mean: 0
             stdev: 1.0137014
   val:
-    src: data/md22/lmdb/double-walled_nanotube/test
+    src: data/md22/lmdb/double-walled_nanotube/val
   # test:
   #   src: data/md22/lmdb/double-walled_nanotube/test
   
