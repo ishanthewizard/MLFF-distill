@@ -12,7 +12,7 @@ dataset:
   train:
     no_shuffle: True
     format: lmdb
-    src: data/SPICE/spice_separated/Iodine/train
+    src: data/spice_separated/Iodine/train
     key_mapping:
       y: energy
       force: forces
@@ -25,7 +25,7 @@ dataset:
             mean: 0
             stdev: 1
   val:
-    src: data/SPICE/spice_separated/Iodine/val
+    src: data/spice_separated/Iodine/val
 
 
 outputs:

@@ -10,9 +10,9 @@ trainer: ocp
 dataset:
   train:
     no_shuffle: True
-    teacher_labels_folder: /pscratch/sd/i/ishan_a/labels/mace_off_large_SpiceMonomers
+    teacher_labels_folder: labels/mace_off_large_SpiceMonomers
     format: lmdb
-    src: data/SPICE/spice_separated/DES370K_Monomers/train
+    src: data/spice_separated/DES370K_Monomers/train
     key_mapping:
       reference_energy: energy
       force: forces
@@ -25,7 +25,7 @@ dataset:
             mean: 0 
             stdev: 1          # true std: .9473
   val:
-    src: data/SPICE/spice_separated/DES370K_Monomers/val
+    src: data/spice_separated/DES370K_Monomers/val
 
 
 outputs:
