@@ -19,12 +19,14 @@ dataset:
       force: forces
     transforms:
       normalizer:
-        energy: 
-            mean: -129.40 # actual formation energy value for iodine
-            stdev: 69.63  # actual formation energy value for iodine
-        forces: 
+        energy:
             mean: 0
-            stdev: 1
+            rmsd: 0.08761493116617203 # Ryan’s value for spice
+        forces:
+            mean: 0   #
+            rmsd: 1  #
+      element_references:
+        file: configs/SPICE/element_references.pt
   val:
     src: data/spice_separated/Iodine/val
 
@@ -41,15 +43,16 @@ outputs:
 
 loss_functions:
   - energy:
-      fn: mae
-      coefficient: 0
+      fn: per_atom_mae
+      coefficient: 1
   - forces:
       fn: l2mae
       coefficient: 100
+
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity

@@ -11,7 +11,7 @@ dataset:
 
 loss_functions:
   - energy:
-      fn: mae
+      fn: per_atom_mae
       coefficient: 1
       reduction: 
   - forces:

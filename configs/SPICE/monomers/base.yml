@@ -18,12 +18,14 @@ dataset:
       force: forces
     transforms:
       normalizer:
-        energy: 
-            mean: -52.56 # proper formation number for monomers
-            stdev: 1 #17.29  # proper formation number for monomers
-        forces: 
-            mean: 0 
-            stdev: 1          # true std: .9473
+        energy:
+            mean: 0
+            rmsd: 0.08761493116617203 # Ryan’s value for spice
+        forces:
+            mean: 0   #
+            rmsd: 1  #
+      element_references:
+        file: configs/SPICE/element_references.pt
   val:
     src: data/spice_separated/DES370K_Monomers/val
 
@@ -40,15 +42,16 @@ outputs:
 
 loss_functions:
   - energy:
-      fn: mae
+      fn: per_atom_mae
       coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100
+      
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity

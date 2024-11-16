@@ -19,12 +19,15 @@ dataset:
       force: forces
     transforms:
       normalizer:
-        energy: 
-            mean: -322.07 #  actual formation energy value for solvated
-            stdev: 20.60 #idk how to actually deal with the scaling issue, so we'll go with 1.  20.60 is actual formation energy value for solvated
-        forces: 
-            mean: 0   # actual for forces: 0
-            stdev: 1  # actual for std: 1.549
+        energy:
+            mean: 0
+            rmsd: 0.08761493116617203 # Ryan’s value for spice
+        forces:
+            mean: 0   #
+            rmsd: 1  #
+      element_references:
+        file: configs/SPICE/element_references.pt
+
   val:
     src: data/spice_separated/Solvated_Amino_Acids/val
   # test:
@@ -41,17 +44,19 @@ outputs:
     train_on_free_atoms: True
     eval_on_free_atoms: True
 
+
 loss_functions:
   - energy:
-      fn: mae
+      fn: per_atom_mae
       coefficient: 1
   - forces:
       fn: l2mae
       coefficient: 100
+    
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity
