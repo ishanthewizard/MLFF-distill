@@ -1,4 +1,5 @@
 import os
+from fairchem.src.fairchem.core.datasets.base_dataset import create_dataset
 import numpy as np
 from ase import Atoms
 from mace.calculators import mace_off, mace_mp
@@ -11,7 +12,7 @@ from src.distill_utils import print_cuda_memory_usage
 import argparse
 
 
-def get_accuracy(dataset_path, model='small'):
+def get_accuracy(dataset_path, model='large'):
     # Load model
     calc = mace_off(model=model, dispersion=False,  default_dtype="float32", device="cuda")
     # # Counting parameters
@@ -22,6 +23,11 @@ def get_accuracy(dataset_path, model='small'):
     
     # Load the dataset
     dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
+    
+    # dataset = create_dataset(
+    #     {"src": dataset_path, "no_shuffle": True},
+    #     "train"
+    # )
     
 
     # indxs = np.random.default_rng(seed=123).choice(len(dataset), 1000, replace=False)
@@ -41,10 +47,9 @@ def get_accuracy(dataset_path, model='small'):
         num_atoms.append(len(atomic_numbers))
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy())
         atoms.calc = calc
-        print(sample.atomic_numbers)
         predicted_energy = atoms.get_potential_energy()
         predicted_force = atoms.get_forces()
-        energy_mae_loss += abs(predicted_energy - true_energy)
+        energy_mae_loss += abs(predicted_energy - true_energy) / len(atomic_numbers)
         # numel_energy += len(atomic_numbers)
         force_mae_loss += np.abs(predicted_force - true_force).sum()
         numel += len(sample.pos) * 3

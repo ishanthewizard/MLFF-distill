@@ -3,6 +3,7 @@ wandb
 checkpoints/
 teacher_checkpoints/
 student_checkpoints/
+student_energy_checkpoints/
 results
 labels/
 MODELPATH
