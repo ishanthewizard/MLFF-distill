@@ -14,7 +14,7 @@ dataset:
     format: lmdb
     src: data/spice_separated/DES370K_Monomers/train
     key_mapping:
-      reference_energy: energy
+      y: energy
       force: forces
     transforms:
       normalizer:

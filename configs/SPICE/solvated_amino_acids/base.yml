@@ -15,7 +15,7 @@ dataset:
     src: data/spice_separated/Solvated_Amino_Acids/train
     teacher_labels_folder: labels/mace_off_large_SpiceAminos
     key_mapping:
-      reference_energy: energy
+      y: energy
       force: forces
     transforms:
       normalizer:
