@@ -10,7 +10,7 @@ dataset:
     vectorize_teach_jacs: True
 
 model:
-  name: gemnet_t_baseline
+  name: src.models.gemnet_baseline.GemNetT #gemnet_t_baseline
   baseline: True
   use_teacher_node_embeddings: True
   use_teacher_atom_embeddings: False

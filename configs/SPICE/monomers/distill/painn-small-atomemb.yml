@@ -10,7 +10,7 @@ dataset:
     vectorize_teach_jacs: True
 
 model:
-  name: painn_baseline
+  name: src.models.painn_baseline.PaiNN
   baseline: True
   use_teacher_node_embeddings: False
   use_teacher_atom_embeddings: True

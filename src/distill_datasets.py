@@ -25,6 +25,7 @@ class CombinedDataset(Dataset):
         self.metadata_hasattr = self.main_dataset.metadata_hasattr
         
         self.final_node_feature_dataset = final_node_feature_dataset
+        self.get_metadata = self.main_dataset.get_metadata
 
     def __len__(self):
         return len(self.main_dataset)  # Assuming both datasets are the same size
