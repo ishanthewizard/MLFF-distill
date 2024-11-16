@@ -27,7 +27,7 @@ outputs:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 0
+      coefficient: 1
       reduction: 
   - forces:
       fn: l2mae
