@@ -9,7 +9,7 @@ model:
   num_rbf: 128
   cutoff: 12.0
   max_neighbors: 50
-  scale_file: configs/SPICE/iodine/painn/painn-small-scale.pt
+  scale_file: configs/SPICE/iodine/painn/new_fairchem_painn.pt
   regress_forces: True
   direct_forces: True
   use_pbc: True
