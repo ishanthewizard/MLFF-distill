@@ -80,6 +80,7 @@ class PaiNN(nn.Module, GraphModelMixin):
         scale_file: str | None = None,
         #added arguments distillation
         teacher_atom_embedding_path: str | None = None,
+        use_teacher_node_embeddings: bool = False,
         use_teacher_atom_embeddings: bool = False,
         emb_size_teacher: int = 224,
         baseline: bool = False,
@@ -104,6 +105,7 @@ class PaiNN(nn.Module, GraphModelMixin):
         # distillation init
         self.teacher_atom_embedding_path = teacher_atom_embedding_path
 
+        self.use_teacher_node_embeddings = use_teacher_node_embeddings
         self.use_teacher_atom_embeddings = use_teacher_atom_embeddings
 
         self.emb_size_teacher = emb_size_teacher
@@ -117,7 +119,8 @@ class PaiNN(nn.Module, GraphModelMixin):
 
         #### Learnable parameters #############################################
 
-        self.atom_emb = AtomEmbedding(hidden_channels, num_elements)
+        if not (self.baseline and self.use_teacher_atom_embeddings):
+            self.atom_emb = AtomEmbedding(hidden_channels, num_elements)
 
         self.radial_basis = RadialBasis(
             num_radial=num_rbf,
@@ -155,16 +158,16 @@ class PaiNN(nn.Module, GraphModelMixin):
         
         # Distillation-specific projections
 
-        # self.baseline = True # TEMP
+        # Distillation-specific projections
         if self.baseline:
 
-            self.final_node_feature_projection = torch.nn.Linear(hidden_channels, emb_size_teacher)
+            if self.use_teacher_node_embeddings:
+                self.final_node_feature_projection = torch.nn.Linear(hidden_channels, emb_size_teacher)
 
-            self.atom_embedding_projection = torch.nn.Linear(emb_size_teacher, hidden_channels)
+            if self.use_teacher_atom_embeddings:
+                self.atom_embedding_projection = torch.nn.Linear(emb_size_teacher, hidden_channels)
 
-            self.teacher_atom_embedding_path = "/data/shared/ishan_stuff/labels_unlocked/mace_mp0_atom_embeddings.npy" # TEMP
-
-            self.teacher_atom_embeddings = torch.tensor(np.load(self.teacher_atom_embedding_path), dtype=torch.float32, device='cuda')
+                self.teacher_atom_embeddings = torch.tensor(np.load(self.teacher_atom_embedding_path), dtype=torch.float32, device='cuda')
         # end distill
 
     def reset_parameters(self) -> None:
@@ -409,15 +412,16 @@ class PaiNN(nn.Module, GraphModelMixin):
 
         edge_rbf = self.radial_basis(edge_dist)  # rbf * envelope
 
-        x = self.atom_emb(z)
+        
         
         # distill added
         if self.use_teacher_atom_embeddings and self.baseline:
-
             teacher_x = self.teacher_atom_embeddings[z]
 
             x = self.atom_embedding_projection(teacher_x)
         # end distill added
+        else:
+            x = self.atom_emb(z)
             
         vec = torch.zeros(x.size(0), 3, x.size(1), device=x.device)
 
@@ -443,7 +447,7 @@ class PaiNN(nn.Module, GraphModelMixin):
         outputs = {"energy": energy}
 
         # distill start
-        if self.baseline:
+        if self.baseline and self.use_teacher_node_embeddings:
             outputs['final_node_features'] = self.final_node_feature_projection(x)
         else:
             outputs['final_node_features'] = torch.zeros((x.shape[0], self.emb_size_teacher), device=x.device)

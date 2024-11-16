@@ -11,7 +11,11 @@ dataset:
 
 model:
   name: painn_baseline
+  baseline: True
+  use_teacher_node_embeddings: True
   use_teacher_atom_embeddings: False
+  teacher_atom_embedding_path: labels/mace_off_large_atom_embeddings.npy
+  emb_size_teacher: 224
 
 outputs:
   final_node_features:
