@@ -1,5 +1,5 @@
 includes:
-- configs/SPICE/iodine/gemnet-dT-small.yml
+- configs/SPICE/monomers/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
@@ -8,7 +8,6 @@ dataset:
     label_force_batch_size: 32
     label_jac_batch_size: 4
     vectorize_teach_jacs: True
-
 
 loss_functions:
   - energy:
@@ -35,8 +34,6 @@ evaluation_metrics:
       - mae
       - cosine_similarity
       - magnitude_error
-    final_node_features:
-      - mse
     misc:
       - energy_forces_within_threshold
   primary_metric: forces_mae

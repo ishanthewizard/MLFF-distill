@@ -1,46 +1,28 @@
 includes:
-- configs/SPICE/iodine/gemnet-dT-small.yml
+- configs/SPICE/iodine/painn/painn-grad.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
+    teacher_labels_folder: labels/SPICE_labels/mace_off_large_SpiceAminos
     label_force_batch_size: 32
     label_jac_batch_size: 4
     vectorize_teach_jacs: True
 
-
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 1
-      reduction: 
+      coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100
   - teacher_forces:
       fn: l2mae
       coefficient: 0
-
   - force_jacs:
       fn: l2mae
-      coefficient: 400
-
-
-evaluation_metrics:
-  metrics:
-    energy:
-      - mae
-    forces:
-      - mae
-      - cosine_similarity
-      - magnitude_error
-    final_node_features:
-      - mse
-    misc:
-      - energy_forces_within_threshold
-  primary_metric: forces_mae
-  
+      coefficient: 200
 
 optim:
   batch_size: 8
@@ -48,3 +30,4 @@ optim:
   force_jac_sample_size: 1
   print_memory_usage: False
   vectorize_jacs: True
+  distill_energy: False

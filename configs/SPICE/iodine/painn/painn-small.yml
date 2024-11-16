@@ -13,7 +13,6 @@ model:
   regress_forces: True
   direct_forces: True
   use_pbc: True
-  emb_size_teacher: 224
   otf_graph: True
 
 optim:

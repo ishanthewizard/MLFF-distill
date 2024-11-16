@@ -10,7 +10,12 @@ dataset:
     vectorize_teach_jacs: True
 
 model:
+  name: gemnet_t_baseline
+  baseline: True
+  use_teacher_node_embeddings: False
   use_teacher_atom_embeddings: True
+  teacher_atom_embedding_path: labels/mace_off_large_atom_embeddings.npy
+  emb_size_teacher: 224
 
 outputs:
   final_node_features:
@@ -22,20 +27,21 @@ outputs:
 loss_functions:
   - energy:
       fn: mae
-      coefficient: 0
+      coefficient: 1
+      reduction: 
   - forces:
       fn: l2mae
       coefficient: 100
-  - teacher_forces:
-      fn: l2mae
-      coefficient: 0
   - final_node_features:
       fn: mse
       coefficient: 0
+  - teacher_forces:
+      fn: l2mae
+      coefficient: 0
+
   - force_jacs:
       fn: l2mae
       coefficient: 0
-      reduction: mean_all
 
 
 evaluation_metrics:

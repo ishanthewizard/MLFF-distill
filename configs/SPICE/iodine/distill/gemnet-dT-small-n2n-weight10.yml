@@ -9,6 +9,20 @@ dataset:
     label_jac_batch_size: 4
     vectorize_teach_jacs: True
 
+model:
+  name: gemnet_t_baseline
+  baseline: True
+  use_teacher_node_embeddings: True
+  use_teacher_atom_embeddings: False
+  teacher_atom_embedding_path: labels/mace_off_large_atom_embeddings.npy
+  emb_size_teacher: 224
+
+outputs:
+  final_node_features:
+    irrep_dim: 1
+    level: atom
+    train_on_free_atoms: True
+    eval_on_free_atoms: True
 
 loss_functions:
   - energy:
@@ -18,14 +32,16 @@ loss_functions:
   - forces:
       fn: l2mae
       coefficient: 100
+  - final_node_features:
+      fn: mse
+      coefficient: 10
   - teacher_forces:
       fn: l2mae
       coefficient: 0
 
   - force_jacs:
       fn: l2mae
-      coefficient: 400
-
+      coefficient: 0
 
 evaluation_metrics:
   metrics:
@@ -43,8 +59,8 @@ evaluation_metrics:
   
 
 optim:
-  batch_size: 8
+  batch_size: 1
   eval_batch_size: 32
-  force_jac_sample_size: 1
+  force_jac_sample_size: 10
   print_memory_usage: False
   vectorize_jacs: True
