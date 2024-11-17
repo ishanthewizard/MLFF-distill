@@ -206,7 +206,8 @@ def plot_stability(data_split, checkpoint_dir, md_dirs, ref_calc, append_name = 
             for i in tqdm(range(1, len(T))):
                 atom = traj[subsample * i]
                 atom.calc = ref_calc
-                energy = atom.get_potential_energy() + atom.get_kinetic_energy()
+                # energy = atom.get_potential_energy() + atom.get_kinetic_energy()
+                energy = 0
                 if i ==1:
                     initial_energy = energy
                 ref_energies.append(abs(energy - initial_energy) + 1e-4)
@@ -256,37 +257,28 @@ def plot_stability(data_split, checkpoint_dir, md_dirs, ref_calc, append_name = 
 
     plt.xlabel("Simulation time (ps)", fontsize=10)
     plt.xlim(0, 105)
-    plt.ylabel("Change in Energy (eV)", fontsize=9)
+    plt.ylabel("Change in Energy (eV/atom)", fontsize=9)
     # plt.yscale("log")
 
-    for energies, label, color in zip(all_ref_energies, labels, colors):
+    for energies, label, color in zip(all_energies, labels, colors):
         plt.plot(energies, label=label, color = color)
         # Plot an 'x' at the collapse point
         plt.plot(len(energies) - 1, energies[-1], 'x', color=color)
+        print(label, " Change in energy/atom: ", energies[-1])
+
     
     plt.legend(frameon=True, edgecolor='black')
     plt.savefig(f"energies{append_name}.png")
     plt.show()
     plt.close()
 
+    # Print 
+
 
 if __name__ == "__main__":
 
     
-    setup_logging()
-
-    parser = flags.get_parser()
-    args, override_args = parser.parse_known_args()
-    config = build_config(args, override_args)
-
-    # Set up the OCP calculator
-    calc_checkpoint_path = os.path.join(config["MODELPATH"], config["run_name"], "best_checkpoint.pt")
-    calc = OCPCalculator(
-        config_yml=args.config_yml.__str__(),
-        checkpoint_path=calc_checkpoint_path,
-        cpu=False,
-        seed=args.seed,
-    )
+    calc = None
 
     
     checkpoint_path = "/data/shared/ishan_stuff"

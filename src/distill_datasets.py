@@ -20,9 +20,9 @@ class CombinedDataset(Dataset):
             logging.info("WARNING: FINAL NODE FEATURE DATASET DIFFERENT SIZE")
             # raise Exception("DIFF SIZE!!")
         self.main_dataset = main_dataset
-        self.teach_force_dataset = None #teach_force_dataset
-        self.force_jac_dataset = None #force_jac_dataset 
-        self.final_node_feature_dataset = None #final_node_feature_dataset
+        self.teach_force_dataset = teach_force_dataset
+        self.force_jac_dataset = force_jac_dataset 
+        self.final_node_feature_dataset = final_node_feature_dataset
         if  isinstance(self.main_dataset, _HasMetadata):
             self.metadata_path = self.main_dataset.metadata_path 
 
