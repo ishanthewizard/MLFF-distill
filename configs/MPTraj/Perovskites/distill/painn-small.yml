@@ -10,7 +10,7 @@ dataset:
 loss_functions:
   - energy:
       fn: per_atom_mae
-      coefficient: 1
+      coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100
@@ -22,8 +22,8 @@ loss_functions:
       coefficient: 200
 
 optim:
-  force_jac_sample_size: 1
+  force_jac_sample_size: 4
   print_memory_usage: False
   vectorize_jacs: True
-  energy_distill_coeff: 2
+  energy_distill_coeff: 5
 

@@ -21,6 +21,7 @@ class CombinedDataset(Dataset):
         self.force_jac_dataset = force_jac_dataset 
         self._metadata = self.main_dataset._metadata
         self.metadata_hasattr = self.main_dataset.metadata_hasattr
+        self.get_metadata = self.main_dataset.get_metadata
 
     def __len__(self):
         return len(self.main_dataset)  # Assuming both datasets are the same size

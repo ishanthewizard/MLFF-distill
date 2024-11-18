@@ -2,7 +2,7 @@ includes:
   - configs/slurm/regular.yml
 logger: 
   name: wandb
-  project: spice-Energy
+  project: spice-Energy-FINAL
 
 trainer: ocp
 
