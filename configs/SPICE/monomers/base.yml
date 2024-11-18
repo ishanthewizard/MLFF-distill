@@ -23,7 +23,7 @@ dataset:
             mean: 0 
             stdev: 1          # true std: .9473
   val:
-    src: data/spice_separated/DES370K_Monomers/test
+    src: data/spice_separated/DES370K_Monomers/val
   # test:
   #   src: data/spice_separated/DES370K_Monomers/test
 
