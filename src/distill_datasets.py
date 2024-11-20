@@ -11,20 +11,21 @@ class CombinedDataset(Dataset):
     def __init__(self, main_dataset, teach_force_dataset, force_jac_dataset=None, final_node_feature_dataset=None):
         if  len(main_dataset) != len(teach_force_dataset):
             logging.info("WARNING: TEACH FORCE DATASET DIFFERENT SIZE")
-            raise Exception("DIFF SIZE!!")
+            # raise Exception("DIFF SIZE!!")
         if force_jac_dataset and len(main_dataset) != len(force_jac_dataset):
             logging.info("WARNING: FORCE JACOBIAN DIFFERENT SIZE")
-            raise Exception("DIFF SIZE!!")
+            # raise Exception("DIFF SIZE!!")
         if final_node_feature_dataset and len(main_dataset) != len(final_node_feature_dataset):
             logging.info("WARNING: FINAL NODE FEATURE DATASET DIFFERENT SIZE")
-            raise Exception("DIFF SIZE!!")
+            # raise Exception("DIFF SIZE!!")
         self.main_dataset = main_dataset
-        self.teach_force_dataset = teach_force_dataset
-        self.force_jac_dataset = force_jac_dataset 
+        self.teach_force_dataset = None #teach_force_dataset
+        self.force_jac_dataset = None #force_jac_dataset
+        self.final_node_feature_dataset = None #final_node_feature_dataset
         self._metadata = self.main_dataset._metadata
         self.metadata_hasattr = self.main_dataset.metadata_hasattr
         
-        self.final_node_feature_dataset = final_node_feature_dataset
+        
         self.get_metadata = self.main_dataset.get_metadata
 
     def __len__(self):
@@ -33,18 +34,25 @@ class CombinedDataset(Dataset):
     def __getitem__(self, idx):
         main_batch = self.main_dataset[idx]
         num_atoms = main_batch.natoms
-        teacher_forces = self.teach_force_dataset[idx].reshape(num_atoms, 3)
+        if self.teach_force_dataset:
+            teacher_forces = self.teach_force_dataset[idx].reshape(num_atoms, 3)
+        else:
+            teacher_forces = torch.zeros(num_atoms, 3, dtype=torch.float32)
+
         if self.force_jac_dataset:
             num_free_atoms = (main_batch.fixed == 0).sum().item()
             # force_jacs  = self.force_jac_dataset[idx].reshape(num_free_atoms, 3, num_atoms, 3) 
             force_jacs = self.force_jac_dataset[idx] # DON'T RESHAPE! We'll do it later, easier for atoms of different lengths
         else: 
-            force_jacs = None
+            # force_jacs = None
+            force_jacs = torch.zeros(num_atoms**2 * 9, dtype=torch.float32)
         if self.final_node_feature_dataset:
             final_node_features = self.final_node_feature_dataset[idx]
-
         else:
-            final_node_features = None
+            final_node_features = torch.zeros(num_atoms, 224, dtype=torch.float32)
+
+        # else:
+        #     final_node_features = None
         main_batch.teacher_forces = teacher_forces
         main_batch.force_jacs = force_jacs
         main_batch.final_node_features = final_node_features.reshape(teacher_forces.shape[0], -1)

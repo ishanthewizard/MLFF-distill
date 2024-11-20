@@ -1,5 +1,5 @@
 includes:
-- configs/SPICE/iodine/painn/painn-small.yml
+- configs/SPICE/solvated_amino_acids/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
@@ -12,7 +12,7 @@ dataset:
 loss_functions:
   - energy:
       fn: per_atom_mae
-      coefficient: 0
+      coefficient: 5
       reduction: 
   - forces:
       fn: l2mae
@@ -20,9 +20,11 @@ loss_functions:
   - teacher_forces:
       fn: l2mae
       coefficient: 0
+
   - force_jacs:
       fn: l2mae
-      coefficient: 400
+      coefficient: 0
+
 
 evaluation_metrics:
   metrics:
@@ -43,4 +45,3 @@ optim:
   force_jac_sample_size: 1
   print_memory_usage: False
   vectorize_jacs: True
-  distill_energy: True

@@ -47,7 +47,7 @@ loss_functions:
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity
