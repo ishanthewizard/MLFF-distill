@@ -184,7 +184,7 @@ class DistillTrainer(OCPTrainer):
                 should_mask=should_mask, 
                 finite_differences= self.config['optim'].get('finite_differences', False),
                 looped=(not self.config['optim']["vectorize_jacs"]),
-                # collater = self.ocp_collater,
+                collater = self.collater,
                 forward = self._forward
             )
             if self.config['optim'].get("print_memory_usage", False):
