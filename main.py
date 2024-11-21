@@ -26,9 +26,6 @@ from fairchem.core.common.utils import (
     setup_logging,
 )
 
-from src.models.gemnet_baseline import GemNetT
-from src.models.painn_baseline import PaiNN
-
 if TYPE_CHECKING:
     import argparse
 
@@ -89,7 +86,7 @@ def main():
             # slurm_partition=args.slurm_partition,
             gpus_per_node=args.num_gpus,
             cpus_per_task=(config["optim"]["num_workers"] + 1),
-            tasks_per_node=(args.num_gpus if args.distributed else 1),
+            tasks_per_node=(args.num_gpus),
             nodes=args.num_nodes,
             slurm_additional_parameters=slurm_add_params,
         )
@@ -101,7 +98,7 @@ def main():
         for config in configs:
             config["slurm"] = copy.deepcopy(executor.parameters)
             config["slurm"]["folder"] = str(executor.folder)
-        jobs = executor.map_array(Runner(distributed=args.distributed), configs)
+        jobs = executor.map_array(Runner(), configs)
         logging.info(f"Submitted jobs: {', '.join([job.job_id for job in jobs])}")
         log_file = save_experiment_log(args, jobs, configs)
         logging.info(f"Experiment log saved to: {log_file}")
