@@ -1,29 +1,32 @@
 includes:
-  - configs/slurm/regular.yml
-
+  - configs/slurm/premium.yml
 logger: 
   name: wandb
-  project: AT-AT
-  
+  entity: ishan-amin
+  project: MD22_JMP
+
+trainer: ocp
+
 dataset:
   train:
     format: lmdb
-    # src: /data/shared/MLFF/MD22/95_lmdb/AT-AT/train/
-    src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/AT-AT/train/
+    no_shuffle: True
+    src: data/md22/lmdb/buckyball-catcher/train
     key_mapping:
       y: energy
       force: forces
     transforms:
       normalizer:
-        energy:
-          mean: -50080.08
-          stdev: 0.47309175
-        # forces:
-        #   mean: 0
-        #   stdev: 1.2109985
+        energy: 
+            mean:  -124776.7
+            stdev: 1 #1.0899031 #0.64662045 # make this change for GemNet-T runs
+        forces: 
+            mean: 0
+            stdev: 1 #1.0899031
   val:
-    # src: /data/shared/MLFF/MD22/95_lmdb/AT-AT/val/
-    src: /pscratch/sd/i/ishan_a/MD22/95_lmdb/AT-AT/val/
+    src: data/md22/lmdb/buckyball-catcher/val
+  # test:
+  #   src: data/md22/lmdb/buckyball-catcher/test
 
 outputs:
   energy:
@@ -38,11 +41,10 @@ outputs:
 loss_functions:
   - energy:
       fn: per_atom_mae
-      coefficient: 1
+      coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100
-
 evaluation_metrics:
   metrics:
     energy:

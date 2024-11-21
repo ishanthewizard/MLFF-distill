@@ -14,7 +14,7 @@ dataset:
 
 loss_functions:
   - energy:
-      fn: mae
+      fn: per_atom_mae
       coefficient: 1
   - forces:
       fn: l2mae
@@ -25,7 +25,6 @@ loss_functions:
   - force_jacs:
       fn: l2mae
       coefficient: 400
-      reduction: mean_all
 
 optim:
   batch_size: 8

@@ -1,0 +1,35 @@
+# # Make sure to run without AMP.
+includes:
+  - configs/md22/buckyball-catcher/base.yml
+
+model:
+  name: painn
+  hidden_channels: 128
+  num_layers: 4
+  num_rbf: 128
+  cutoff: 12.0
+  max_neighbors: 50
+  scale_file: configs/md22/buckyball-catcher/painn/painn-small-scale.pt
+  regress_forces: True
+  direct_forces: True
+  use_pbc: False
+  otf_graph: True
+  emb_size_teacher: 256
+
+optim:
+  batch_size: 4
+  eval_batch_size: 32
+  load_balancing: atoms
+  num_workers: 4
+  optimizer: AdamW
+  optimizer_params: {"eps": 1.e-7, "weight_decay": 0.000002, "amsgrad": True}
+  lr_initial: 5.e-4
+  scheduler: ReduceLROnPlateau
+  patience: 5
+  factor: 0.8
+  min_lr: 0.000005
+  max_epochs: 1000
+  ema_decay: 0.999
+  clip_grad_norm: 10
+
+

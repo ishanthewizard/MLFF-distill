@@ -1,20 +1,21 @@
 includes:
-- configs/md22/Ac-Ala3/painn/painn-small.yml
+- configs/md22/buckyball-catcher/painn/painn-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_checkpoint_path: teacher_checkpoints/Ac-Ala3-all-gemT-normOFF-570epochs/best_checkpoint.pt
-    teacher_labels_folder: labels/Ac-Ala3-gemT-570epochs
+    teacher_checkpoint_path: data/buckyball-catcher_jmp-l.ckpt
+    teacher_labels_folder: labels/jmp-large_buckyball-catcher
     label_force_batch_size: 32
     label_jac_batch_size: 64
     vectorize_teach_jacs: False
 
+
 loss_functions:
   - energy:
       fn: per_atom_mae
-      coefficient: 1
+      coefficient: 5
   - forces:
       fn: l2mae
       coefficient: 100
@@ -26,8 +27,8 @@ loss_functions:
       coefficient: 400
 
 optim:
-  batch_size: 16
+  batch_size: 1
   eval_batch_size: 32
-  force_jac_sample_size: 4
+  force_jac_sample_size: 1
   print_memory_usage: False
   vectorize_jacs: True

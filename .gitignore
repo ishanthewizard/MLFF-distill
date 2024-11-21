@@ -9,6 +9,8 @@ labels/
 MODELPATH
 logs
 *.traj
+*.png 
+*.sh
 experimental
 
 # Byte-compiled / optimized / DLL files
