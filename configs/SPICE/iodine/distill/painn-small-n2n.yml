@@ -34,7 +34,7 @@ loss_functions:
       coefficient: 100
   - final_node_features:
       fn: mse
-      coefficient: 1000
+      coefficient: 10000
   - teacher_forces:
       fn: l2mae
       coefficient: 0
