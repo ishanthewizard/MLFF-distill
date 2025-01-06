@@ -1,35 +1,12 @@
 #!/bin/bash
 
 
-# python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/iodine/distill/gemnet-dT-small-teacherforces.yml --identifier iodine-gemSmall-DIST-teacherforces
-# python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/monomers/distill/gemnet-dT-small-teacherforces.yml --identifier monomers-gemSmall-DIST-teacherforces
+###### SPICE GemNet-T Baselines (total 6 runs) ##############
+python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/iodine/distill/gemnet-T-small-atomemb.yml --identifier iodine-gemTSmall-atomemb --logger.project="spice_baselines" --optim.batch_size=1
+python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/iodine/distill/gemnet-T-small-n2n.yml --identifier iodine-gemTSmall-n2n --logger.project="spice_baselines" --optim.batch_size=1
 
-###### Hessian Subsampling Expts ##############
-# Submit on regular
-# python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/solvated_amino_acids/distill/gemnet-dT-small.yml --optim.force_jac_sample_size=1 --identifier solvated-gemSmall-DIST-s1 DONE
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/SPICE/solvated_amino_acids/distill/gemnet-dT-small.yml --optim.force_jac_sample_size=15 --identifier solvated-gemSmall-DIST-s15
-# # python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/solvated_amino_acids/distill/painn-small.yml --optim.force_jac_sample_size=1 --identifier solvated-PaiNN-DIST-pbc-s1 DONE
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/SPICE/solvated_amino_acids/distill/painn-small.yml --optim.force_jac_sample_size=10 --identifier solvated-PaiNN-DIST-pbc-s10
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/SPICE/solvated_amino_acids/distill/painn-small.yml --optim.force_jac_sample_size=15 --identifier solvated-PaiNN-DIST-pbc-s15
+python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/monomers/distill/gemnet-T-small-atomemb.yml --identifier monomers-gemTSmall-atomemb --logger.project="spice_baselines" --optim.batch_size=1
+python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/monomers/distill/gemnet-T-small-n2n.yml --identifier monomers-gemTSmall-n2n --logger.project="spice_baselines" --optim.batch_size=1
 
-# ###### MPTraj Baseline Expts #################
-
-# Submit on premium
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Perovskites/distill/gemnet-dT-small-n2n.yml --identifier Perov-gemSmall-DIST-n2n
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Perovskites/distill/gemnet-dT-small-atomemb.yml --identifier Perov-gemSmall-DIST-atomemb
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Perovskites/distill/painn-small-n2n.yml --identifier Perov-PaiNN-DIST-n2n
-python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Perovskites/distill/painn-small-atomemb.yml --identifier Perov-PaiNN-DIST-atomemb-restart
-
-python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Yttrium/distill/gemnet-dT-small-n2n.yml --identifier Ytt-gemSmall-DIST-n2n --checkpoint /global/homes/s/sanjeevr/MLFF-distill/checkpoints/2024-09-27-13-18-08-Ytt-gemSmall-DIST-n2n/checkpoint.pt
-
-
-# Submit on regular
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Yttrium/distill/gemnet-dT-small-atomemb.yml --identifier Ytt-gemSmall-DIST-atomemb
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Yttrium/distill/painn-small-n2n.yml --identifier Ytt-PaiNN-DIST-n2n
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Yttrium/distill/painn-small-atomemb.yml --identifier Ytt-PaiNN-DIST-atomemb
-
-python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Bandgap_greater_5/distill/gemnet-dT-small-n2n.yml --identifier Bandgap-gemSmall-DIST-n2n --checkpoint /global/homes/s/sanjeevr/MLFF-distill/checkpoints/2024-09-27-22-34-56-Bandgap-gemSmall-DIST-n2n/checkpoint.pt
-python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Bandgap_greater_5/distill/gemnet-dT-small-atomemb.yml --identifier Bandgap-gemSmall-DIST-atomemb --checkpoint /global/homes/s/sanjeevr/MLFF-distill/checkpoints/2024-09-27-22-39-12-Bandgap-gemSmall-DIST-atomemb/checkpoint.pt
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Bandgap_greater_5/distill/painn-small-n2n.yml --identifier Bandgap-PaiNN-DIST-n2n #DONE
-# python main.py --num-nodes 1 --num-gpus 4 --submit --nersc --mode train --config-yml configs/MPTraj/Bandgap_greater_5/distill/painn-small-atomemb.yml --identifier Bandgap-PaiNN-DIST-atomemb #DONE
-
+python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/solvated_amino_acids/distill/gemnet-T-small-atomemb.yml --identifier solvated-gemTSmall-atomemb --logger.project="spice_baselines" --optim.batch_size=1
+python main.py --num-gpus 1 --submit --nersc --mode train --config-yml configs/SPICE/solvated_amino_acids/distill/gemnet-T-small-n2n.yml --identifier solvated-gemTSmall-n2n --logger.project="spice_baselines" --optim.batch_size=1
