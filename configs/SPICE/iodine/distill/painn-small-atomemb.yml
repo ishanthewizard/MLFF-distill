@@ -14,7 +14,7 @@ model:
   baseline: True
   use_teacher_node_embeddings: False
   use_teacher_atom_embeddings: True
-  teacher_atom_embedding_path: labels/mace_off_large_SpiceAminos/mace_off_large_atom_embeddings.npy
+  teacher_atom_embedding_path: labels/mace_off_large_atom_embeddings.npy
   emb_size_teacher: 224
 
 outputs:
@@ -46,7 +46,7 @@ loss_functions:
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity

@@ -29,7 +29,7 @@ dataset:
         file: configs/SPICE/element_references.pt
 
   val:
-    src: data/spice_separated/Solvated_Amino_Acids/val
+    src: data/spice_separated/Solvated_Amino_Acids/test
   # test:
   #   src: data/spice_separated/Solvated_Amino_Acids/test
 
