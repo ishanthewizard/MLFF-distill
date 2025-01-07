@@ -1,5 +1,5 @@
 includes:
-  - configs/slurm/premium.yml
+  - configs/slurm/regular.yml
   # configs/slurm/debug.yml
 logger: 
   name: wandb
