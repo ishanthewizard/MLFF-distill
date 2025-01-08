@@ -21,7 +21,7 @@ dataset:
       normalizer:
         energy:
             mean: 0
-            rmsd: 0.08761493116617203 # Ryan’s value for spice
+            rmsd: 1 #0.08761493116617203 # Ryan’s value for spice
         forces:
             mean: 0   #
             rmsd: 1  #
@@ -29,7 +29,7 @@ dataset:
         file: configs/SPICE/element_references.pt
 
   val:
-    src: data/spice_separated/Solvated_Amino_Acids/test
+    src: data/spice_separated/Solvated_Amino_Acids/val
   # test:
   #   src: data/spice_separated/Solvated_Amino_Acids/test
 
