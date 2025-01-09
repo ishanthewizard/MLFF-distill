@@ -1,10 +1,12 @@
 includes:
-  - configs/slurm/regular.yml
+  - configs/slurm/premium.yml
   # configs/slurm/debug.yml
 logger: 
   name: wandb
   entity: ishan-amin
   project: spice
+
+logdir: /pscratch/sd/s/sanjeevr/MLFF-distill-logs
 
 trainer: ocp
 

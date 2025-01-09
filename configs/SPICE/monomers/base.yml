@@ -5,6 +5,8 @@ logger:
   entity: ishan-amin
   project: spice
 
+logdir: /pscratch/sd/s/sanjeevr/MLFF-distill-logs
+
 trainer: ocp
 
 dataset:
