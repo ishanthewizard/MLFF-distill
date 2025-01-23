@@ -113,7 +113,10 @@ class DistillTrainer(OCPTrainer):
         labels_folder = self.config['dataset']['teacher_labels_folder']
         
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
-        final_node_feature_dataset = SimpleDataset(os.path.join(labels_folder, f'{dataset_type}_final_node_features' ))
+        if self.config['optim'].get('final_node_distill', False):
+            final_node_feature_dataset = SimpleDataset(os.path.join(labels_folder, f'{dataset_type}_final_node_features' ))
+        else:
+            final_node_feature_dataset = None
         if indxs is not None:
             teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
             final_node_feature_dataset = Subset(final_node_feature_dataset, torch.tensor(indxs))

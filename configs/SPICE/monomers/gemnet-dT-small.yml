@@ -31,7 +31,7 @@ model:
   extensive: True 
   otf_graph: True
   regress_forces: True
-  direct_forces: False # IMPORTANT: CHANGED!!!!
+  direct_forces: False # IMPORTANT: CHANGE IF YOU WANT DIRECT FORCES!
 
 optim:
   batch_size: 4

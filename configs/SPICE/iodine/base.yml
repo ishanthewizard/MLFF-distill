@@ -26,7 +26,7 @@ dataset:
       element_references:
         file: configs/SPICE/element_references.pt
   val:
-    src: data/SPICE/spice_separated/Iodine/test
+    src: data/SPICE/spice_separated/Iodine/val
 
 
 outputs:

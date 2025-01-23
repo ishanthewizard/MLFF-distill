@@ -65,3 +65,4 @@ optim:
   force_jac_sample_size: 10
   print_memory_usage: False
   vectorize_jacs: True
+  final_node_distill: True
