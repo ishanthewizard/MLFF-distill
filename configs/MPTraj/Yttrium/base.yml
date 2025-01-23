@@ -1,8 +1,12 @@
 includes:
   - configs/slurm/premium.yml
+
+trainer: ocp
+
 logger: 
   name: wandb
   project: MPTrj-Energy-FINAL
+
 
 trainer: ocp
 
@@ -10,7 +14,8 @@ dataset:
   train:
     no_shuffle: True
     format: lmdb
-    src: data/MPtraj/mptraj_seperated_all_splits/Yttrium/train
+    src: data/MPtraj/mptraj_seperated_all_splits/Yttrium/val
+
     key_mapping:
       corrected_total_energy: energy
       force: forces

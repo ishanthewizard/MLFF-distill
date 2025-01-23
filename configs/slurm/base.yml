@@ -4,4 +4,4 @@ slurm:
   constraint: gpu
   gpu_bind: none
   mail_type: begin,end,fail
-  mail_user: ishanthewizard@berkeley.edu
+  mail_user: sanjeevr@umich.edu

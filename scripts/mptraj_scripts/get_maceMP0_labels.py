@@ -28,18 +28,12 @@ def record_labels(labels_folder, dataset_path, model="large"):
     os.makedirs(labels_folder, exist_ok=True)
     # Load the dataset
     train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, 'train')})
-    # indx = np.random.default_rng(seed=0).choice(
-    #                     len(train_dataset), 
-    #                     1000, 
-    #                     replace=False
-    #                 )
-    # train_dataset = Subset(train_dataset, torch.tensor(indx))
+    
     val_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, 'val')})
     
     # Load the model
     calc = mace_mp(model=model, dispersion=False, default_dtype="float32", device='cuda')
 
-    # calc = mace_mp(model=model, dispersion=dispersion, default_dtype=default_dtype, device=device)
     def get_forces(sample):
         atomic_numbers = sample.atomic_numbers.numpy()
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy(), cell=sample.cell.numpy()[0], pbc=True)
@@ -50,21 +44,44 @@ def record_labels(labels_folder, dataset_path, model="large"):
         natoms = sample.natoms
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy(), cell=sample.cell.numpy()[0], pbc=True)
         atoms.calc = calc
+
         hessian = calc.get_hessian(atoms=atoms)
         return - 1 * hessian.reshape(natoms, 3, natoms, 3) # this is SUPER IMPORTANT!!! multiply by -1
-        
-    record_and_save(train_dataset, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_hessians)
-    record_and_save(train_dataset, os.path.join(labels_folder, 'train_forces.lmdb'), get_forces)
-    record_and_save(val_dataset, os.path.join(labels_folder, 'val_forces.lmdb'), get_forces)
+    
+    def get_final_node_features(sample):
+        atomic_numbers = sample.atomic_numbers.numpy()
+        natoms = sample.natoms
+        atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy(), cell=sample.cell.numpy()[0], pbc=True)
+        atoms.calc = calc
+        return calc.get_final_node_features(atoms=atoms)
+
+
+    def get_atom_embeddings():
+        return calc.get_atom_embeddings()
+    
+    atom_embeddings = get_atom_embeddings()
+    np.save(os.path.join(labels_folder, 'atom_embeddings.npy'), get_atom_embeddings())
+    # record_and_save(train_dataset, os.path.join(labels_folder, 'final_node_features.lmdb'), get_final_node_features)
+    # record_and_save(val_dataset, os.path.join(labels_folder, 'final_node_features.lmdb'), get_final_node_features)
+    # record_and_save(train_dataset, os.path.join(labels_folder, 'train_forces.lmdb'), get_forces)
+    # record_and_save(train_dataset, os.path.join(labels_folder, 'force_jacobians.lmdb'), get_hessians)
+    # record_and_save(val_dataset, os.path.join(labels_folder, 'val_forces.lmdb'), get_forces)
 
 if __name__ == "__main__":
-    labels_folder = 'labels/mace_off_large_Bandgap_greater_5'
-    if os.path.isdir(labels_folder):
-        raise Exception('folder already exists')
-    # dataset_path = '/data/ishan-amin/post_data/md17/ethanol/1k/' 
-    # dataset_path = '/data/ishan-amin/post_data/md17/aspirin/1k/'
-    # dataset_path = '/data/ishan-amin/post_data/md22/AT_AT/1k/'
-    # dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated/Yttrium'
-    dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5'
+    labels_folder = '/data/shared/ishan_stuff/labels/mace_off_large_SpiceMonomers'
+    dataset_path = '/data/ishan-amin/SPICE/spice_separated/DES370K_Monomers'
 
     record_labels(labels_folder, dataset_path)
+
+    labels_folder = '/data/shared/ishan_stuff/labels/mace_off_large_SpiceIodine'
+    dataset_path = '/data/ishan-amin/SPICE/spice_separated/Iodine'
+
+    record_labels(labels_folder, dataset_path)
+
+
+    labels_folder = '/data/shared/ishan_stuff/labels/mace_off_large_SpiceAminos'
+    dataset_path = '/data/ishan-amin/SPICE/spice_separated/Solvated_Amino_Acids'
+
+    record_labels(labels_folder, dataset_path)
+
+

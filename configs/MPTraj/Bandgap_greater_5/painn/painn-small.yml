@@ -7,14 +7,15 @@ model:
   hidden_channels: 128
   num_layers: 4
   num_rbf: 128
-  cutoff: 12.0
+  cutoff: 6.0
   max_neighbors: 20
-  scale_file: configs/MPTraj/Bandgap_greater_5/painn/painn_new_scale.pt
+  scale_file: configs/SPICE/solvated_amino_acids/painn/painn-small-scale.pt
   regress_forces: True
   direct_forces: True
   use_pbc: True # IMPORTANT
   otf_graph: True
   num_elements: 100
+  emb_size_teacher: 256
 
 optim:
   batch_size: 16

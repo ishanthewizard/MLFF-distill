@@ -7,8 +7,15 @@ LICENSE file in the root directory of this source tree.
 
 from __future__ import annotations
 
+import contextlib
+import datetime
+import errno
 import logging
 import os
+import random
+from abc import ABC, abstractmethod
+from itertools import chain
+import sys
 from typing import TYPE_CHECKING
 import time
 import numpy as np
@@ -74,7 +81,6 @@ class DistillTrainer(OCPTrainer):
                 self.config["val_dataset"]["split"], 
                 replace=False
             )
-        
         self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train', train_indxs ) # ADDED LINE
 
         self.train_sampler = self.get_sampler(
@@ -107,15 +113,17 @@ class DistillTrainer(OCPTrainer):
         labels_folder = self.config['dataset']['teacher_labels_folder']
         
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
+        final_node_feature_dataset = SimpleDataset(os.path.join(labels_folder, f'{dataset_type}_final_node_features' ))
         if indxs is not None:
             teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
+            final_node_feature_dataset = Subset(final_node_feature_dataset, torch.tensor(indxs))
         if dataset_type == 'train':
             force_jac_dataset = SimpleDataset(os.path.join(labels_folder, 'force_jacobians'))
             if indxs is not None:
                 force_jac_dataset = Subset(force_jac_dataset, torch.tensor(indxs))
         else: 
             force_jac_dataset = None
-        return CombinedDataset(main_dataset,  teacher_force_dataset, force_jac_dataset)
+        return CombinedDataset(main_dataset,  teacher_force_dataset, force_jac_dataset, final_node_feature_dataset)
 
     def update_loss_coefficients(self):
         # self.force_mae, self.teacher_force_mae are good to go
@@ -191,6 +199,7 @@ class DistillTrainer(OCPTrainer):
                 print_cuda_memory_usage()
             loss.append(force_jac_loss * self.force_jac_loss_fn[1]['coefficient'])
             batch['force_jac_loss'] = force_jac_loss
+
         if self.teacher_force_loss_fn[1]['coefficient'] != 0:
             batch_size = batch.natoms.numel()
             natoms = torch.repeat_interleave(batch.natoms, batch.natoms)
@@ -200,7 +209,6 @@ class DistillTrainer(OCPTrainer):
                         out['forces'],
                         batch['teacher_forces'],
                         natoms=natoms,
-                        batch_size=batch_size,
             )
             loss.append(
                 mult

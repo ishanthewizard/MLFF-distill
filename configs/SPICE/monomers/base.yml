@@ -10,7 +10,7 @@ dataset:
   train:
     no_shuffle: True
     format: lmdb
-    src: data/SPICE/spice_separated/DES370K_Monomers/train
+    src: data/spice_separated/DES370K_Monomers/train
     key_mapping:
       y: energy
       force: forces
@@ -45,6 +45,7 @@ loss_functions:
   - forces:
       fn: l2mae
       coefficient: 100
+      
 evaluation_metrics:
   metrics:
     energy:

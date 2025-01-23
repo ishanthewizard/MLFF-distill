@@ -6,7 +6,7 @@ trainer: src.distill_trainer.DistillTrainer
 dataset:
   train:
     teacher_labels_folder: data/labels/MPtraj_labels/mace_mp_all_splits_Yttrium
-
+    
 loss_functions:
   - energy:
       fn: per_atom_mae

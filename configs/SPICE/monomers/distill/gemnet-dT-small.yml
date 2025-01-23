@@ -7,16 +7,19 @@ dataset:
   train:
     teacher_labels_folder: data/labels/SPICE_labels/mace_off_large_SpiceMonomers
 
+
 loss_functions:
   - energy:
       fn: per_atom_mae
       coefficient: 5
+      reduction: 
   - forces:
       fn: l2mae
       coefficient: 100
   - teacher_forces:
       fn: l2mae
       coefficient: 0
+
   - force_jacs:
       fn: l2mae
       coefficient: 400
@@ -25,5 +28,5 @@ optim:
   force_jac_sample_size: 4
   print_memory_usage: False
   vectorize_jacs: True
-  energy_distill_coeff: 0
+  energy_distill_coeff: 5
   finite_differences: True

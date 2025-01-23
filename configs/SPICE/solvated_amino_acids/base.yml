@@ -10,7 +10,8 @@ dataset:
   train:
     no_shuffle: True
     format: lmdb
-    src: data/SPICE/spice_separated/Solvated_Amino_Acids/train
+    src: data/spice_separated/Solvated_Amino_Acids/train
+    teacher_labels_folder: labels/mace_off_large_SpiceAminos
     key_mapping:
       y: energy
       force: forces
@@ -38,6 +39,7 @@ outputs:
     train_on_free_atoms: True
     eval_on_free_atoms: True
 
+
 loss_functions:
   - energy:
       fn: per_atom_mae
@@ -45,6 +47,7 @@ loss_functions:
   - forces:
       fn: l2mae
       coefficient: 100
+    
 evaluation_metrics:
   metrics:
     energy:

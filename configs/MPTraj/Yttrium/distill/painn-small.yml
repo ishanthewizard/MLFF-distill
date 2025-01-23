@@ -20,7 +20,7 @@ loss_functions:
   - force_jacs:
       fn: l2mae
       coefficient: 200
-
+      
 optim:
   force_jac_sample_size: 4
   print_memory_usage: False

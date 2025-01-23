@@ -12,7 +12,11 @@ model:
   scale_file: configs/SPICE/solvated_amino_acids/painn/new_fairchem_painn.pt
   regress_forces: True
   direct_forces: True
+<<<<<<< HEAD
   use_pbc: True 
+=======
+  use_pbc: True
+>>>>>>> baselines-new-fairchem
   otf_graph: True
 
 optim:
