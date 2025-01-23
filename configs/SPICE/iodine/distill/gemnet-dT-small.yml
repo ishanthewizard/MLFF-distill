@@ -25,4 +25,5 @@ optim:
   force_jac_sample_size: 4
   print_memory_usage: False
   vectorize_jacs: True
-  energy_distill_coeff: 5
+  energy_distill_coeff: 0
+  finite_differences: True

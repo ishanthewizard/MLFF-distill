@@ -18,14 +18,14 @@ dataset:
       normalizer:
         energy: 
             mean: 0
-            rmsd: 0.08761493116617203 # Ryan's value for spice
+            rmsd: 1 #0.08761493116617203 # Ryan's value for spice
         forces: 
             mean: 0   # 
             rmsd: 1  # 
       element_references:
         file: configs/SPICE/element_references.pt
   val:
-    src: data/SPICE/spice_separated/DES370K_Monomers/val
+    src: data/SPICE/spice_separated/DES370K_Monomers/test
 
 
 outputs:

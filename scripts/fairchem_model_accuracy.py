@@ -9,12 +9,12 @@ from fairchem.core.common.utils import build_config
 from fairchem.core.common.utils import new_trainer_context
 from tqdm import tqdm
 import time
-from fairchem.core.modules.loss import L2MAELoss
+from fairchem.core.modules.loss import L2NormLoss
 import numpy as np
 import torch
 from src.distill_utils import print_cuda_memory_usage
 def evaluate_model(trainer, eval_loss):
-    loss_fn = L2MAELoss()
+    loss_fn = L2NormLoss()
     losses = []
     trainer.model.eval()
     start = None
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     parser: argparse.ArgumentParser = flags.get_parser()
     parser.add_argument("--nersc", action="store_true", help="Run with NERSC")
     parser.add_argument("--eval_loss", action="store_true", default=False)
-    parser.add_argument("--batch-size", default=64)
+    parser.add_argument("--batch-size", default=32)
     args: argparse.Namespace
     override_args: list[str]
     args, override_args = parser.parse_known_args()
@@ -60,21 +60,21 @@ if __name__ == "__main__":
     # config['dataset']['test'] = {'src' : test_dataset}
     config['is_debug'] = True
     config['optim']['eval_batch_size'] = batch_size
-    config['dataset']['test'] = {'src': config['dataset']['val']['src'][:-3] + 'train'}
+    config['dataset']['test'] = {'src': config['dataset']['val']['src'][:-4] + 'train'}
     print(config['dataset']['test'])
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id
 
-    with new_trainer_context(config=config, distributed=False) as ctx:
+    with new_trainer_context(config=config) as ctx:
         trainer = ctx.trainer
 
         checkpoint = torch.load(args.checkpoint, map_location=torch.device("cpu"))
         model_config = checkpoint["config"]
 
-        trainer.config['model_attributes'] = model_config['model_attributes']
+        # trainer.config['model_attributes'] = model_config['model_attributes']
         #Load teacher config from teacher checkpoint
         trainer.config['model'] =  model_config['model']
-        trainer.config['model_attributes'].pop('scale_file', None)
+        # trainer.config['model_attributes'].pop('scale_file', None)
         trainer.normalizers = {}  # This SHOULD be okay since it gets overridden later (in tasks, after datasets), but double check
         trainer.load_task()
         trainer.load_model()

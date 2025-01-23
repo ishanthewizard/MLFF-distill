@@ -17,13 +17,13 @@ dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
 print(dataset[0])
 breakpoint()
 
-preprocessed_datapath = '/data/shared/MPTrj/original'
-mp_id = 1006278
-look_at = f'mp-{mp_id}.extxyz'
-file_path = os.path.join(preprocessed_datapath, look_at)
-for atoms in read(file_path, index=":"):
-    print(atoms.get_positions())
-    breakpoint()
+# preprocessed_datapath = '/data/shared/MPTrj/original'
+# mp_id = 1006278
+# look_at = f'mp-{mp_id}.extxyz'
+# file_path = os.path.join(preprocessed_datapath, look_at)
+# for atoms in read(file_path, index=":"):
+#     print(atoms.get_positions())
+#     breakpoint()
     # for key, val in atoms.info.items():
     #     print(key, val)
 
