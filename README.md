@@ -1,10 +1,18 @@
-# MLFF-distill: Force-Jacobian Model Distillation for Machine Learning Force Fields
-Based off the fairchem repo with environments and distributed training instructions taken from EGAP (https://github.com/EricZQu/EGAP)
+# MLFF-Distill: Force-Jacobian Model Distillation for Machine Learning Force Fields
 
-This repository contains the WIP code for MLFF-distill.
+This repository contains the code for the paper:  
+**Amin, I., Raja, S., Krishnapriyan, A.S. (2024). Towards Fast, Specialized Machine Learning Force Fields: Distilling Foundation Models via Energy Hessians.**  
+*Accepted to ICLR 2025.*  
+DOI: [10.48550/arXiv.2501.09009](https://doi.org/10.48550/arXiv.2501.09009), [arXiv:2501.09009](https://arxiv.org/abs/2501.09009).
 
-## Install 
-(taken from EGAP)
+We built our implementation of Hessian distillation on top of the [Fairchem repository](https://github.com/FAIR-Chem/fairchem).  
+The environment and NERSC training instructions were adapted from the [EScAIP repository](https://github.com/ASK-Berkeley/EScAIP/tree/main).
+
+---
+
+
+## Installing the conda environment 
+(environment is from [EScAIP repository](https://github.com/ASK-Berkeley/EScAIP/tree/main))
 
 Step 1: Install mamba solver for conda (optional)
 
@@ -35,6 +43,10 @@ Step 3: Install the dependencies
 mamba env create -f env.yml
 conda activate egap
 ```
+## Downloading the Data
+TODO
+
+
 ## Start Training Runs
 Training is identical to training with the fairchem repo, just with different configs. 
 For example, to perform a normal (undistilled) training run of Gemnet-dT on Ac-Ala3, run
@@ -50,4 +62,5 @@ python main.py --mode train configs/md22/Ac-Ala3/distill/gemnet-dT.yml
 ```
 
 ## Distributed Trainig
-For distributed training on NERSC, please see the [Nersc Distributed Training README](NERSC_dist_train.md) (adapted from the EGAP repository)
+For distributed training on NERSC, please see the [Nersc Distributed Training README](NERSC_dist_train.md) taken from the  [EScAIP repository](https://github.com/ASK-Berkeley/EScAIP/tree/main))
+
