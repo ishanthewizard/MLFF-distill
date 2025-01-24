@@ -18,7 +18,7 @@ def get_mace_lmdb_forces(sample, mace_model):
 
 def get_accuracy(dataset_path, model='large'):
     dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
-    folder_path = '/data/shared/MPTrj/original'
+    folder_path = '/data/shared/MPtrj/original'
 
     # Get a list of all extxyz files
     files = [f for f in os.listdir(folder_path) if f.endswith('.extxyz')]

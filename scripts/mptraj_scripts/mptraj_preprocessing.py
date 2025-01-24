@@ -136,7 +136,7 @@ def main(preprocessed_datapath, lmdb_output_dir):
 
 
 if __name__ == "__main__":
-    preprocessed_datapath = '/data/shared/MPTrj/original'
-    lmdb_output_dir = '/data/ishan-amin/MPtraj/mace_mp_split/train'
+    preprocessed_datapath = '/data/shared/MPtrj/original'
+    lmdb_output_dir = '/data/ishan-amin/MPtrj/mace_mp_split/train'
     
     main(preprocessed_datapath, lmdb_output_dir)

@@ -10,7 +10,6 @@ from tqdm import tqdm
 class CombinedDataset(Dataset):
     def __init__(self, main_dataset, teach_force_dataset, force_jac_dataset=None, final_node_feature_dataset=None):
         if  len(main_dataset) != len(teach_force_dataset):
-            breakpoint()
             logging.info("WARNING: TEACH FORCE DATASET DIFFERENT SIZE")
             raise Exception("DIFF SIZE!!")
         if force_jac_dataset and len(main_dataset) != len(force_jac_dataset):

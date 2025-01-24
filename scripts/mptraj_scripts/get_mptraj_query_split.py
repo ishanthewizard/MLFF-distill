@@ -87,9 +87,9 @@ def _save_to_lmdb(samples, db_path):
 
 
 if __name__ == "__main__":
-    # dataset_path = "/data/ishan-amin/MPtraj/mace_mp_split"  # Update this with your actual path
-    dataset_path = "/data/ishan-amin/MPtraj/mace_mp_split/"
-    output_dir = "/data/ishan-amin/MPtraj/mptraj_seperated/Bandgap_greater_than_5"   # Update this with your desired output directory
+    # dataset_path = "/data/ishan-amin/MPtrj/mace_mp_split"  # Update this with your actual path
+    dataset_path = "/data/ishan-amin/MPtrj/mace_mp_split/"
+    output_dir = "/data/ishan-amin/MPtrj/MPtrj_seperated/Bandgap_greater_than_5"   # Update this with your desired output directory
     dataset_type = "train"
     dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, dataset_type)})
     get_different_splits(dataset, output_dir, test=(dataset_type == "test"))

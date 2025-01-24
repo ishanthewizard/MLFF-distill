@@ -8,8 +8,8 @@ from fairchem.core.common.registry import registry
 # Configuration
 dataset_types = ['train', 'val', 'test']
 molecule_types = ['Perovskites_noIons', 'Yttrium', 'Bandgap_greater_than_5']
-base_dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits'
-base_destination_path = '/data/ishan-amin/xyzs/MPtraj/xyz_mptraj_seperated_all_splits'
+base_dataset_path = '/data/ishan-amin/MPtrj/MPtrj_seperated_all_splits'
+base_destination_path = '/data/ishan-amin/xyzs/MPtrj/xyz_MPtrj_seperated_all_splits'
 
 # Function to process each dataset type and molecule type
 def process_dataset(molecule_type, dataset_type):

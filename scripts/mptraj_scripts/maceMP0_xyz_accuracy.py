@@ -5,7 +5,7 @@ from ase.io import read, iread
 from mace.calculators import mace_mp
 from tqdm import tqdm
 # Path to the directory containing the extxyz files
-folder_path = '/data/shared/MPTrj/original'
+folder_path = '/data/shared/MPtrj/original'
 
 # Get a list of all extxyz files
 files = [f for f in os.listdir(folder_path) if f.endswith('.extxyz')]

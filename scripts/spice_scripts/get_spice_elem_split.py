@@ -76,9 +76,9 @@ def _save_to_lmdb(samples, db_path):
 # Usage
 # dataset_path = "/data/ishan-amin/maceoff_split"  # Update this with your actual path
 # output_dir = "/data/ishan-amin/spice_separated"   # Update this with your desired output directory
-# dataset_path = "/data/ishan-amin/MPtraj/mace_mp_split/train"  # Update this with your actual path
-dataset_path = "/data/shared/MPTrj/lmdb/train/"
-output_dir = "/data/ishan-amin/mptraj_eric_seperated"   # Update this with your desired output directory
+# dataset_path = "/data/ishan-amin/MPtrj/mace_mp_split/train"  # Update this with your actual path
+dataset_path = "/data/shared/MPtrj/lmdb/train/"
+output_dir = "/data/ishan-amin/MPtrj_eric_seperated"   # Update this with your desired output directory
 dataset_type = "train"
 # element = {"name": "Yttrium", "atomic_num": 39}
 element = {"name": "Sulfides", "atomic_num": 16}

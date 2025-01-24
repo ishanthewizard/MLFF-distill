@@ -54,6 +54,6 @@ if __name__ == "__main__":
     labels_folder = 'labels/mace_off_large_Yttrium'
     if os.path.isdir(labels_folder):
         raise Exception('folder already exists')
-    dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated/Yttrium'
+    dataset_path = '/data/ishan-amin/MPtrj/MPtrj_seperated/Yttrium'
 
     record_labels(labels_folder, dataset_path)

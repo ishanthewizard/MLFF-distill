@@ -69,7 +69,7 @@ def aggregate_atoms_from_folder(folder_path):
     return atoms_list
 
 # Example usage
-folder_path = '/data/shared/MPTrj/mace_val/mptrj-gga-ggapu-val'
+folder_path = '/data/shared/MPtrj/mace_val/mptrj-gga-ggapu-val'
 atoms_list = aggregate_atoms_from_folder(folder_path)
 
 # Now you have an aggregated atoms_list with all the molecules

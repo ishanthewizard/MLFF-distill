@@ -1,0 +1,11 @@
+includes:
+- configs/MPtrj/Bandgap_greater_5/gemnet-dT-small.yml
+
+model:
+  name: src.models.gemnet_baseline.GemNetT
+  baseline: True
+  use_teacher_node_embeddings: False
+  use_teacher_atom_embeddings: True
+  teacher_atom_embedding_path: data/labels/atom_embeddings/mace_mp0_atom_embeddings.npy
+  emb_size_teacher: 256
+  

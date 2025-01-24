@@ -5,7 +5,7 @@ import re
 pattern = re.compile(r'^mp-\d+\.extxyz$')
 
 # Path to the directory
-folder_path = '/data/shared/MPTrj/original'
+folder_path = '/data/shared/MPtrj/original'
 
 # Get a list of all files in the directory
 files = os.listdir(folder_path)

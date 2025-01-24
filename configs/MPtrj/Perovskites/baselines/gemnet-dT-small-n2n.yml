@@ -1,19 +1,19 @@
 includes:
-- configs/SPICE/iodine/painn/painn-small.yml
+- configs/MPtrj/Perovskites/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: data/labels/SPICE_labels/mace_off_large_SpiceIodine
+    teacher_labels_folder: data/labels/MPtrj_labels/mace_mp_all_splits_Perovskites_noIons
 
 model:
-  name: src.models.painn_baseline.PaiNN
+  name: src.models.gemnet_baseline.GemNetT #gemnet_t_baseline
   baseline: True
   use_teacher_node_embeddings: True
   use_teacher_atom_embeddings: False
-  teacher_atom_embedding_path: data/labels/atom_embeddings/mace_off_large_atom_embeddings.npy
-  emb_size_teacher: 224
+  teacher_atom_embedding_path: data/labels/atom_embeddings/mace_mp0_atom_embeddings.npy
+  emb_size_teacher: 256
 
 outputs:
   final_node_features:
@@ -39,7 +39,6 @@ loss_functions:
   - force_jacs:
       fn: l2mae
       coefficient: 0
-
 
 evaluation_metrics:
   metrics:

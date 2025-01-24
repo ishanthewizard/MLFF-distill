@@ -8,9 +8,9 @@ from fairchem.core.common.registry import registry
 from src.distill_datasets import SimpleDataset
 
 # Paths
-main_path = '/data/ishan-amin/MPtraj/mptraj_seperated/Yttrium/'
+main_path = '/data/ishan-amin/MPtrj/MPtrj_seperated/Yttrium/'
 labels_folder = 'labels/mace_mp_large_Yttrium'
-output_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium/'
+output_path = '/data/ishan-amin/MPtrj/MPtrj_seperated_all_splits/Yttrium/'
 output_label_path = 'labels/mace_mp_all_splits_Yttrium'
 
 

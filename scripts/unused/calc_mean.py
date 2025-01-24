@@ -6,9 +6,9 @@ import numpy as np
 # dataset_path = 'data/SPICE/spice_seperated_w_energies/Iodine/train'
 # dataset_path = '/data/shared/MLFF/SPICE/maceoff_split/train/'
 # dataset_path = 'data/SPICE/spice_separated/Solvated_Amino_Acids/train'
-dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Perovskites_noIons/train'
-# dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Bandgap_greater_than_5/train'
-# dataset_path = '/data/ishan-amin/MPtraj/mptraj_seperated_all_splits/Yttrium/train'
+dataset_path = '/data/ishan-amin/MPtrj/MPtrj_seperated_all_splits/Perovskites_noIons/train'
+# dataset_path = '/data/ishan-amin/MPtrj/MPtrj_seperated_all_splits/Bandgap_greater_than_5/train'
+# dataset_path = '/data/ishan-amin/MPtrj/MPtrj_seperated_all_splits/Yttrium/train'
 print(registry)
 config = {"src": dataset_path}
 dataset = registry.get_dataset_class("lmdb")(config)

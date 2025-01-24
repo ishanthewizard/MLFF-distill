@@ -54,11 +54,5 @@ evaluation_metrics:
       - energy_forces_within_threshold
   primary_metric: forces_mae
   
-
 optim:
-  batch_size: 1
-  eval_batch_size: 32
-  force_jac_sample_size: 10
-  print_memory_usage: False
-  vectorize_jacs: True
   final_node_distill: True

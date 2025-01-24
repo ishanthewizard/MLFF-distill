@@ -240,94 +240,49 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
 
     
     
-# def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collater, looped=False, h=0.0001):
-#     # Store original positions
-#     original_pos = batch.pos.clone()
 
-#     # Create a list to store all perturbed batches
-#     perturbed_batches = []
-
-#     # Total number of atoms
-#     total_num_atoms = batch.pos.shape[0]
-
-#     for output in grad_outputs:
-#         # Create forward perturbation
-#         perturbed_batch_forward = batch.clone()
-#         perturbed_batch_forward.pos = original_pos + h * output
-
-#         # Create backward perturbation
-#         perturbed_batch_backward = batch.clone()
-#         perturbed_batch_backward.pos = original_pos - h * output
-
-#         # Append both perturbed batches to the list
-#         perturbed_batches.append(perturbed_batch_forward)
-#         perturbed_batches.append(perturbed_batch_backward)
-
-#     # Combine all perturbed batches into one large batch
-#     if not looped:
-#         large_batch = collater(perturbed_batches)
-#         # Perform forward pass for all perturbed batches at once
-#         perturbed_forces = forward(large_batch)['forces']
-#     else:
-#         perturbed_forces = []
-#         for batch in perturbed_batches:
-#             perturbed_forces.append(forward(batch)['forces'])
-#         perturbed_forces = torch.cat(perturbed_forces, dim=0)
-#     # Split the large batch's forces into individual forward and backward forces
-#     hessian_columns = []
-#     for i in range(0, len(perturbed_batches), 2):
-#         forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
-#         backward_force = perturbed_forces[(i + 1) * total_num_atoms:(i + 2) * total_num_atoms]
-#         hessian_col = (forward_force - backward_force) / (2 * h)
-#         hessian_columns.append(hessian_col)
-
-#     # Stack columns to form the Jacobian matrix
-#     #technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
-#     return torch.stack(hessian_columns, dim=0) 
-
-def get_jacobian_forward_mode(forces, batch, grad_outputs, collater, forward, looped=False, h=0.0001):
-    """
-    Compute Jacobian-vector products using forward-mode autodiff.
-    Args:
-        forces: Predicted forces tensor
-        batch: Input batch containing positions
-        grad_outputs: Vectors to compute JVP with (shape: [..., num_atoms, 3])
-        collater: Batch collation function
-        forward: Forward pass function
-    Returns:
-        JVPs stacked along first dimension
-    """
-    # Prepare function that computes forces given positions
-    def forces_fn(positions):
-        # Clone the batch to avoid mutating it
-        # batch_copy = batch.clone()  # Ensure you have a clone method or copy mechanism for your batch
-        # batch_copy.pos = positions  # Assign the positions to the new batch
-        batch.pos = positions
-        def simple_tester(batch):
-            print(batch.pos.shape)
-            return batch.pos ** 2
+# def get_jacobian_forward_mode(forces, batch, grad_outputs, collater, forward, looped=False, h=0.0001):
+#     """
+#     Compute Jacobian-vector products using forward-mode autodiff.
+#     Args:
+#         forces: Predicted forces tensor
+#         batch: Input batch containing positions
+#         grad_outputs: Vectors to compute JVP with (shape: [..., num_atoms, 3])
+#         collater: Batch collation function
+#         forward: Forward pass function
+#     Returns:
+#         JVPs stacked along first dimension
+#     """
+#     # Prepare function that computes forces given positions
+#     def forces_fn(positions):
+#         # Clone the batch to avoid mutating it
+#         # batch_copy = batch.clone()  # Ensure you have a clone method or copy mechanism for your batch
+#         # batch_copy.pos = positions  # Assign the positions to the new batch
+#         batch.pos = positions
+#         def simple_tester(batch):
+#             print(batch.pos.shape)
+#             return batch.pos ** 2
         
-        return simple_tester(batch)
+#         return simple_tester(batch)
     
-    # Function to compute single JVP
-    def compute_single_jvp(tangent):
-        breakpoint()
-        _, jvp_out = jvp(
-            func=forces_fn,
-            primals=(batch.pos,),
-            tangents=(tangent,)
-        )
-        return jvp_out
+#     # Function to compute single JVP
+#     def compute_single_jvp(tangent):
+#         _, jvp_out = jvp(
+#             func=forces_fn,
+#             primals=(batch.pos,),
+#             tangents=(tangent,)
+#         )
+#         return jvp_out
 
-    # Vectorize over grad_outputs
-    if len(grad_outputs.shape) == 4:
-        # Case: grad_outputs is [batch, atom, atom, 3]
-        compute_jvp = torch.vmap(torch.vmap(compute_single_jvp))
-    else:
-        # Case: grad_outputs is [atom, atom, 3]
-        compute_jvp = torch.vmap(compute_single_jvp)
+#     # Vectorize over grad_outputs
+#     if len(grad_outputs.shape) == 4:
+#         # Case: grad_outputs is [batch, atom, atom, 3]
+#         compute_jvp = torch.vmap(torch.vmap(compute_single_jvp))
+#     else:
+#         # Case: grad_outputs is [atom, atom, 3]
+#         compute_jvp = torch.vmap(compute_single_jvp)
         
-    return compute_jvp(grad_outputs)
+#     return compute_jvp(grad_outputs)
     
 
     
