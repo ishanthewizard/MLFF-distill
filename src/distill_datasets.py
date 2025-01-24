@@ -48,7 +48,7 @@ class CombinedDataset(Dataset):
             
         main_batch.teacher_forces = teacher_forces
         main_batch.force_jacs = force_jacs
-        if final_node_features:
+        if final_node_features is not None:
             main_batch.final_node_features = final_node_features.reshape(teacher_forces.shape[0], -1)
         return main_batch
 

@@ -1,10 +1,18 @@
 includes:
-- configs/MPTraj/Bandgap_greater_5/gemnet-dT-small.yml
+- configs/SPICE/monomers/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
+dataset:
+  train:
+    teacher_labels_folder: data/labels/SPICE_labels/mace_off_large_SpiceMonomers
+
 model:
+  name: src.models.gemnet_baseline.GemNetT #gemnet_t_baseline
+  baseline: True
+  use_teacher_node_embeddings: True
   use_teacher_atom_embeddings: False
+  teacher_atom_embedding_path: data/labels/atom_embeddings/mace_off_large_atom_embeddings.npy
   emb_size_teacher: 256
 
 outputs:
@@ -13,12 +21,12 @@ outputs:
     level: atom
     train_on_free_atoms: True
     eval_on_free_atoms: True
-    
 
 loss_functions:
   - energy:
-      fn: mae
-      coefficient: 0
+      fn: per_atom_mae
+      coefficient: 5
+      reduction: 
   - forces:
       fn: l2mae
       coefficient: 100
@@ -31,12 +39,11 @@ loss_functions:
   - force_jacs:
       fn: l2mae
       coefficient: 0
-      reduction: mean_all
 
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity
@@ -46,10 +53,12 @@ evaluation_metrics:
     misc:
       - energy_forces_within_threshold
   primary_metric: forces_mae
+  
 
 optim:
-  batch_size: 32
+  batch_size: 1
   eval_batch_size: 32
-  force_jac_sample_size: 1
+  force_jac_sample_size: 10
   print_memory_usage: False
   vectorize_jacs: True
+  final_node_distill: True

@@ -1,68 +1,11 @@
 includes:
 - configs/SPICE/monomers/gemnet-dT-small.yml
 
-trainer: src.distill_trainer.DistillTrainer
-
-dataset:
-  train:
-    label_force_batch_size: 32
-    label_jac_batch_size: 4
-    vectorize_teach_jacs: True
-
 model:
   name: src.models.gemnet_baseline.GemNetT
   baseline: True
   use_teacher_node_embeddings: False
   use_teacher_atom_embeddings: True
-  teacher_atom_embedding_path: labels/mace_off_large_atom_embeddings.npy
+  teacher_atom_embedding_path: data/labels/atom_embeddings/mace_off_large_atom_embeddings.npy
   emb_size_teacher: 224
-
-outputs:
-  final_node_features:
-    irrep_dim: 1
-    level: atom
-    train_on_free_atoms: True
-    eval_on_free_atoms: True
-
-loss_functions:
-  - energy:
-      fn: per_atom_mae
-      coefficient: 5
-      reduction: 
-  - forces:
-      fn: l2mae
-      coefficient: 100
-  - final_node_features:
-      fn: mse
-      coefficient: 0
-  - teacher_forces:
-      fn: l2mae
-      coefficient: 0
-
-  - force_jacs:
-      fn: l2mae
-      coefficient: 0
-
-
-evaluation_metrics:
-  metrics:
-    energy:
-      - mae
-    forces:
-      - mae
-      - cosine_similarity
-      - magnitude_error
-    final_node_features:
-      - mse
-    misc:
-      - energy_forces_within_threshold
-  primary_metric: forces_mae
   
-
-optim:
-  batch_size: 32
-  eval_batch_size: 32
-  force_jac_sample_size: 10
-  print_memory_usage: False
-  vectorize_jacs: True
-  final_node_distill: True

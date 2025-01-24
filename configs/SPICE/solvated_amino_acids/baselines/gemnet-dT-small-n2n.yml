@@ -5,16 +5,14 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    label_force_batch_size: 32
-    label_jac_batch_size: 4
-    vectorize_teach_jacs: True
+    teacher_labels_folder: data/labels/SPICE_labels/mace_off_large_SpiceAminos
 
 model:
-  name: src.models.gemnet_baseline.GemNetT
+  name: src.models.gemnet_baseline.GemNetT #gemnet_t_baseline
   baseline: True
   use_teacher_node_embeddings: True
   use_teacher_atom_embeddings: False
-  teacher_atom_embedding_path: labels/mace_off_large_atom_embeddings.npy
+  teacher_atom_embedding_path: data/labels/atom_embeddings/mace_off_large_atom_embeddings.npy
   emb_size_teacher: 224
 
 outputs:
@@ -38,7 +36,6 @@ loss_functions:
   - teacher_forces:
       fn: l2mae
       coefficient: 0
-
   - force_jacs:
       fn: l2mae
       coefficient: 0
@@ -46,7 +43,7 @@ loss_functions:
 evaluation_metrics:
   metrics:
     energy:
-      - mae
+      - per_atom_mae
     forces:
       - mae
       - cosine_similarity

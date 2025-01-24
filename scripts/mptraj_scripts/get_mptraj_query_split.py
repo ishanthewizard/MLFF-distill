@@ -10,7 +10,8 @@ import lmdb
 def get_different_splits(dataset, output_dir, test):
     categorized_samples = {"Bandgap_greater_than_5": []}
     mpproj_query_ids = set()
-    with MPRester("PZ6Gx8dJTmeySErT5xuuaGhypYyg86p4") as mpr:
+    key = 'Z6Gx8dJTmeySErT5xuuaGhypYyg86p4' # NOTE: use your own key! don't use mine
+    with MPRester(key) as mpr:
         docs = mpr.summary.search(band_gap=(5, 3000), fields=["material_id"])
         mpproj_query_ids.update([sample.material_id for sample in docs])
     count = 0

@@ -10,7 +10,7 @@ dataset:
   train:
     no_shuffle: True
     format: lmdb
-    src: data/spice_separated/Iodine/train
+    src: data/SPICE/spice_separated/Iodine/train
     teacher_labels_folder: labels/mace_off_large_SpiceIodine
     key_mapping:
       y: energy
