@@ -55,17 +55,24 @@ Scripts to process the data can be found in the [scripts](scripts/) folder. We m
 
 
 ## Start Training Runs
-Training is identical to training with the fairchem repo, just with different configs. 
-For example, to perform a normal (undistilled) training run of Gemnet-dT on Ac-Ala3, run
 
-```
-python main.py --mode train --config-yml configs/md22/Ac-Ala3/gemnet-dT.yml
-```
-For a distilled version of the above training run, go into the distill folder that is always in the same directory as the original config. The distill 
-config specifies attributes unique to distillation training. It also contains a link with all the attributes of the original config. 
+To perform a standard (non-distilled) training run of Gemnet-dT on the Solvated Amino Acids subset of SPICE, execute:
 
+```bash
+python main.py --mode train --config-yml configs/SPICE/solvated_amino_acids/gemnet-dT-small.yml
 ```
-python main.py --mode train configs/md22/Ac-Ala3/distill/gemnet-dT.yml
+For more info and options relating to training command inputs, please see the fairchem repository.
+
+For a Hessian distillation version of the above training run, navigate to the hessians folder, located in the same directory as the original configuration. The distillation configuration specifies attributes unique to distillation training and includes a link to all the attributes of the original (non-distilled) configuration:
+
+```bash
+python main.py --mode train --config-yml configs/SPICE/solvated_amino_acids/hessian/gemnet-dT-small.yml
+```
+
+Similiarly, you can run some of the baselines we ran in our paper by selecting a config from the baselines folder, which is located in the same directory as the undistilled configuration:
+
+```bash
+python main.py --mode train --config-yml configs/SPICE/solvated_amino_acids/baselines/gemnet-dT-small-n2n.yml
 ```
 
 ## Distributed Training
