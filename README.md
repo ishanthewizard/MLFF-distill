@@ -2,8 +2,7 @@
 
 This repository contains the code for the paper:  
 **Amin, I., Raja, S., Krishnapriyan, A.S. (2024). Towards Fast, Specialized Machine Learning Force Fields: Distilling Foundation Models via Energy Hessians.**  
-*Accepted to ICLR 2025.*  
-DOI: [10.48550/arXiv.2501.09009](https://doi.org/10.48550/arXiv.2501.09009), [arXiv:2501.09009](https://arxiv.org/abs/2501.09009).
+*Accepted to ICLR 2025.* [arXiv:2501.09009](https://arxiv.org/abs/2501.09009).
 
 We built our implementation of Hessian distillation on top of the [Fairchem repository](https://github.com/FAIR-Chem/fairchem).  
 The environment and NERSC training instructions were adapted from the [EScAIP repository](https://github.com/ASK-Berkeley/EScAIP/tree/main).
@@ -12,7 +11,7 @@ The environment and NERSC training instructions were adapted from the [EScAIP re
 
 
 ## Installing the conda environment 
-(environment is from [EScAIP repository](https://github.com/ASK-Berkeley/EScAIP/tree/main))
+(environment is from the [EScAIP repository](https://github.com/ASK-Berkeley/EScAIP/tree/main))
 
 Step 1: Install mamba solver for conda (optional)
 
@@ -30,7 +29,7 @@ $ echo $LD_LIBRARY_PATH | tr ':' '\n' | grep cuda
 /usr/local/cuda/lib64
 ```
 
-If not, add something like following (depends on the location) to your `.bashrc` or `.zshrc`:
+If not, add something like the following (depends on location) to your `.bashrc` or `.zshrc`:
 
 ```bash
 export PATH="/usr/local/cuda/bin:$PATH"
@@ -41,7 +40,7 @@ Step 3: Install the dependencies
 
 ```bash
 mamba env create -f env.yml
-conda activate egap
+conda activate escaip
 ```
 ## Downloading the Data
 Below we provide the links to repositories where the foundation model weights were obtained, as well as the training data:
@@ -52,7 +51,7 @@ Below we provide the links to repositories where the foundation model weights we
 - [Spice Dataset](https://www.repository.cam.ac.uk/items/d50227cd-194f-4ba4-aeb7-2643a69f025f)
 - [MPtrj Dataset](https://figshare.com/articles/dataset/Materials_Project_Trjectory_MPtrj_Dataset/23713842)
 
-Scripts to process the data can be found in the [scripts](scripts/) folder.
+Scripts to process the data can be found in the [scripts](scripts/) folder. We may add postprocessed labels and data to this repo at some point in the future.
 
 
 ## Start Training Runs
