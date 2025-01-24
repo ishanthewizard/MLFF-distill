@@ -61,7 +61,7 @@ To perform a standard (non-distilled) training run of Gemnet-dT on the Solvated 
 ```bash
 python main.py --mode train --config-yml configs/SPICE/solvated_amino_acids/gemnet-dT-small.yml
 ```
-For more info and options relating to training command inputs, please see the fairchem repository.
+For more info and options relating to training command inputs, please see the [Fairchem repository](https://github.com/FAIR-Chem/fairchem).
 
 For a Hessian distillation version of the above training run, navigate to the hessians folder, located in the same directory as the original configuration. The distillation configuration specifies attributes unique to distillation training and includes a link to all the attributes of the original (non-distilled) configuration:
 
