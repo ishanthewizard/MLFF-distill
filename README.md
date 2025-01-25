@@ -109,6 +109,8 @@ dataset:
 - **`label_jac_batch_size`**: Batch size for generating Hessians (note: setting this too high may cause memory overflow).  
 - **`vectorize_teach_jacs`**: If set to `True`, Hessian generation speed will increase using `vmap`, but there is a risk of memory overflow.  
 
+Please see [this file](configs/SPICE/solvated_amino_acids/hessian/gemnet-dT-small.yml) for an example of label generation, the label generation settings are the ones commented out.
+
 - **Important**: Ensure the dataset specified in your base configuration matches the dataset you plan to distill with (i.e., the dataset you want to generate labels for). Also ensure that the linked config with the model attributes is the teacher's config, not the student's.
 
 We created the JMP labels from the [JMP repository](https://github.com/facebookresearch/JMP), essentially by just copying over our src/labels_trainer.py 
