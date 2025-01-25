@@ -6,7 +6,8 @@ This repository contains the code for the paper:
 
 We built our implementation of Hessian distillation on top of the [Fairchem repository](https://github.com/FAIR-Chem/fairchem).  
 The environment and NERSC training instructions were adapted from the [EScAIP repository](https://github.com/ASK-Berkeley/EScAIP/tree/main).
-If you have any questions about the repo feel free to email ishanthewizard@berkeley.edu. I may take up to 5 days to respond. 
+
+If you have any questions about the repo feel free to email ishanthewizard@berkeley.edu.
 
 ---
 
