@@ -119,3 +119,16 @@ We created the JMP labels from the [JMP repository](https://github.com/facebookr
 ## Distributed Training
 For distributed training on NERSC, please see the [Nersc Distributed Training README](NERSC_dist_train.md) taken from the  [EScAIP repository](https://github.com/ASK-Berkeley/EScAIP/tree/main)
 
+## Citation
+If you find this work useful, please consider citing the following:
+
+```bibtex
+@article{amin2025distilling,
+      title={Towards Fast, Specialized Machine Learning Force Fields: Distilling Foundation Models via Energy Hessians},
+      author={Ishan Amin, Sanjeev Raja, and Krishnapriyan, A.S.},
+      journal={International Conference on Learning Representations 2025},
+      year={2025},
+      archivePrefix={arXiv},
+      eprint={2501.09009},
+}
+```
