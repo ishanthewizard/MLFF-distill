@@ -44,7 +44,11 @@ class CombinedDataset(Dataset):
             final_node_features = self.final_node_feature_dataset[idx]
         else:
             final_node_features = None
-            
+        
+        if not hasattr(main_batch, 'cell'):
+            main_batch.cell =  torch.eye(3, device=main_batch.pos.device).unsqueeze(0)
+        if not hasattr(main_batch, 'fixed'):
+            main_batch.fixed = torch.zeros(main_batch.pos.shape[0], device=main_batch.pos.device) 
         main_batch.teacher_forces = teacher_forces
         main_batch.force_jacs = force_jacs
         if final_node_features is not None:

@@ -1,0 +1,34 @@
+includes:
+- configs/md22/double-walled_nanotube/gemnet-T-small.yml
+
+trainer: src.distill_trainer.DistillTrainer
+
+dataset:
+  train:
+    teacher_checkpoint_path: data/teacher_checkpoints/nanotube_jmp-s.ckpt 
+    teacher_labels_folder: data/labels/md22_labels/jmp-small_double-walled_nanotube/
+    label_force_batch_size: 32
+    label_jac_batch_size: 64
+    vectorize_teach_jacs: False
+
+
+loss_functions:
+  - energy:
+      fn: per_atom_mae
+      coefficient: 5
+  - forces:
+      fn: l2mae
+      coefficient: 100
+  - teacher_forces:
+      fn: l2mae
+      coefficient: 0
+  - force_jacs:
+      fn: l2mae
+      coefficient: 400
+
+optim:
+  batch_size: 1
+  eval_batch_size: 4
+  force_jac_sample_size: 1
+  print_memory_usage: False
+  vectorize_jacs: True
