@@ -24,92 +24,32 @@ import numpy.typing as npt
 import torch
 import torch.nn as nn
 import yaml
-from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 import lmdb
 
 from fairchem.core import __version__
-from fairchem.core.common import distutils, gp_utils
-from fairchem.core.common.data_parallel import BalancedBatchSampler, OCPCollater
+from fairchem.core.common import distutils
 from fairchem.core.common.registry import registry
-from fairchem.core.common.typing import assert_is_instance as aii
-from fairchem.core.common.typing import none_throws
-from fairchem.core.modules.evaluator import Evaluator
-from fairchem.core.modules.exponential_moving_average import ExponentialMovingAverage
-from fairchem.core.modules.loss import DDPLoss
-from fairchem.core.modules.normalizer import Normalizer
-from fairchem.core.modules.scaling.compat import load_scales_compat
-from fairchem.core.modules.scaling.util import ensure_fitted
-from fairchem.core.modules.scheduler import LRScheduler
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
-from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian, custom_sigmoid 
+from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian
 from . import CombinedDataset, SimpleDataset
 from fairchem.core.common import distutils
-from fairchem.core.modules.loss import L2MAELoss
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
 @registry.register_trainer("labels")
 class LabelsTrainer(OCPTrainer):
-    def __init__(
-        self,
-        task,
-        model,
-        outputs,
-        dataset,
-        optimizer,
-        loss_functions,
-        evaluation_metrics,
-        identifier,
-        timestamp_id=None,
-        run_dir=None,
-        is_debug=False,
-        print_every=100,
-        seed=None,
-        logger="wandb",
-        local_rank=0,
-        amp=False,
-        cpu=False,
-        slurm=None,
-        noddp=False,
-        name="ocp",
-        gp_gpus=None,
-    ):
-        if slurm is None:
-            slurm = {}
-        super().__init__(
-            task=task,
-            model=model,
-            outputs=outputs,
-            dataset=dataset,
-            optimizer=optimizer,
-            loss_functions=loss_functions,
-            evaluation_metrics=evaluation_metrics,
-            identifier=identifier,
-            timestamp_id=timestamp_id,
-            run_dir=run_dir,
-            is_debug=is_debug,
-            print_every=print_every,
-            seed=seed,
-            logger=logger,
-            local_rank=local_rank,
-            amp=amp,
-            cpu=cpu,
-            slurm=slurm,
-            noddp=noddp,
-            name=name,
-            gp_gpus=gp_gpus,
-        )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         # Compute teacher MAE
         self.load_teacher_model_and_record(self.config['dataset']['teacher_labels_folder'])
         sys.exit(0)
     
     
     def load_teacher_model_and_record(self, labels_folder):
-        model_attributes_holder = self.config['model_attributes']
-        model_name_holder = self.config['model']
+        model_attributes_holder = self.config['model']
 
         checkpoint = torch.load(self.config["dataset"]["teacher_checkpoint_path"], map_location=torch.device("cpu"))
         self.teacher_config = checkpoint["config"]
@@ -119,20 +59,23 @@ class LabelsTrainer(OCPTrainer):
         if self.config["dataset"].get("teacher_scale_file", None):
             self.teacher_config["model_attributes"]["scale_file"] = self.config["dataset"]["teacher_scale_file"]
 
-        self.config['model_attributes'] = self.teacher_config['model_attributes']
+        self.config['model'] = self.teacher_config['model']
         #Load teacher config from teacher checkpoint
         self.config['model'] =  self.teacher_config['model']
-        self.config['model_attributes'].pop('scale_file', None)
+        self.config['model'].pop('scale_file', None)
         self.normalizers = {}  # This SHOULD be okay since it gets overridden later (in tasks, after datasets), but double check
         self.load_task()
         self.load_model()
         self.load_checkpoint(self.config["dataset"]["teacher_checkpoint_path"])
         
+        os.makedirs(os.path.join(labels_folder, "train_forces"))
+        os.makedirs(os.path.join(labels_folder, "val_forces"))
+        os.makedirs(os.path.join(labels_folder, "force_jacobians"))
+        
         self.launch_record_tasks(labels_folder, 'train')
         self.launch_record_tasks(labels_folder, 'val')
 
-        self.config['model_attributes'] = model_attributes_holder
-        self.config['model'] = model_name_holder
+        self.config['model'] = model_attributes_holder
 
     def launch_record_tasks(self, labels_folder, dataset_type):
         """
@@ -168,7 +111,7 @@ class LabelsTrainer(OCPTrainer):
         subset_dataset = Subset(dataset, subset_indices)
         dataloader = DataLoader(
             subset_dataset,
-            collate_fn=self.ocp_collater,
+            collate_fn=self.collater,
             num_workers=self.config["optim"]["num_workers"],
             pin_memory=True,
             batch_size=self.config["dataset"]["label_force_batch_size"],
@@ -190,7 +133,7 @@ class LabelsTrainer(OCPTrainer):
             # Only for training dataset, save jacobians as well
             jac_dataloader = DataLoader(
             subset_dataset,
-            collate_fn=self.ocp_collater,
+            collate_fn=self.collater,
             num_workers=self.config["optim"]["num_workers"],
             pin_memory=True,
             batch_size=self.config["dataset"]["label_jac_batch_size"],
@@ -198,7 +141,9 @@ class LabelsTrainer(OCPTrainer):
             
             jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
             should_mask = self.output_targets['forces']["train_on_free_atoms"]
-            get_seperated_force_jacs = lambda batch: get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
+            def get_seperated_force_jacs(batch): 
+                batch.pos.requires_grad_(True)
+                return get_teacher_jacobian(self._forward(batch)['forces'], batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], should_mask=should_mask)
             self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
 
     def record_and_save(self, dataloader, file_path, fn):

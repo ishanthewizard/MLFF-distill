@@ -6,8 +6,8 @@ This repository contains the code for the paper:
 
 We built our implementation of Hessian distillation on top of the [Fairchem repository](https://github.com/FAIR-Chem/fairchem).  
 The environment and NERSC training instructions were adapted from the [EScAIP repository](https://github.com/ASK-Berkeley/EScAIP/tree/main).
-
 If you have any questions about the repo feel free to email ishanthewizard@berkeley.edu. I may take up to 5 days to respond. 
+
 ---
 
 
@@ -86,7 +86,6 @@ Set the `dataset_path` and `labels_folder` variables in the `main` function to t
 To generate the labels for **Mace-MP0**, use the script [`scripts/mptraj_scripts/get_maceMP0_labels.py`](scripts/mptraj_scripts/get_maceMP0_labels.py).  
 Similarly, set the `dataset_path` and `labels_folder` variables in the `main` function appropriately.
 
----
 
 ### Generating Hessian Labels with a Teacher Checkpoint
 If you have a teacher checkpoint that is runnable in the **Fairchem** repository, you can generate Hessian labels using the following steps:
@@ -110,7 +109,7 @@ dataset:
 - **`label_jac_batch_size`**: Batch size for generating Hessians (note: setting this too high may cause memory overflow).  
 - **`vectorize_teach_jacs`**: If set to `True`, Hessian generation speed will increase using `vmap`, but there is a risk of memory overflow.  
 
-- **Important**: Ensure the dataset specified in your base configuration matches the dataset you plan to distill with (i.e., the dataset you want to generate labels for).  
+- **Important**: Ensure the dataset specified in your base configuration matches the dataset you plan to distill with (i.e., the dataset you want to generate labels for). Also ensure that the linked config with the model attributes is the teacher's config, not the student's.
 
 We created the JMP labels from the [JMP repository](https://github.com/facebookresearch/JMP), essentially by just copying over our src/labels_trainer.py 
 

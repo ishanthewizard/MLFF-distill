@@ -31,7 +31,7 @@ model:
   extensive: True 
   otf_graph: True
   regress_forces: True
-  direct_forces: False # IMPORTANT: CHANGED!!!!
+  direct_forces: False # IMPORTANT: change if you want a conservative model (Gemnet-T)
 
 optim:
   batch_size: 4
