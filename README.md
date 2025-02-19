@@ -124,12 +124,12 @@ For distributed training on NERSC, please see the [Nersc Distributed Training RE
 If you find this work useful, please consider citing the following:
 
 ```bibtex
-@article{amin2025distilling,
-      title={Towards Fast, Specialized Machine Learning Force Fields: Distilling Foundation Models via Energy Hessians},
-      author={Ishan Amin, Sanjeev Raja, and Krishnapriyan, A.S.},
-      journal={International Conference on Learning Representations 2025},
-      year={2025},
-      archivePrefix={arXiv},
-      eprint={2501.09009},
+@inproceedings{
+amin2025distill,
+title={Towards Fast, Specialized Machine Learning Force Fields: Distilling Foundation Models via Energy Hessians},
+author={Ishan Amin and Sanjeev Raja and Aditi S. Krishnapriyan},
+booktitle={The Thirteenth International Conference on Learning Representations},
+year={2025},
+url={https://openreview.net/forum?id=1durmugh3I}
 }
 ```
