@@ -40,13 +40,13 @@ if __name__ == "__main__":
 
     # Set up the OCP calculator
     checkpoint_path = os.path.join(config["MODELPATH"], config["run_name"], "best_checkpoint.pt")
-    # calc = OCPCalculator(
-    #     config_yml=args.config_yml.__str__(),
-    #     checkpoint_path=checkpoint_path,
-    #     cpu=False,
-    #     seed=args.seed,
-    # )
-    calc = mace_mp(model="large", dispersion=False, default_dtype="float32", device='cuda')
+    calc = OCPCalculator(
+        config_yml=args.config_yml.__str__(),
+        checkpoint_path=checkpoint_path,
+        cpu=False,
+        seed=args.seed,
+    )
+    # calc = mace_mp(model="large", dispersion=False, default_dtype="float32", device='cuda')
 
     atoms.calc = calc
 
