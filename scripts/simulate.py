@@ -82,10 +82,10 @@ if __name__ == "__main__":
     # Define a callback function to update the progress bar
     def update_pbar(atoms=atoms):
         pbar.update(1)
-
+    config['seed'] = 30
     dyn.attach(
             MDLogger(
-                dyn, atoms, os.path.join(os.path.dirname(output_folder), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
+                dyn, atoms, os.path.join(os.path.dirname(output_folder), f"md_system{idx}_seed{config['seed']}.log"), header=True, stress=False, peratom=True, mode="a"
             ),
             interval=config["save_freq"],
         )

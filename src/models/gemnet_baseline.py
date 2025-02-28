@@ -539,7 +539,6 @@ class GemNetT(nn.Module, GraphModelMixin):
         
         if self.baseline and self.use_teacher_atom_embeddings:
             teacher_h = self.teacher_atom_embeddings[atomic_numbers]
-
             h = self.atom_embedding_projection(teacher_h)
         
         else:
