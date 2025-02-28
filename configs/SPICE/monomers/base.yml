@@ -10,7 +10,7 @@ dataset:
   train:
     no_shuffle: True
     format: lmdb
-    src: data/SPICE/spice_separated/DES370K_Monomers/train
+    src: data/spice_separated/DES370K_Monomers/train
     key_mapping:
       y: energy
       force: forces
@@ -25,7 +25,7 @@ dataset:
       element_references:
         file: configs/SPICE/element_references.pt
   val:
-    src: data/SPICE/spice_separated/DES370K_Monomers/val
+    src: data/spice_separated/DES370K_Monomers/val
 
 
 outputs:

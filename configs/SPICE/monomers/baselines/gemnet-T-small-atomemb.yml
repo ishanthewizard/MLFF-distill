@@ -1,0 +1,11 @@
+includes:
+- configs/SPICE/monomers/gemnet-T-small.yml
+
+model:
+  name: src.models.gemnet_baseline.GemNetT
+  baseline: True
+  use_teacher_node_embeddings: False
+  use_teacher_atom_embeddings: True
+  teacher_atom_embedding_path: data/labels_unlocked/EScAIP_labels/escaip_atom_embeddings.npy
+  emb_size_teacher: 256
+  
