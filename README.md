@@ -45,7 +45,9 @@ mamba env create -f env.yml
 conda activate escaip
 ```
 ## Downloading the Data
-Below we provide the links to repositories where the foundation model weights were obtained, as well as the training data:
+All of the specialized datasets we used in the paper, as well as the hessian and baseline labels we used for distillation, can be found at this link: [https://zenodo.org/records/14759305](https://zenodo.org/records/14759305)
+
+Below we provide the links to repositories where the foundation model weights were obtained, as well as the original, unspecialized training datasets that the foundation models were trained on.
 
 - [Mace-OFF repository](https://github.com/ACEsuit/mace-off)
 - [Mace-MP repository](https://github.com/ACEsuit/mace-mp)
@@ -53,8 +55,7 @@ Below we provide the links to repositories where the foundation model weights we
 - [Spice Dataset](https://www.repository.cam.ac.uk/items/d50227cd-194f-4ba4-aeb7-2643a69f025f)
 - [MPtrj Dataset](https://figshare.com/articles/dataset/Materials_Project_Trjectory_MPtrj_Dataset/23713842)
 
-Scripts to process the data can be found in the [scripts](scripts/) folder. We may add postprocessed labels and data to this repo at some point in the future.
-
+Scripts to process the original data and generate the specialized subsets can be found in the [scripts](scripts/) folder.
 
 ## Start Training Runs
 
@@ -123,12 +124,12 @@ For distributed training on NERSC, please see the [Nersc Distributed Training RE
 If you find this work useful, please consider citing the following:
 
 ```bibtex
-@article{amin2025distilling,
-      title={Towards Fast, Specialized Machine Learning Force Fields: Distilling Foundation Models via Energy Hessians},
-      author={Ishan Amin, Sanjeev Raja, and Krishnapriyan, A.S.},
-      journal={International Conference on Learning Representations 2025},
-      year={2025},
-      archivePrefix={arXiv},
-      eprint={2501.09009},
+@inproceedings{
+amin2025distill,
+title={Towards Fast, Specialized Machine Learning Force Fields: Distilling Foundation Models via Energy Hessians},
+author={Ishan Amin and Sanjeev Raja and Aditi S. Krishnapriyan},
+booktitle={The Thirteenth International Conference on Learning Representations},
+year={2025},
+url={https://openreview.net/forum?id=1durmugh3I}
 }
 ```
