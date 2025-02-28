@@ -1,11 +1,11 @@
 includes:
-- configs/SPICE/solvated_amino_acids/gemnet-dT-small.yml
+- configs/SPICE/iodine/gemnet-dT-small.yml
 
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos
+    teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceIodine
 
 model:
   name: src.models.gemnet_baseline.GemNetT #gemnet_t_baseline
