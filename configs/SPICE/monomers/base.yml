@@ -26,6 +26,8 @@ dataset:
         file: configs/SPICE/element_references.pt
   val:
     src: data/SPICE/spice_separated/DES370K_Monomers/val
+  test: 
+    src: data/SPICE/spice_separated/DES370K_Monomers/test
 
 
 outputs:

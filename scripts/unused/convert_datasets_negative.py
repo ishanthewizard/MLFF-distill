@@ -18,12 +18,12 @@ def record_and_save(dataset, file_path, fn, fjacs=False):
     with env.begin(write=True) as txn:
         i = 0
         for sample in dataset:
-            if np.sqrt(len(sample) / 9 ) < 3 and fjacs:
-                continue
-            if len(sample) / 3 < 3:
-                continue
-            if torch.isnan(sample).any():
-                raise Exception("yup, has nans")
+            # if np.sqrt(len(sample) / 9 ) < 3 and fjacs:
+            #     continue
+            # if len(sample) / 3 < 3:
+            #     continue
+            # if torch.isnan(sample).any():
+            #     raise Exception("yup, has nans")
             sample_id = str(i)
             sample_output = fn(sample)  # this function needs to output an array where each element correponds to the label for an entire molecule
             # Convert tensor to bytes and write to LMDB
@@ -34,7 +34,9 @@ def record_and_save(dataset, file_path, fn, fjacs=False):
     print(f"All tensors saved to LMDB:{file_path}")
 
 def convert_labels(labels_folder, new_labels_folder, model="medium"):
-    os.makedirs(new_labels_folder)
+    os.makedirs(os.path.join(new_labels_folder, 'force_jacobians'))
+    os.makedirs(os.path.join(new_labels_folder, 'train_forces'))
+    os.makedirs(os.path.join(new_labels_folder, 'val_forces'))
     force_jac_dataset = SimpleDataset(os.path.join(labels_folder,  'force_jacobians'))
     teacher_force_train_dataset = SimpleDataset(os.path.join(labels_folder,  'train_forces' ))
     teacher_force_val_dataset = SimpleDataset(os.path.join(labels_folder,  'val_forces'  ))
@@ -43,11 +45,14 @@ def convert_labels(labels_folder, new_labels_folder, model="medium"):
         print(item)
     identity = lambda x: x.numpy()
     flip = lambda x: -x.numpy()
-    record_and_save(force_jac_dataset, os.path.join(new_labels_folder, 'force_jacobians', 'force_jacobians.lmdb'), identity, fjacs=True)
-    record_and_save(teacher_force_train_dataset, os.path.join(new_labels_folder, 'train_forces', 'train_forces.lmdb'), identity)
-    record_and_save(teacher_force_val_dataset, os.path.join(new_labels_folder, 'val_forces', 'val_forces.lmdb'), identity)
+    multiply_std = lambda x: (1.0759390592575073 * x).numpy()
+    record_and_save(force_jac_dataset, os.path.join(new_labels_folder, 'force_jacobians', 'force_jacobians.lmdb'), multiply_std, fjacs=True)
+    record_and_save(teacher_force_train_dataset, os.path.join(new_labels_folder, 'train_forces', 'train_forces.lmdb'), multiply_std)
+    record_and_save(teacher_force_val_dataset, os.path.join(new_labels_folder, 'val_forces', 'val_forces.lmdb'), multiply_std)
 if __name__ == "__main__":
-    labels_folder = 'labels/mace_off_large_Perovskites'
-    new_labels_folder = 'labels/mace_off_large_Perovskites_noIons'
+    # labels_folder = 'labels/mace_off_large_Perovskites'
+    labels_folder = '/data/ericqu/EScAIP_labels/monomers'
+    # labels_folder = '/data/ericqu/EScAIP_labels/iodine'
+    new_labels_folder = '/data/ishan-amin/hessian_proj_data/labels/SPICE_labels/EScAIP_SpiceMonomers'
 
     convert_labels(labels_folder, new_labels_folder)
