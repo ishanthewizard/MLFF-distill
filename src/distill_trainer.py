@@ -225,7 +225,7 @@ class DistillTrainer(OCPTrainer):
     
     def _compute_metrics(self, out, batch, evaluator, metrics=None):
         metrics = super()._compute_metrics(out, batch, evaluator, metrics)
-        if not self.is_validating:
+        if not self.is_validating and self.original_fjac_coeff > 0:
             avg_force_jac_loss = distutils.all_reduce(batch["force_jac_loss"], average=True )
             metrics['force_jac_loss'] = {}
             metrics['force_jac_loss']['metric'] = avg_force_jac_loss.item()

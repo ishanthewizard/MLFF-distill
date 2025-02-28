@@ -1,5 +1,5 @@
 includes:
-  - configs/slurm/regular.yml
+  - configs/slurm/premium.yml
 logger: 
   name: wandb
   project: spice-Energy-FINAL
@@ -26,8 +26,8 @@ dataset:
         file: configs/SPICE/element_references.pt
   val:
     src: data/SPICE/spice_separated/DES370K_Monomers/val
-  test: 
-    src: data/SPICE/spice_separated/DES370K_Monomers/test
+  # test: 
+  #   src: data/SPICE/spice_separated/DES370K_Monomers/test
 
 
 outputs:
