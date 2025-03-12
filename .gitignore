@@ -12,6 +12,7 @@ logs
 *.png
 *.sh
 *.ckpt
+*.out
 
 *.traj
 experimental

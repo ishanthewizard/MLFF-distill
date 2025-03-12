@@ -2,7 +2,7 @@ includes:
   - configs/slurm/premium.yml
 logger: 
   name: wandb
-  project: spice-Energy-FINAL
+  project: spice-active-learning
 
 trainer: ocp
 
