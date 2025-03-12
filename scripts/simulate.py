@@ -23,7 +23,6 @@ from tqdm import tqdm
 
 if __name__ == "__main__":
 
-    
     setup_logging()
 
     parser = flags.get_parser()
@@ -33,7 +32,7 @@ if __name__ == "__main__":
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id
 
-    data = LmdbDataset(config['dataset']['test'])
+    data = LmdbDataset(config["dataset"]["test"])
 
     idx = config["init_data_idx"]
     init_data = data.__getitem__(idx)
@@ -42,8 +41,8 @@ if __name__ == "__main__":
     atoms = batch_to_atoms(collater([init_data]))[0]
 
     # Set up the OCP calculator
-    output_folder = config['output_folder']
-    checkpoint_path = config['checkpoint']
+    output_folder = config["output_folder"]
+    checkpoint_path = config["checkpoint"]
     calc = OCPCalculator(
         config_yml=args.config_yml.__str__(),
         checkpoint_path=checkpoint_path,
@@ -55,9 +54,10 @@ if __name__ == "__main__":
     atoms.calc = calc
 
     # Initialize atom velocities
-    MaxwellBoltzmannDistribution(atoms, temperature_K=config["integrator_config"]["temperature"])
+    MaxwellBoltzmannDistribution(
+        atoms, temperature_K=config["integrator_config"]["temperature"]
+    )
     Stationary(atoms)  # zero the center of mass velocity
-
 
     if config["nvt"]:
         dyn = Langevin(
@@ -72,7 +72,9 @@ if __name__ == "__main__":
         dyn = VelocityVerlet(
             atoms,
             timestep=config["integrator_config"]["timestep"] * units.fs,
-            trajectory=os.path.join(os.path.dirname(output_folder), f"md_system{idx}.traj"),
+            trajectory=os.path.join(
+                os.path.dirname(output_folder), f"md_system{idx}.traj"
+            ),
         )
 
         # Initialize the progress bar
@@ -82,14 +84,24 @@ if __name__ == "__main__":
     # Define a callback function to update the progress bar
     def update_pbar(atoms=atoms):
         pbar.update(1)
-    config['seed'] = 22
+
+    config["seed"] = 22
     dyn.attach(
-            MDLogger(
-                dyn, atoms, os.path.join(os.path.dirname(output_folder), f"md_system{idx}_seed{config['seed']}.log"), header=True, stress=False, peratom=True, mode="a"
+        MDLogger(
+            dyn,
+            atoms,
+            os.path.join(
+                os.path.dirname(output_folder),
+                f"md_system{idx}_seed{config['seed']}.log",
             ),
-            interval=config["save_freq"],
-        )
-    
+            header=True,
+            stress=False,
+            peratom=True,
+            mode="a",
+        ),
+        interval=config["save_freq"],
+    )
+
     dyn.attach(update_pbar, interval=1)
 
     dyn.run(config["steps"])

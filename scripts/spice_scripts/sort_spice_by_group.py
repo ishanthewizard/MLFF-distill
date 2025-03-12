@@ -9,6 +9,7 @@ import numpy as np
 from torch.utils.data import Subset
 import torch
 
+
 def categorize_samples_by_name(dataset, output_dir, test=False):
     categorized_samples = {}
 
@@ -25,6 +26,7 @@ def categorize_samples_by_name(dataset, output_dir, test=False):
             _save_to_lmdb(samples, os.path.join(output_dir, dataset_name, "test"))
         else:
             save_samples_to_lmdb(samples, output_dir, dataset_name)
+
 
 def save_samples_to_lmdb(samples, output_dir, dataset_name, split_ratio=0.85):
     # Shuffle the samples
@@ -45,6 +47,7 @@ def save_samples_to_lmdb(samples, output_dir, dataset_name, split_ratio=0.85):
     # Save the val samples
     _save_to_lmdb(val_samples, val_db_path)
 
+
 def _save_to_lmdb(samples, db_path):
     # Check if the directory exists
     if os.path.exists(db_path):
@@ -53,13 +56,13 @@ def _save_to_lmdb(samples, db_path):
 
     os.makedirs(db_path, exist_ok=True)
     db = lmdb.open(
-        os.path.join(db_path, 'data.lmdb'),
+        os.path.join(db_path, "data.lmdb"),
         map_size=1099511627776 * 2,
         subdir=False,
         meminit=False,
         map_async=True,
     )
-    
+
     for idx, sample in enumerate(tqdm(samples)):
         txn = db.begin(write=True)
         txn.put(f"{idx}".encode("ascii"), pickle.dumps(sample, protocol=-1))
@@ -74,11 +77,16 @@ def _save_to_lmdb(samples, db_path):
     db.close()
     print(f"Saved {len(samples)} samples to {db_path}")
 
+
 # Example usage:
 # save_samples_to_lmdb(samples, output_dir, dataset_name)
 # Usage
 dataset_path = "/data/ishan-amin/maceoff_split"  # Update this with your actual path
-output_dir = "/data/ishan-amin/spice_separated"   # Update this with your desired output directory
+output_dir = (
+    "/data/ishan-amin/spice_separated"  # Update this with your desired output directory
+)
 dataset_type = "train"
-train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, dataset_type)})
+train_dataset = registry.get_dataset_class("lmdb")(
+    {"src": os.path.join(dataset_path, dataset_type)}
+)
 categorize_samples_by_name(train_dataset, output_dir, test=(dataset_type == "test"))

@@ -4,10 +4,8 @@ from ffairchem.core.common.registry import registry
 from src.distill_datasets import SimpleDataset
 
 
-dataset_path = '/data/ishan-amin/MPtrj/MPtrj_seperated/Yttrium/val'
-labels_path = output_label_path = 'labels/mace_mp_all_splits_Yttrium'
-
-
+dataset_path = "/data/ishan-amin/MPtrj/MPtrj_seperated/Yttrium/val"
+labels_path = output_label_path = "labels/mace_mp_all_splits_Yttrium"
 
 
 # dataset_path = '/data/ishan-amin/MPtrj/MPtrj_seperated_all_splits/Yttrium/'
@@ -16,14 +14,14 @@ labels_path = output_label_path = 'labels/mace_mp_all_splits_Yttrium'
 # output_label_path = 'labels/mace_mp_all_splits_Yttrium'
 
 val_dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
-teacher_force_val_dataset = SimpleDataset(os.path.join(labels_path, 'val_forces'))
+teacher_force_val_dataset = SimpleDataset(os.path.join(labels_path, "val_forces"))
 # Load datasets
 
 
-
-
-train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(main_path, 'train')})
-force_jac_dataset = SimpleDataset(os.path.join(labels_folder, 'force_jacobians'))
-teacher_force_train_dataset = SimpleDataset(os.path.join(labels_folder, 'train_forces'))
+train_dataset = registry.get_dataset_class("lmdb")(
+    {"src": os.path.join(main_path, "train")}
+)
+force_jac_dataset = SimpleDataset(os.path.join(labels_folder, "force_jacobians"))
+teacher_force_train_dataset = SimpleDataset(os.path.join(labels_folder, "train_forces"))
 
 # Ensure dataset lengths match

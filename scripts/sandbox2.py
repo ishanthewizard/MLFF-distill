@@ -1,6 +1,7 @@
 import os
 import pickle
 from fairchem.core.common.registry import registry
+
 # from mp_api.client import MPRester
 # from ase.io import read
 from src.distill_datasets import SimpleDataset
@@ -9,9 +10,10 @@ import torch
 import numpy as np
 import lmdb
 from torch.utils.data import Subset
+
 # breakpoint()
 
-toby_path = '/data/shared/MLFF/SPICE/maceoff_split/test'
+toby_path = "/data/shared/MLFF/SPICE/maceoff_split/test"
 
 toby_spice_dataset = registry.get_dataset_class("lmdb")({"src": toby_path})
 fairchem_dataset = registry.get_dataset_class("lmdb")({"src": toby_path})

@@ -25,12 +25,24 @@ from fairchem.core.modules.scaling.compat import load_scales_compat
 
 from fairchem.core.models.gemnet.layers.atom_update_block import OutputBlock
 from fairchem.core.models.gemnet.layers.base_layers import Dense
-from fairchem.core.models.gemnet.layers.efficient import EfficientInteractionDownProjection
-from fairchem.core.models.gemnet.layers.embedding_block import AtomEmbedding, EdgeEmbedding
-from fairchem.core.models.gemnet.layers.interaction_block import InteractionBlockTripletsOnly
+from fairchem.core.models.gemnet.layers.efficient import (
+    EfficientInteractionDownProjection,
+)
+from fairchem.core.models.gemnet.layers.embedding_block import (
+    AtomEmbedding,
+    EdgeEmbedding,
+)
+from fairchem.core.models.gemnet.layers.interaction_block import (
+    InteractionBlockTripletsOnly,
+)
 from fairchem.core.models.gemnet.layers.radial_basis import RadialBasis
 from fairchem.core.models.gemnet.layers.spherical_basis import CircularBasisLayer
-from fairchem.core.models.gemnet.utils import inner_product_normalized, mask_neighbors, ragged_range, repeat_blocks
+from fairchem.core.models.gemnet.utils import (
+    inner_product_normalized,
+    mask_neighbors,
+    ragged_range,
+    repeat_blocks,
+)
 
 
 @registry.register_model("gemnet_t_baseline")
@@ -150,7 +162,7 @@ class GemNetT(nn.Module, GraphModelMixin):
         self.otf_graph = otf_graph
         self.use_pbc = use_pbc
         self.use_pbc_single = use_pbc_single
-        
+
         # start baseline KD code
         self.teacher_atom_embedding_path = teacher_atom_embedding_path
         self.use_teacher_node_embeddings = use_teacher_node_embeddings
@@ -271,13 +283,21 @@ class GemNetT(nn.Module, GraphModelMixin):
         # Distillation-specific projections
         if self.baseline:
             if self.use_teacher_node_embeddings:
-                self.final_node_feature_projection = torch.nn.Linear(emb_size_atom, emb_size_teacher)
+                self.final_node_feature_projection = torch.nn.Linear(
+                    emb_size_atom, emb_size_teacher
+                )
 
             if self.use_teacher_atom_embeddings:
-                self.atom_embedding_projection = torch.nn.Linear(emb_size_teacher, emb_size_atom)
+                self.atom_embedding_projection = torch.nn.Linear(
+                    emb_size_teacher, emb_size_atom
+                )
 
-                self.teacher_atom_embeddings = torch.tensor(np.load(self.teacher_atom_embedding_path), dtype=torch.float32, device='cuda')
-    
+                self.teacher_atom_embeddings = torch.tensor(
+                    np.load(self.teacher_atom_embedding_path),
+                    dtype=torch.float32,
+                    device="cuda",
+                )
+
     def get_triplets(self, edge_index, num_atoms):
         """
         Get all b->a for each edge c->a.
@@ -533,21 +553,18 @@ class GemNetT(nn.Module, GraphModelMixin):
 
         rbf = self.radial_basis(D_st)
 
-        
-        
         # start distill_replace_atom_embeddings
-        
+
         if self.baseline and self.use_teacher_atom_embeddings:
             teacher_h = self.teacher_atom_embeddings[atomic_numbers]
             h = self.atom_embedding_projection(teacher_h)
-        
+
         else:
             # Embedding block
             h = self.atom_emb(atomic_numbers)
-        
-        
-        #end distill_replace_atom embeddings
-        
+
+        # end distill_replace_atom embeddings
+
         # (nAtoms, emb_size_atom)
         m = self.edge_emb(h, rbf, idx_s, idx_t)  # (nEdges, emb_size_edge)
 
@@ -592,14 +609,15 @@ class GemNetT(nn.Module, GraphModelMixin):
             )  # (nMolecules, 1)
 
         outputs = {"energy": E_t}
-        
+
         # start distill outputs
         if self.baseline and self.use_teacher_node_embeddings:
-            outputs['final_node_features'] = self.final_node_feature_projection(h)
+            outputs["final_node_features"] = self.final_node_feature_projection(h)
         else:
-            outputs['final_node_features'] = torch.zeros((h.shape[0], self.emb_size_teacher), device=h.device)
+            outputs["final_node_features"] = torch.zeros(
+                (h.shape[0], self.emb_size_teacher), device=h.device
+            )
         # end distill outputs
-        
 
         if self.regress_forces:
             if self.direct_forces:

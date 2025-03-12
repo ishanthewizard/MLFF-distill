@@ -15,6 +15,7 @@ import pickle
 from tqdm import tqdm
 from torch_geometric.data import Data
 
+
 def write_lmdb(files, dir):
     os.makedirs(dir)
     print(f"Writing to {str(dir / 'data.lmdb')}")
@@ -32,10 +33,10 @@ def write_lmdb(files, dir):
     }
     i = 0
     for file_path in tqdm(files):
-        diff_idx= 0
+        diff_idx = 0
         for atoms in read(file_path, index=":"):
-            new_sid = atoms.info['mp_id'] + '_' + str(diff_idx)
-            data = mptrj_dict_to_pyg_data(atoms, sid = new_sid )
+            new_sid = atoms.info["mp_id"] + "_" + str(diff_idx)
+            data = mptrj_dict_to_pyg_data(atoms, sid=new_sid)
             txn = db.begin(write=True)
             txn.put(f"{i}".encode("ascii"), pickle.dumps(data, protocol=-1))
             txn.commit()
@@ -82,29 +83,24 @@ def process_meta(results, dirs):
         json.dump(meta_data, f)
 
 
-
 def mptrj_dict_to_pyg_data(atoms, sid):
 
     # Input
-    atomic_numbers = torch.tensor(
-       atoms.get_atomic_numbers()
-    )  # natoms
-    cell = torch.tensor(atoms.cell, dtype=torch.float).unsqueeze(
-        dim=0
-    )  # 1 3 3
+    atomic_numbers = torch.tensor(atoms.get_atomic_numbers())  # natoms
+    cell = torch.tensor(atoms.cell, dtype=torch.float).unsqueeze(dim=0)  # 1 3 3
 
-    pos = torch.tensor(
-        atoms.get_positions()
-    ).float()  # natoms 3
+    pos = torch.tensor(atoms.get_positions()).float()  # natoms 3
 
     natoms = torch.tensor(len(atomic_numbers)).unsqueeze(0)
     fixed = torch.zeros(len(atomic_numbers))
 
     # Output
-    uncorrected_total_energy = torch.tensor(atoms.get_potential_energy(), dtype=torch.float)
+    uncorrected_total_energy = torch.tensor(
+        atoms.get_potential_energy(), dtype=torch.float
+    )
     force = torch.tensor(atoms.get_forces(), dtype=torch.float)  # natoms 3
     corrected_total_energy = torch.tensor(
-        atoms.info['corrected_total_energy'], dtype=torch.float
+        atoms.info["corrected_total_energy"], dtype=torch.float
     )
 
     mp_id = atoms.info["mp_id"]
@@ -124,19 +120,22 @@ def mptrj_dict_to_pyg_data(atoms, sid):
     return data
 
 
-
 def main(preprocessed_datapath, lmdb_output_dir):
-    files = [os.path.join(preprocessed_datapath, f) for f in os.listdir(preprocessed_datapath) if f.endswith('.extxyz')]
+    files = [
+        os.path.join(preprocessed_datapath, f)
+        for f in os.listdir(preprocessed_datapath)
+        if f.endswith(".extxyz")
+    ]
     lmdb_output_dir = Path(lmdb_output_dir)
 
-    meta_info = write_lmdb(files,  lmdb_output_dir)
+    meta_info = write_lmdb(files, lmdb_output_dir)
     process_meta(meta_info, lmdb_output_dir)
 
     print("Done!")
 
 
 if __name__ == "__main__":
-    preprocessed_datapath = '/data/shared/MPtrj/original'
-    lmdb_output_dir = '/data/ishan-amin/MPtrj/mace_mp_split/train'
-    
+    preprocessed_datapath = "/data/shared/MPtrj/original"
+    lmdb_output_dir = "/data/ishan-amin/MPtrj/mace_mp_split/train"
+
     main(preprocessed_datapath, lmdb_output_dir)

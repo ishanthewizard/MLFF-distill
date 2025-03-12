@@ -78,7 +78,7 @@ class PaiNN(nn.Module, GraphModelMixin):
         otf_graph: bool = True,
         num_elements: int = 83,
         scale_file: str | None = None,
-        #added arguments distillation
+        # added arguments distillation
         teacher_atom_embedding_path: str | None = None,
         use_teacher_node_embeddings: bool = False,
         use_teacher_atom_embeddings: bool = False,
@@ -101,7 +101,7 @@ class PaiNN(nn.Module, GraphModelMixin):
         self.otf_graph = otf_graph
         self.use_pbc = use_pbc
         self.use_pbc_single = use_pbc_single
-        
+
         # distillation init
         self.teacher_atom_embedding_path = teacher_atom_embedding_path
 
@@ -111,8 +111,7 @@ class PaiNN(nn.Module, GraphModelMixin):
         self.emb_size_teacher = emb_size_teacher
 
         self.baseline = baseline
-        #end distillation init
-        
+        # end distillation init
 
         # Borrowed from GemNet.
         self.symmetric_edge_symmetrization = False
@@ -153,21 +152,29 @@ class PaiNN(nn.Module, GraphModelMixin):
         self.reset_parameters()
 
         load_scales_compat(self, scale_file)
-        
+
         # start distill
-        
+
         # Distillation-specific projections
 
         # Distillation-specific projections
         if self.baseline:
 
             if self.use_teacher_node_embeddings:
-                self.final_node_feature_projection = torch.nn.Linear(hidden_channels, emb_size_teacher)
+                self.final_node_feature_projection = torch.nn.Linear(
+                    hidden_channels, emb_size_teacher
+                )
 
             if self.use_teacher_atom_embeddings:
-                self.atom_embedding_projection = torch.nn.Linear(emb_size_teacher, hidden_channels)
+                self.atom_embedding_projection = torch.nn.Linear(
+                    emb_size_teacher, hidden_channels
+                )
 
-                self.teacher_atom_embeddings = torch.tensor(np.load(self.teacher_atom_embedding_path), dtype=torch.float32, device='cuda')
+                self.teacher_atom_embeddings = torch.tensor(
+                    np.load(self.teacher_atom_embedding_path),
+                    dtype=torch.float32,
+                    device="cuda",
+                )
         # end distill
 
     def reset_parameters(self) -> None:
@@ -412,8 +419,6 @@ class PaiNN(nn.Module, GraphModelMixin):
 
         edge_rbf = self.radial_basis(edge_dist)  # rbf * envelope
 
-        
-        
         # distill added
         if self.use_teacher_atom_embeddings and self.baseline:
             teacher_x = self.teacher_atom_embeddings[z]
@@ -422,7 +427,7 @@ class PaiNN(nn.Module, GraphModelMixin):
         # end distill added
         else:
             x = self.atom_emb(z)
-            
+
         vec = torch.zeros(x.size(0), 3, x.size(1), device=x.device)
 
         #### Interaction blocks ###############################################
@@ -448,11 +453,13 @@ class PaiNN(nn.Module, GraphModelMixin):
 
         # distill start
         if self.baseline and self.use_teacher_node_embeddings:
-            outputs['final_node_features'] = self.final_node_feature_projection(x)
+            outputs["final_node_features"] = self.final_node_feature_projection(x)
         else:
-            outputs['final_node_features'] = torch.zeros((x.shape[0], self.emb_size_teacher), device=x.device)
+            outputs["final_node_features"] = torch.zeros(
+                (x.shape[0], self.emb_size_teacher), device=x.device
+            )
         # distill end
-        
+
         if self.regress_forces:
             if self.direct_forces:
                 forces = self.out_forces(x, vec)

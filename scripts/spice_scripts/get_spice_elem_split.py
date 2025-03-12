@@ -9,12 +9,13 @@ import numpy as np
 from torch.utils.data import Subset
 import torch
 
+
 def categorize_samples_by_name(dataset, output_dir, element, test=False):
-    categorized_samples = {element['name']: []}
+    categorized_samples = {element["name"]: []}
     # Iterate through the dataset and categorize samples by 'dataset_name'
     atomic_num_set = set()
     for sample in tqdm(dataset, desc="Processing samples"):
-        if element['atomic_num'] in sample.atomic_numbers:
+        if element["atomic_num"] in sample.atomic_numbers:
             categorized_samples[element["name"]].append(sample)
     # Create separate LMDB datasets for each category
     for dataset_name, samples in categorized_samples.items():
@@ -22,6 +23,7 @@ def categorize_samples_by_name(dataset, output_dir, element, test=False):
             _save_to_lmdb(samples, os.path.join(output_dir, dataset_name, "test"))
         else:
             save_samples_to_lmdb(samples, output_dir, dataset_name)
+
 
 def save_samples_to_lmdb(samples, output_dir, dataset_name, split_ratio=0.85):
     # Shuffle the samples
@@ -42,6 +44,7 @@ def save_samples_to_lmdb(samples, output_dir, dataset_name, split_ratio=0.85):
     # Save the val samples
     _save_to_lmdb(val_samples, val_db_path)
 
+
 def _save_to_lmdb(samples, db_path):
     # Check if the directory exists
     if os.path.exists(db_path):
@@ -50,13 +53,13 @@ def _save_to_lmdb(samples, db_path):
 
     os.makedirs(db_path, exist_ok=True)
     db = lmdb.open(
-        os.path.join(db_path, 'data.lmdb'),
+        os.path.join(db_path, "data.lmdb"),
         map_size=1099511627776 * 2,
         subdir=False,
         meminit=False,
         map_async=True,
     )
-    
+
     for idx, sample in enumerate(tqdm(samples)):
         txn = db.begin(write=True)
         txn.put(f"{idx}".encode("ascii"), pickle.dumps(sample, protocol=-1))
@@ -71,6 +74,7 @@ def _save_to_lmdb(samples, db_path):
     db.close()
     print(f"Saved {len(samples)} samples to {db_path}")
 
+
 # Example usage:
 # save_samples_to_lmdb(samples, output_dir, dataset_name)
 # Usage
@@ -78,10 +82,12 @@ def _save_to_lmdb(samples, db_path):
 # output_dir = "/data/ishan-amin/spice_separated"   # Update this with your desired output directory
 # dataset_path = "/data/ishan-amin/MPtrj/mace_mp_split/train"  # Update this with your actual path
 dataset_path = "/data/shared/MPtrj/lmdb/train/"
-output_dir = "/data/ishan-amin/MPtrj_eric_seperated"   # Update this with your desired output directory
+output_dir = "/data/ishan-amin/MPtrj_eric_seperated"  # Update this with your desired output directory
 dataset_type = "train"
 # element = {"name": "Yttrium", "atomic_num": 39}
 element = {"name": "Sulfides", "atomic_num": 16}
 # train_dataset = registry.get_dataset_class("lmdb")({"src": os.path.join(dataset_path, dataset_type)})
 train_dataset = registry.get_dataset_class("lmdb")({"src": dataset_path})
-categorize_samples_by_name(train_dataset, output_dir, test=(dataset_type == "test"), element = element)
+categorize_samples_by_name(
+    train_dataset, output_dir, test=(dataset_type == "test"), element=element
+)

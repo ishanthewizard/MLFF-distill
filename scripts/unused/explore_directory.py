@@ -2,10 +2,10 @@ import os
 import re
 
 # Define the regex pattern for files that match the 'mp-number.extxyz' format
-pattern = re.compile(r'^mp-\d+\.extxyz$')
+pattern = re.compile(r"^mp-\d+\.extxyz$")
 
 # Path to the directory
-folder_path = '/data/shared/MPtrj/original'
+folder_path = "/data/shared/MPtrj/original"
 
 # Get a list of all files in the directory
 files = os.listdir(folder_path)

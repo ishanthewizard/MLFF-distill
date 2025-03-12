@@ -7,7 +7,7 @@ trainer: src.distill_trainer.DistillTrainer
 dataset:
   train:
     # teacher_labels_folder: data/labels/SPICE_labels/mace_off_large_SpiceAminos
-    teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos
+    teacher_labels_folder: data/labels_unlocked/mace_off_large_SpiceAminos
     # Below is an exmaple of label configs if you want to generate that.
     # teacher_checkpoint_path: checkpoints/2024-11-15-23-42-56-Solvated-Gem-DIST/best_checkpoint.pt
     # teacher_labels_folder: zz_labels/tester_gemT_solvated/
@@ -36,3 +36,6 @@ optim:
   vectorize_jacs: True
   energy_distill_coeff: 0
   finite_differences: True
+  active_learning: True
+  worst_force_update_freq: 5
+  frac_worst_rows: 0.5
