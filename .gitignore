@@ -1,6 +1,7 @@
 wandb
 /data
 checkpoints/
+checkpoints
 teacher_checkpoints/
 student_checkpoints/
 student_energy_checkpoints/
