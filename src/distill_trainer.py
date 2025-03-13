@@ -205,7 +205,7 @@ class DistillTrainer(OCPTrainer):
         with torch.no_grad():
             if self.config["optim"].get("active_learning", False):
                 if (
-                    int(self.epoch-0.1)
+                    int(self.epoch - 0.1)
                     % self.config["optim"].get("worst_force_update_freq", 5)
                     == 0
                 ):
@@ -229,7 +229,9 @@ class DistillTrainer(OCPTrainer):
                     self.worst_force_row_dict[fid.item()] for fid in batch.fid
                 ]
             except KeyError:
-                import pdb; pdb.set_trace()
+                import pdb
+
+                pdb.set_trace()
             worst_force_rows = torch.cat(
                 [
                     rows + offset
@@ -327,33 +329,24 @@ class DistillTrainer(OCPTrainer):
                 )
 
         batch_size = batch.batch.max().item() + 1
-        k = math.ceil(self.config["optim"].get("frac_worst_rows", 0.5) * batch_size)
+        ks = torch.ceil(
+            self.config["optim"].get("frac_worst_rows", 0.5) * batch.natoms
+        ).long()
         grouped_force_loss_per_atom = [
             force_loss_per_atom[batch.batch == i] for i in range(batch_size)
         ]
-
         # Step 3: Apply topk to each batch's values
         topk_indices = []
-        topk_values = []
-
-        for i in range(batch_size):
+        for i, k in enumerate(ks):
             if len(grouped_force_loss_per_atom[i]) > 0:
-                top_vals, top_idx = torch.topk(
+                _, top_idx = torch.topk(
                     grouped_force_loss_per_atom[i],
                     min(k, len(grouped_force_loss_per_atom[i])),
                 )
-                topk_values.append(top_vals)
                 topk_indices.append(top_idx)
             else:
-                topk_values.append(torch.tensor([]))  # No elements for this batch
                 topk_indices.append(torch.tensor([], dtype=torch.long))
 
-        # Concatenate results
-        final_topk_indices = (
-            torch.stack(topk_indices)
-            if len(topk_indices) > 0
-            else torch.tensor([], dtype=torch.long)
-        )
         # update worst rows dict
         for i in range(batch_size):
-            self.worst_force_row_dict[batch.fid[i].item()] = final_topk_indices[i]
+            self.worst_force_row_dict[batch.fid[i].item()] = topk_indices[i]
