@@ -15,19 +15,24 @@ class WorstRowTrainer(OCPTrainer):
         # self.worst_force_row_dict = {}
         lmdb_path = self.config["optim"].get("worst_rows_lmdb_path")
         self.lmdb_env = lmdb.open(lmdb_path, map_size=int(1e9)) 
+        self.true_epoch = 0
         
     def  _compute_loss(self, out, batch):
         loss = super()._compute_loss(out, batch)
         with torch.no_grad():
             if self.config["optim"].get("active_learning", False):
                 if (
-                    int(self.epoch-0.1)
+                    self.true_epoch
                     % self.config["optim"].get("worst_force_update_freq", 5)
                     == 0
                 ):
                     self._update_worst_force_loss_dict(out, batch)
         return loss
         
+    def validate(self, **kwargs):
+        metrics = super().validate(**kwargs)    
+        self.true_epoch += 1
+        return metrics
         
     def _update_worst_force_loss_dict(self, out, batch):
         # recompute worst k rows of force loss
@@ -67,7 +72,7 @@ class WorstRowTrainer(OCPTrainer):
                 )
 
         batch_size = batch.batch.max().item() + 1
-        k = math.ceil(self.config["optim"].get("frac_worst_rows", 0.5) * batch_size)
+        top_k_arr = torch.ceil(self.config["optim"].get("frac_worst_rows", 0.5) * batch.natoms)
         grouped_force_loss_per_atom = [
             force_loss_per_atom[batch.batch == i] for i in range(batch_size)
         ]
@@ -80,7 +85,7 @@ class WorstRowTrainer(OCPTrainer):
             if len(grouped_force_loss_per_atom[i]) > 0:
                 top_vals, top_idx = torch.topk(
                     grouped_force_loss_per_atom[i],
-                    min(k, len(grouped_force_loss_per_atom[i])),
+                    int(top_k_arr[i]),
                 )
                 topk_values.append(top_vals)
                 topk_indices.append(top_idx)
@@ -88,12 +93,6 @@ class WorstRowTrainer(OCPTrainer):
                 topk_values.append(torch.tensor([]))  # No elements for this batch
                 topk_indices.append(torch.tensor([], dtype=torch.long))
 
-        # Concatenate results
-        final_topk_indices = (
-            torch.stack(topk_indices)
-            if len(topk_indices) > 0
-            else torch.tensor([], dtype=torch.long)
-        )
         # # update worst rows dict
         # for i in range(batch_size):
         #     self.worst_force_row_dict[batch.fid[i].item()] = final_topk_indices[i]
@@ -101,6 +100,6 @@ class WorstRowTrainer(OCPTrainer):
         # Store in LMDB
         with self.lmdb_env.begin(write=True) as txn:
             for i in range(batch_size):
-                key = f"{batch.fid[i].item()}_{self.epoch}".encode()
+                key = f"{batch.fid[i].item()}_{self.true_epoch}".encode()
                 value = pickle.dumps(topk_indices[i])
                 txn.put(key, value)

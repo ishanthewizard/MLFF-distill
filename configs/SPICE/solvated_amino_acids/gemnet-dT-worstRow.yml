@@ -9,4 +9,4 @@ logger:
 
 optim:
   active_learning: True
-  worst_rows_lmdb_path: student_checkpoints/worst_rows/gem_solvated_worst.lmdb
+  worst_rows_lmdb_path: student_checkpoints/worst_rows/gem_solvated_worst_corrected.lmdb

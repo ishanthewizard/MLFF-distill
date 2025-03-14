@@ -152,7 +152,7 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
     cum_jac_indexes = [0] +  torch.cumsum((num_free_atoms_per_mol * natoms)*9, dim=0).tolist()
     
     jacs_per_mol = [jac[:len(mol_samps), cum_sum:cum_sum + nat, :] for mol_samps, cum_sum, nat in zip(by_molecule, cumulative_sums[:-1], natoms)]
-    jacs_per_mol = [mol_jac[:, mask, :] for mol_jac, mask in  zip(jacs_per_mol, mask_per_mol)] # do the same for te student hessians
+    # jacs_per_mol = [mol_jac[:, mask, :] for mol_jac, mask in  zip(jacs_per_mol, mask_per_mol)] # do the same for te student hessians
 
     if torch.any(torch.isnan(jac)):
         raise Exception("FORCE JAC IS NAN")
@@ -164,7 +164,7 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
         fixed_cumsum = torch.cumsum(fixed_atoms, dim=0)
         num_free_atoms = num_free_atoms_per_mol[i]
         curr = batch['force_jacs'][cum_jac_indexes[i]:cum_jac_indexes[i+1]].reshape(num_free_atoms, 3, natoms[i], 3)
-        curr = curr[:, :, mask_per_mol[i], :] # filter out the masked columns 
+        # curr = curr[:, :, mask_per_mol[i], :] # filter out the masked columns 
         subsampled_curr = curr[(samples[:, 0] - fixed_cumsum[samples[:, 0]]).long(), samples[:, 1]] # get the sampled rows
         true_jacs_per_mol.append(subsampled_curr)
     
