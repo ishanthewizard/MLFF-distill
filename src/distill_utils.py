@@ -221,12 +221,10 @@ def get_force_jac_loss(
             natoms[i], 3, natoms[i], 3
         )
 
-
         # if not active_learning:
         # curr = curr[:, :, mask_per_mol[i], :]  # filter out the masked columns
-        subsampled_curr = curr[
-            (samples[:, 0] - fixed_cumsum[samples[:, 0]]).long(), samples[:, 1]
-        ]  # get the sampled rows
+        subsampled_curr = curr[samples[:, 0], samples[:, 1]]  # get the sampled rows
+           
         # else:
         #     import pdb; pdb.set_trace()
         #     valid_rows = torch.where(mask_per_mol[i])[0]
