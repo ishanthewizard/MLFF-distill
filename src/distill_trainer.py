@@ -205,7 +205,7 @@ class DistillTrainer(OCPTrainer):
         with torch.no_grad():
             if self.config["optim"].get("active_learning", False):
                 if (
-                    int(self.epoch - 0.1)
+                    int(self.epoch-0.1)
                     % self.config["optim"].get("worst_force_update_freq", 5)
                     == 0
                 ):
@@ -224,14 +224,10 @@ class DistillTrainer(OCPTrainer):
             loss.append(en_dist_coeff * energy_jac_loss)
 
         if self.config["optim"].get("active_learning", False):
-            try:
-                worst_force_rows = [
-                    self.worst_force_row_dict[fid.item()] for fid in batch.fid
-                ]
-            except KeyError:
-                import pdb
-
-                pdb.set_trace()
+            worst_force_rows = [
+                self.worst_force_row_dict[fid.item()] for fid in batch.fid
+            ]
+            
             worst_force_rows = torch.cat(
                 [
                     rows + offset
