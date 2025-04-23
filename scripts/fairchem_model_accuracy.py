@@ -1,4 +1,3 @@
-
 import argparse
 import copy
 import logging
@@ -12,7 +11,7 @@ import time
 from fairchem.core.modules.loss import L2NormLoss
 import numpy as np
 import torch
-from src.distill_utils import print_cuda_memory_usage
+# from src.distill_utils import print_cuda_memory_usage
 def evaluate_model(trainer, eval_loss):
     loss_fn = L2NormLoss()
     losses = []

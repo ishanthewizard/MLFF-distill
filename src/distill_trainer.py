@@ -27,7 +27,7 @@ from tqdm import tqdm
 
 from fairchem.core import __version__
 from fairchem.core.common import distutils 
-from fairchem.core.common.data_parallel import  OCPCollater
+from fairchem.core.common.data_parallel import OCPCollater
 from fairchem.core.common.registry import registry
 
 
@@ -57,6 +57,9 @@ class DistillTrainer(OCPTrainer):
         self.original_fjac_coeff = self.force_jac_loss_fn[1]['coefficient']
     
     def calculate_teacher_loss(self):
+        # print("\n\n\n\n\n")
+        # print("TEACHER LOSS")
+        # print("\n\n\n\n")
         self.teacher_force_mae = 0
         for datapoint in tqdm(self.val_dataset):
             true_label = datapoint['forces'].to(self.device)
@@ -81,8 +84,9 @@ class DistillTrainer(OCPTrainer):
                 self.config["val_dataset"]["split"], 
                 replace=False
             )
+        # print("before",next(iter(self.train_dataset)))
         self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train', train_indxs ) # ADDED LINE
-
+        # print("after",next(iter(self.train_dataset)))
         self.train_sampler = self.get_sampler(
             self.train_dataset,
             self.config["optim"]["batch_size"],
@@ -109,15 +113,18 @@ class DistillTrainer(OCPTrainer):
 
     def insert_teach_datasets(self, main_dataset, dataset_type, indxs=None):
         #dataset_type either equals 'train' or 'val'
-        
+
         labels_folder = self.config['dataset']['teacher_labels_folder']
-        
+        # print("labeldir \n\n\n")
+        # print(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
+        # print("here\n\n\n",len(teacher_force_dataset))
         if self.config['optim'].get('final_node_distill', False):
             final_node_feature_dataset = SimpleDataset(os.path.join(labels_folder, f'{dataset_type}_final_node_features' ))
         else:
             final_node_feature_dataset = None
         if indxs is not None:
+            # print("\n\n\n\nINDXS:", indxs)
             teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
             final_node_feature_dataset = Subset(final_node_feature_dataset, torch.tensor(indxs))
         if dataset_type == 'train':
@@ -126,6 +133,12 @@ class DistillTrainer(OCPTrainer):
                 force_jac_dataset = Subset(force_jac_dataset, torch.tensor(indxs))
         else: 
             force_jac_dataset = None
+        # print("\n\n\n\n")
+        # print(main_dataset, teacher_force_dataset, force_jac_dataset, final_node_feature_dataset)
+        # print(len(main_dataset))
+        # print(len(teacher_force_dataset))
+        # # print(len(force_jac_dataset))
+        # print(len(final_node_feature_dataset))
         return CombinedDataset(main_dataset,  teacher_force_dataset, force_jac_dataset, final_node_feature_dataset)
 
     def update_loss_coefficients(self):
@@ -142,11 +155,22 @@ class DistillTrainer(OCPTrainer):
                 self.force_jac_loss_fn[1]['coefficient'] = 0.5 * self.original_fjac_coeff
            
     def _forward(self, batch):
+        print("\n\n\n\n\n")
+        print("FORWARD")
+        print("\n\n\n\n")
         if not self.is_validating:
+            # print("here")
             batch.pos.requires_grad_(True)
-        return super()._forward(batch)
+        print(batch)
+        res = super()._forward(batch)
+        print(res)
+        return res
+        # return super()._forward(batch)
 
     def validate(self, split: str = "val", disable_tqdm: bool = False):
+        print("\n\n\n\n\n")
+        print("VALIDATING")
+        print("\n\n\n\n")
         self.is_validating =True 
 
         total_rate =  self.step / (time.time() - self.start_time)  * 60
@@ -160,6 +184,9 @@ class DistillTrainer(OCPTrainer):
         return val_metrics
 
     def _compute_loss(self, out, batch):
+        print("\n\n\n\n\n")
+        print("COMPUTING LOSS")
+        print("\n\n\n\n")
         if self.is_validating:
             return torch.tensor([0])
         batch_size = batch.natoms.numel()
@@ -224,6 +251,14 @@ class DistillTrainer(OCPTrainer):
         return sum(loss)
     
     def _compute_metrics(self, out, batch, evaluator, metrics=None):
+        print("\n\nCOMPUTING METRICS\n\n")
+        # print(out)
+        # print(batch)
+        # print(evaluator)
+        # print(metrics)
+        # print("\n\n\n\n",self.output_targets)
+        # del self.output_targets['final_node_features']
+        print(out,"energy",batch['energy'],"forces" ,batch['forces'])
         metrics = super()._compute_metrics(out, batch, evaluator, metrics)
         if not self.is_validating and self.original_fjac_coeff > 0:
             avg_force_jac_loss = distutils.all_reduce(batch["force_jac_loss"], average=True )

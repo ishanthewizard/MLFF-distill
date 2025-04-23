@@ -1,7 +1,8 @@
 includes:
-  - configs/slurm/premium.yml
+  - configs/slurm/regular.yml
 logger: 
   name: wandb
+  # name: None
   project: spice-Energy-FINAL
 
 trainer: ocp
@@ -10,7 +11,9 @@ dataset:
   train:
     no_shuffle: True
     format: lmdb
-    src: data/SPICE/spice_separated/Solvated_Amino_Acids/train
+    src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/train
+    # src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/test
+    # src: /global/cfs/cdirs/m4319/yuejian/MLFF/SPICE/spice_separated/Solvated_Amino_Acids/train
     key_mapping:
       y: energy
       force: forces
@@ -25,8 +28,14 @@ dataset:
       element_references:
         file: configs/SPICE/element_references.pt
   val:
-    src: data/SPICE/spice_separated/Solvated_Amino_Acids/val
-
+    src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/val
+    # src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/test
+    # src: /global/cfs/cdirs/m4319/yuejian/MLFF/SPICE/spice_separated/Solvated_Amino_Acids/val
+  test:
+    src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/test
+    # src: /global/cfs/cdirs/m4319/yuejian/MLFF/SPICE/spice_separated/Solvated_Amino_Acids/test
+    # src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/val
+    # src: /global/cfs/cdirs/m4319/yuejian/MLFF/SPICE/spice_separated/Solvated_Amino_Acids/val
 
 outputs:
   energy:
