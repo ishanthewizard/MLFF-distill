@@ -1,4 +1,4 @@
-import os
+import os,sys
 from fairchem.core import OCPCalculator
 from fairchem.core.datasets import LmdbDataset
 from ase.md.langevin import Langevin
@@ -6,7 +6,9 @@ from ase.md.verlet import VelocityVerlet
 from ase.md.logger import MDLogger
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
 from ase import Atoms, units
-from fairchem.core.common.relaxation.ase_utils import data_to_atoms
+# from fairchem.core.common.relaxation.ase_utils import data_to_atoms
+from torch_geometric.data import Batch
+from fairchem.core.common.relaxation.ase_utils import batch_to_atoms as data_to_atoms
 from fairchem.core.common.utils import (
     build_config,
     create_grid,
@@ -17,7 +19,8 @@ from fairchem.core.common.utils import (
 
 from fairchem.core.common.flags import flags
 
-from mace.calculators import mace_off, mace_mp
+import torch
+# from mace.calculators import mace_off, mace_mp
 
 
 if __name__ == "__main__":
@@ -36,18 +39,28 @@ if __name__ == "__main__":
 
     idx = config["init_data_idx"]
     init_data = data.__getitem__(idx)
-    atoms = data_to_atoms(init_data)
+    print(init_data)
+    # print(init_data)
+    init_data.tags = torch.tensor([0]*init_data.pos.shape[0])
+    init_data = Batch.from_data_list([init_data,init_data])
+    print(type(init_data))
+    print(init_data)
+    atoms = data_to_atoms(init_data)[0]
 
     # Set up the OCP calculator
     checkpoint_path = os.path.join(config["MODELPATH"], config["run_name"], "best_checkpoint.pt")
+    print("config_yml", args.config_yml.__str__())
+    print("checkpoint_path", checkpoint_path)
+    
     calc = OCPCalculator(
         config_yml=args.config_yml.__str__(),
         checkpoint_path=checkpoint_path,
         cpu=False,
         seed=args.seed,
     )
+    # print("cool")
     # calc = mace_mp(model="large", dispersion=False, default_dtype="float32", device='cuda')
-
+    # sys.exit()
     atoms.calc = calc
 
     # Initialize atom velocities
@@ -71,13 +84,20 @@ if __name__ == "__main__":
             trajectory=os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.traj"),
         )
     
-
+    # print(os.path.dirname(checkpoint_path))
     # dyn.attach(
     #         MDLogger(
     #             dyn, atoms, os.path.join(os.path.dirname(checkpoint_path), f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
     #         ),
     #         interval=config["save_freq"],
     #     )
+    
+    dyn.attach(
+            MDLogger(
+                dyn, atoms, os.path.join("/home/yuejian/project/MLFF-distill/md_log", f"md_system{idx}.log"), header=True, stress=False, peratom=True, mode="a"
+            ),
+            interval=config["save_freq"],
+        )
 
     dyn.run(config["steps"])
     print("Done")
