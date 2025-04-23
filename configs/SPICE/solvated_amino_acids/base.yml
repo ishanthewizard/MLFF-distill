@@ -28,8 +28,8 @@ dataset:
       element_references:
         file: configs/SPICE/element_references.pt
   val:
-    src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/val
-    # src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/test
+    # src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/val
+    src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/test
     # src: /global/cfs/cdirs/m4319/yuejian/MLFF/SPICE/spice_separated/Solvated_Amino_Acids/val
   test:
     src: /data/yuejian/MLFF_DIST/data/SPICE/spice_separated/Solvated_Amino_Acids/test

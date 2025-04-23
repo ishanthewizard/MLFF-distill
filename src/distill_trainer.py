@@ -155,22 +155,22 @@ class DistillTrainer(OCPTrainer):
                 self.force_jac_loss_fn[1]['coefficient'] = 0.5 * self.original_fjac_coeff
            
     def _forward(self, batch):
-        print("\n\n\n\n\n")
-        print("FORWARD")
-        print("\n\n\n\n")
+        # print("\n\n\n\n\n")
+        # print("FORWARD")
+        # print("\n\n\n\n")
         if not self.is_validating:
             # print("here")
             batch.pos.requires_grad_(True)
-        print(batch)
+        # print(batch)
         res = super()._forward(batch)
-        print(res)
+        # print(res)
         return res
         # return super()._forward(batch)
 
     def validate(self, split: str = "val", disable_tqdm: bool = False):
-        print("\n\n\n\n\n")
-        print("VALIDATING")
-        print("\n\n\n\n")
+        # print("\n\n\n\n\n")
+        # print("VALIDATING")
+        # print("\n\n\n\n")
         self.is_validating =True 
 
         total_rate =  self.step / (time.time() - self.start_time)  * 60
@@ -184,9 +184,9 @@ class DistillTrainer(OCPTrainer):
         return val_metrics
 
     def _compute_loss(self, out, batch):
-        print("\n\n\n\n\n")
-        print("COMPUTING LOSS")
-        print("\n\n\n\n")
+        # print("\n\n\n\n\n")
+        # print("COMPUTING LOSS")
+        # print("\n\n\n\n")
         if self.is_validating:
             return torch.tensor([0])
         batch_size = batch.natoms.numel()
@@ -251,14 +251,14 @@ class DistillTrainer(OCPTrainer):
         return sum(loss)
     
     def _compute_metrics(self, out, batch, evaluator, metrics=None):
-        print("\n\nCOMPUTING METRICS\n\n")
+        # print("\n\nCOMPUTING METRICS\n\n")
         # print(out)
         # print(batch)
         # print(evaluator)
         # print(metrics)
         # print("\n\n\n\n",self.output_targets)
         # del self.output_targets['final_node_features']
-        print(out,"energy",batch['energy'],"forces" ,batch['forces'])
+        # print(out,"energy",batch['energy'],"forces" ,batch['forces'])
         metrics = super()._compute_metrics(out, batch, evaluator, metrics)
         if not self.is_validating and self.original_fjac_coeff > 0:
             avg_force_jac_loss = distutils.all_reduce(batch["force_jac_loss"], average=True )
