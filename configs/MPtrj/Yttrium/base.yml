@@ -11,8 +11,8 @@ dataset:
   train:
     no_shuffle: True
     format: lmdb
-    src: data/MPtrj/MPtrj_separated_all_splits/Yttrium/train
-
+    src: /data/yuejian/MLFF_DIST/data/MPtrj/MPtrj_separated_all_splits/Yttrium/train
+        #  /data/yuejian/MLFF_DIST/data/MPtrj/MPtrj_separated_all_splits/Yttrium
     key_mapping:
       corrected_total_energy: energy
       force: forces
@@ -27,7 +27,7 @@ dataset:
       element_references:
         file: configs/MPtrj/element_references.pt
   val:
-    src: data/MPtrj/MPtrj_separated_all_splits/Yttrium/val
+    src: /data/yuejian/MLFF_DIST/data/MPtrj/MPtrj_separated_all_splits/Yttrium/test
 
 
 outputs:

@@ -43,6 +43,7 @@ def record_labels(labels_folder, dataset_path, model="large"):
         natoms = sample.natoms
         atoms = Atoms(numbers=atomic_numbers, positions=sample.pos.numpy())
         atoms.calc = calc
+        # sys.exit()
         hessian = calc.get_hessian(atoms=atoms)
         return - 1 * hessian.reshape(natoms, 3, natoms, 3) # this is SUPER IMPORTANT!!! multiply by -1
         

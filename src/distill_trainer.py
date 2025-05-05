@@ -266,3 +266,10 @@ class DistillTrainer(OCPTrainer):
             metrics['force_jac_loss']['metric'] = avg_force_jac_loss.item()
             metrics['force_jac_loss']['total'] = avg_force_jac_loss.item()
         return metrics
+    
+    def get_save_dir(self):
+        save_dir = "/home/yuejian/project/MLFF-distill/dump.pt"
+        save_dir = os.path.join(save_dir, "dump.pt")
+        # if not os.path.exists(save_dir):
+        #     os.makedirs(save_dir)
+        return save_dir

@@ -27,6 +27,7 @@ import yaml
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 import lmdb
+import copy
 
 from fairchem.core import __version__
 from fairchem.core.common import distutils
@@ -52,8 +53,16 @@ class LabelsTrainer(OCPTrainer):
         model_attributes_holder = self.config['model']
 
         checkpoint = torch.load(self.config["dataset"]["teacher_checkpoint_path"], map_location=torch.device("cpu"))
+        # print("keys in checkpoint", checkpoint.keys())
+        # print("keys in ema", checkpoint['ema'].keys())
+        # print("keys in state", checkpoint['state_dict'].keys())
+        # print("len of state", len(checkpoint['state_dict']))
+        # print("shadow ema",checkpoint['ema']["shadow_params"], len(list(checkpoint['ema']["shadow_params"])))
+        # print("shadow state", checkpoint['state_dict']["shadow_params"],len(list(checkpoint['state_dict']["shadow_params"])))
+        # sys.exit(0)
         self.teacher_config = checkpoint["config"]
-
+        # print("Teacher config loaded from checkpoint",self.teacher_config)
+        # sys.exit()
         # if self.teacher_config['model'].endswith('EfficientGraphAttentionPotential'):
         #     self.teacher_config['model_attributes']['atten_name'] = 'scaled_dot_product'
         if self.config["dataset"].get("teacher_scale_file", None):
@@ -64,15 +73,34 @@ class LabelsTrainer(OCPTrainer):
         self.config['model'] =  self.teacher_config['model']
         self.config['model'].pop('scale_file', None)
         self.normalizers = {}  # This SHOULD be okay since it gets overridden later (in tasks, after datasets), but double check
+        
+        # test
+        # model_config_copy = copy.deepcopy(self.config["model"])
+        # print("this is the preloaded model config", model_config_copy)
+        
+        # model_name = model_config_copy.pop("name")
+        # self.model = registry.get_model_class(model_name)(
+        #     **model_config_copy,
+        # ).to(self.device)
+        # print("len of model parameters", len(list(self.model.parameters())))
+        
+        
+        
         self.load_task()
         self.load_model()
+        # reload ema to prevent wrongful initialization
+        self.load_extras()
+        print("len of model parameters", len(list(self.model.parameters())))
+        print("len of ema parameters", len(list(self.ema.shadow_params)))
+        # sys.exit(0)
         self.load_checkpoint(self.config["dataset"]["teacher_checkpoint_path"])
         
-        os.makedirs(os.path.join(labels_folder, "train_forces"))
-        os.makedirs(os.path.join(labels_folder, "val_forces"))
-        os.makedirs(os.path.join(labels_folder, "force_jacobians"))
+        os.makedirs(os.path.join(labels_folder, "train_forces"),exist_ok=True)
+        os.makedirs(os.path.join(labels_folder, "val_forces"),exist_ok=True)
+        os.makedirs(os.path.join(labels_folder, "force_jacobians"),exist_ok=True)
         
         self.launch_record_tasks(labels_folder, 'train')
+        # sys.exit()
         self.launch_record_tasks(labels_folder, 'val')
 
         self.config['model'] = model_attributes_holder

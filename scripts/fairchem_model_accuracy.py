@@ -1,6 +1,7 @@
 import argparse
 import copy
 import logging
+import sys
 from typing import TYPE_CHECKING
 
 from fairchem.core.common.flags import flags
@@ -29,7 +30,9 @@ def evaluate_model(trainer, eval_loss):
             if i >= start_record_idx and start is None:
                 start = time.time()
 
-            forces = trainer._forward(batch)["forces"]
+            # forces = trainer._forward(batch)["forces"]
+            forces = trainer.model(batch.to("cuda"))
+            # forces = trainer.model(batch.to("cpu"))
             if eval_loss:
                 losses.append(torch.abs(forces - batch["forces"]).mean().item())
             # print_cuda_memory_usage()
@@ -47,35 +50,62 @@ if __name__ == "__main__":
     # checkpoint_path = 'checkpoints/2024-09-08-10-29-36-solvated-PaiNN-DIST/best_checkpoint.pt'
     # test_dataset  = '/data/ishan-amin/spice_separated/Iodine/test'
     
-    parser: argparse.ArgumentParser = flags.get_parser()
+    parser: argparse.ArgumentParser = flags.get_parser() # flag belongs to fairchem
     parser.add_argument("--nersc", action="store_true", help="Run with NERSC")
     parser.add_argument("--eval_loss", action="store_true", default=False)
     parser.add_argument("--batch-size", default=32)
     args: argparse.Namespace
     override_args: list[str]
+    
+    # print("args", args)
+    
+    
     args, override_args = parser.parse_known_args()
+    
+    # print("args", args)
+    # print("override_args", override_args)
+    # sys.exit(0)
+    
     batch_size = int(args.batch_size)
     config = build_config(args, override_args)
     # config['dataset']['test'] = {'src' : test_dataset}
     config['is_debug'] = True
     config['optim']['eval_batch_size'] = batch_size
+    # print("\n\n",)
     config['dataset']['test'] = {'src': config['dataset']['val']['src'][:-4] + 'train'}
-    print(config['dataset']['test'])
+    # print(config['dataset']['test'])
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id
-
+        
+        
+    # overwrite the config with the ckpt if have
+    checkpoint = torch.load(config["checkpoint"], map_location=torch.device("cpu"))  
+    if "config" in checkpoint.keys():
+        config['model'] = checkpoint["config"]['model']  
+    # print("ckeckpoint", checkpoint.keys())
+    # print("CONFIG", config)
+    # sys.exit(0)
     with new_trainer_context(config=config) as ctx:
+        # print("ctx", ctx)
+        # print("ctx.trainer", ctx.trainer)
+        
+        # sys.exit(0)
         trainer = ctx.trainer
 
-        checkpoint = torch.load(args.checkpoint, map_location=torch.device("cpu"))
-        model_config = checkpoint["config"]
+        # checkpoint = torch.load(args.checkpoint, map_location=torch.device("cpu"))
+        # model_config = checkpoint["config"]
 
         # trainer.config['model_attributes'] = model_config['model_attributes']
         #Load teacher config from teacher checkpoint
-        trainer.config['model'] =  model_config['model']
+        # trainer.config['model'] =  model_config['model']
+        trainer.config['model'] =  config['model']
+        print("MODEL CONFIG", config['model'])
+        # sys.exit(0)
         # trainer.config['model_attributes'].pop('scale_file', None)
         trainer.normalizers = {}  # This SHOULD be okay since it gets overridden later (in tasks, after datasets), but double check
         trainer.load_task()
         trainer.load_model()
-        trainer.load_checkpoint(args.checkpoint)
+        # trainer.model.to("cpu")
+        # sys.exit(0)
+        # trainer.load_checkpoint(args.checkpoint)
         evaluate_model(trainer, args.eval_loss)
