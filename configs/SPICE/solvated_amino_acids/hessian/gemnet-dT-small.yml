@@ -6,8 +6,8 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    teacher_labels_folder: /data/yuejian/MLFF_DIST/data/labels/SPICE_labels/mace_off_large_SpiceAminos
-    # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos
+    # teacher_labels_folder: /data/yuejian/MLFF_DIST/data/labels/SPICE_labels/mace_off_large_SpiceAminos
+    teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos
     # Below is an exmaple of label configs if you want to generate that.
     # teacher_checkpoint_path: checkpoints/2024-11-15-23-42-56-Solvated-Gem-DIST/best_checkpoint.pt
     # teacher_labels_folder: zz_labels/tester_gemT_solvated/

@@ -31,11 +31,13 @@ def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True, finite
         offset_indices = torch.nonzero(mask_per_mol[i]).flatten() + cumulative_sums[i]
         assert len(offset_indices) == free_atoms_in_mol
         grad_outputs[indices, :, offset_indices, :] = torch.eye(3)[None, :, :].to(forces.device)
+
+    grad_outputs = grad_outputs.reshape(max_free_atom_per_mol * 3, total_num_atoms, 3)
     if finite_differences:
         jac = get_jacobian_finite_difference(forces, batch, grad_outputs, forward=forward, collater = collater, looped=(not vectorize))
     else:
         jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
-
+    jac = jac.reshape(max_free_atom_per_mol, 3, total_num_atoms, 3)
     jacs_per_mol = [jac[:n_fr_at, :,  cum_sum:cum_sum + nat, :] for cum_sum, n_fr_at, nat in zip(cumulative_sums[:-1], num_free_atoms_per_mol, natoms)]
 
     return jacs_per_mol
@@ -211,14 +213,11 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
 
     # Total number of atoms
     total_num_atoms = batch.pos.shape[0]
-
     for output in grad_outputs:
         # Create forward perturbation
         perturbed_batch_forward = batch.clone()
-        perturbed_batch_forward.pos = (original_pos + h * output)
-        breakpoint()
-
-
+        # perturbed_batch_forward.pos = (original_pos + h * output)
+        perturbed_batch_forward.pos = (original_pos + h * output).detach().requires_grad_()
         # Append both perturbed batches to the list
         perturbed_batches.append(perturbed_batch_forward)
 

@@ -197,6 +197,5 @@ class LabelsTrainer(OCPTrainer):
                     batch_output = fn(batch)
                     for i in range(len(batch_ids)):
                         txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
-                sys.exit()
         env.close()
         logging.info(f"All tensors saved to LMDB:{file_path}")
