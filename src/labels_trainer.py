@@ -11,7 +11,7 @@ import contextlib
 import datetime
 import errno
 import logging
-import os
+import os, gc
 import random
 from abc import ABC, abstractmethod
 from itertools import chain
@@ -48,9 +48,9 @@ device = torch.device("cuda:0")
 class LabelsTrainer(OCPTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        print(len(self.train_dataset))
-        print(len(self.val_dataset))
-        print(self.train_dataset[0])
+        # print(len(self.train_dataset))
+        # print(len(self.val_dataset))
+        # print(self.train_dataset[0])
         # sys.exit(0)
         self.load_teacher_model_and_record(self.config['dataset']['teacher_labels_folder'])
         sys.exit(0)
@@ -160,12 +160,13 @@ class LabelsTrainer(OCPTrainer):
                 batch.pos.detach().requires_grad_()
                 # print(self._forward,self.collater)
                 jacs = get_teacher_jacobian(
-                                            self._forward(batch)['forces'], 
-                                            batch, vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
+                                            batch, 
+                                            vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
                                             should_mask=should_mask,
-                                            finite_differences=True,
+                                            approximation="disabled", # {"disabled","forward","central"}
                                             forward = self._forward,
-                                            collater=self.collater,
+                                            collater = self.collater,
+                                            device = self.device
                                             )
                 return jacs
             self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
@@ -197,5 +198,9 @@ class LabelsTrainer(OCPTrainer):
                     batch_output = fn(batch)
                     for i in range(len(batch_ids)):
                         txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
+                    del batch_output, batch
+                    gc.collect()
+                    torch.cuda.empty_cache()
+                # break
         env.close()
         logging.info(f"All tensors saved to LMDB:{file_path}")
