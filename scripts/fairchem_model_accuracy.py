@@ -53,7 +53,7 @@ if __name__ == "__main__":
     parser: argparse.ArgumentParser = flags.get_parser() # flag belongs to fairchem
     parser.add_argument("--nersc", action="store_true", help="Run with NERSC")
     parser.add_argument("--eval_loss", action="store_true", default=False)
-    parser.add_argument("--batch-size", default=32)
+    parser.add_argument("--batch-size", default=4)
     args: argparse.Namespace
     override_args: list[str]
     

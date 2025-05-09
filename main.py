@@ -38,17 +38,17 @@ class Runner(Checkpointable):
         self.config = None
 
     def __call__(self, config: dict) -> None:
-        print("\n\n\n in the call")
+        # print("\n\n\n in the call")
         with new_trainer_context(config=config) as ctx:
             self.config = ctx.config
             self.task = ctx.task
-            print("\n\n\n")
-            print("task", self.task, ctx.task)
+            # print("\n\n\n")
+            # print("task", self.task, ctx.task)
             self.trainer = ctx.trainer
-            print("trainer", self.trainer)
+            # print("trainer", self.trainer)
             self.task.setup(self.trainer)
-            print("task setup",self.task)
-            print("\n\n\n")
+            # print("task setup",self.task)
+            # print("\n\n\n")
             self.task.run()
 
     def checkpoint(self, *args, **kwargs):
@@ -77,7 +77,7 @@ def main():
 
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id
-    print("\n\n\n\n\n",args.submit)
+    # print("\n\n\n\n\n",args.submit)
     if args.submit:  # Run on cluster
         slurm_add_params = config.get("slurm", None)  # additional slurm arguments
         if args.nersc:

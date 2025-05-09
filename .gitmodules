@@ -4,3 +4,6 @@
 [submodule "mace"]
 	path = mace
 	url = https://github.com/ACEsuit/mace
+[submodule "strain_relief"]
+	path = strain_relief
+	url = https://github.com/ftyuejian/strain_relief.git

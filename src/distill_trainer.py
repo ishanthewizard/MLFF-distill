@@ -43,9 +43,12 @@ if TYPE_CHECKING:
 class DistillTrainer(OCPTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # sys.exit()
         self.is_validating = False
         self.force_mae =  None
         self.modify_train_val_datasets()
+        print("train dataset", len(self.train_dataset),self.train_dataset[0])
+        sys.exit()
         self.start_time = time.time()
 
         # Compute teacher MAE
@@ -119,6 +122,9 @@ class DistillTrainer(OCPTrainer):
         # print(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
         # print("here\n\n\n",len(teacher_force_dataset))
+        for i, item in enumerate(teacher_force_dataset):
+            print("item", i, item)
+        sys.exit()
         if self.config['optim'].get('final_node_distill', False):
             final_node_feature_dataset = SimpleDataset(os.path.join(labels_folder, f'{dataset_type}_final_node_features' ))
         else:
@@ -128,9 +134,11 @@ class DistillTrainer(OCPTrainer):
             teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
             final_node_feature_dataset = Subset(final_node_feature_dataset, torch.tensor(indxs))
         if dataset_type == 'train':
+            # print("FORCE JACOBIAN FOLDER", os.path.join(labels_folder, 'force_jacobians'))
             force_jac_dataset = SimpleDataset(os.path.join(labels_folder, 'force_jacobians'))
             if indxs is not None:
                 force_jac_dataset = Subset(force_jac_dataset, torch.tensor(indxs))
+            # print("end of jac dataset")
         else: 
             force_jac_dataset = None
         # print("\n\n\n\n")
@@ -211,8 +219,8 @@ class DistillTrainer(OCPTrainer):
             en_dist_coeff = self.config['optim']['energy_distill_coeff']
             loss.append(en_dist_coeff* energy_jac_loss)
         
-        
-        
+        # print(batch)
+        # sys.exit(0)
         if self.force_jac_loss_fn[1]['coefficient'] > 0:
             force_jac_loss = get_force_jac_loss(
                 out=out, 

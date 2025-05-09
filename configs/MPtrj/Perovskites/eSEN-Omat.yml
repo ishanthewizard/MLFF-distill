@@ -1,0 +1,72 @@
+includes:
+- configs/MPtrj/Perovskites/base.yml
+
+model:
+  name: hydra
+  pass_through_head_outputs: true
+  otf_graph: true
+  heads:
+    mptrj:
+      module: esen_mlp_efs_head_dens
+  backbone:
+    model: esen_backbone_dens
+    max_num_elements: 100
+    sphere_channels: 128
+    lmax: 3
+    mmax: 2
+    otf_graph: true
+    max_neighbors: 300
+    use_pbc: true
+    use_pbc_single: true
+    cutoff: 6.0
+    edge_channels: 128
+    distance_function: gaussian
+    num_distance_basis: 10
+    regress_forces: true
+    regress_stress: true
+    direct_forces: false
+    num_layers: 10
+    hidden_channels: 128
+    norm_type: rms_norm_sh
+    act_type: gate
+    mlp_type: spectral
+    use_envelope: true
+
+optim:
+  batch_size: 8
+  eval_batch_size: 8
+  num_workers: 8
+  lr_initial: 0.0002
+  optimizer: AdamW
+  optimizer_params:
+    weight_decay: 0.001
+  scheduler: ReduceLROnPlateau
+  patience: 5
+  factor: 0.8
+  min_lr: 0.000001  
+  # max_epochs: 1000
+  # ema_decay: 0.999
+  # clip_grad_norm: 10
+  # scheduler: LambdaLR
+  # scheduler_params:
+  #   lambda_type: cosine
+  #   warmup_factor: 0.2
+  #   warmup_epochs: 277
+  #   lr_min_factor: 0.01
+  #   epochs: 83370
+  #   lr: 0.0002
+  #   lr_lambda: [0.5, 0.5]
+  max_epochs: 30
+  clip_grad_norm: 100
+  ema_decay: 0.999
+  eval_every: 5000
+  load_balancing: atoms
+  use_denoising_pos: true
+  denoising_pos_params:
+    prob: 0.0
+    fixed_noise_std: true
+    std: 0.1
+    num_steps: 50
+    std_low: 0.01
+    std_high: 0.5
+  denoising_pos_coefficient: 10

@@ -14,7 +14,7 @@ def print_cuda_memory_usage():
     print((f"CUDA memory reserved: {reserved:.2f} GB"))
 
 
-def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True):
+def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True, finite_differences=False, forward=None, collater=None):
     natoms = batch.natoms
     total_num_atoms = sum(batch.natoms)
     cumulative_sums = [0] + torch.cumsum(natoms, 0).tolist()
@@ -31,7 +31,10 @@ def get_teacher_jacobian(forces, batch, vectorize=True, should_mask=True):
         offset_indices = torch.nonzero(mask_per_mol[i]).flatten() + cumulative_sums[i]
         assert len(offset_indices) == free_atoms_in_mol
         grad_outputs[indices, :, offset_indices, :] = torch.eye(3)[None, :, :].to(forces.device)
-    jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
+    if finite_differences:
+        jac = get_jacobian_finite_difference(forces, batch, grad_outputs, forward=forward, collater = collater, looped=(not vectorize))
+    else:
+        jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
 
     jacs_per_mol = [jac[:n_fr_at, :,  cum_sum:cum_sum + nat, :] for cum_sum, n_fr_at, nat in zip(cumulative_sums[:-1], num_free_atoms_per_mol, natoms)]
 
@@ -212,7 +215,9 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
     for output in grad_outputs:
         # Create forward perturbation
         perturbed_batch_forward = batch.clone()
-        perturbed_batch_forward.pos = original_pos + h * output
+        perturbed_batch_forward.pos = (original_pos + h * output)
+        breakpoint()
+
 
         # Append both perturbed batches to the list
         perturbed_batches.append(perturbed_batch_forward)

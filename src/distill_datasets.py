@@ -34,6 +34,10 @@ class CombinedDataset(Dataset):
         main_batch = self.main_dataset[idx]
         num_atoms = main_batch.natoms
         teacher_forces = self.teach_force_dataset[idx].reshape(num_atoms, 3)
+        # print("where is my force jacobian")
+        # print(self.force_jac_dataset)
+        # import sys
+        # sys.exit()
         if self.force_jac_dataset:
             # force_jacs  = self.force_jac_dataset[idx].reshape(num_free_atoms, 3, num_atoms, 3) 
             force_jacs = self.force_jac_dataset[idx] # DON'T RESHAPE! We'll do it later, easier for atoms of different lengths
@@ -83,6 +87,8 @@ class SimpleDataset(Dataset):
                 num_entries = txn.stat()['entries']
                 total_entries += num_entries
                 self._keylen_cumulative.append(total_entries)
+        # print(self._keylen_cumulative)
+        print(f"\n\n\n Total entries across all LMDB files jacs: {total_entries}")
 
     def __len__(self):
         return self._keylen_cumulative[-1] if self._keylen_cumulative else 0
@@ -95,9 +101,12 @@ class SimpleDataset(Dataset):
         db_idx = bisect.bisect_right(self._keylen_cumulative, index)
 
         with self.envs[db_idx].begin() as txn:
+            # print(f"Accessing LMDB file {self.db_paths[db_idx]} for index {index}")
+            # index = 10
             byte_data = txn.get(str(index).encode())
             if byte_data:
                 tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=self.dtype))
+                # print(byte_data,tensor)
                 return tensor
             else:
                 raise Exception(f"Data not found for index {index} in LMDB file.")

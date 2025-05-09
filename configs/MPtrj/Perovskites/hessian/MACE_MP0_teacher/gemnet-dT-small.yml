@@ -1,6 +1,7 @@
 includes:
 - configs/MPtrj/Perovskites/gemnet-dT-small.yml
 
+# trainer: src.labels_trainer.LabelsTrainer
 trainer: src.distill_trainer.DistillTrainer
 
 dataset:

@@ -1,5 +1,5 @@
 includes:
-- configs/MPtrj/Perovskites/base.yml
+- configs/MPtrj_fairchem/base.yml
 
 model:
   name: gemnet_t
