@@ -6,13 +6,19 @@ trainer: src.labels_trainer.LabelsTrainer
 
 dataset:
   train:
-    # teacher_labels_folder: data/labels/SPICE_labels/mace_off_large_SpiceAminos
-    # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos
+    # put this inside the dataset train
+    subset_indices_path: /home/yuejian/project/MLFF-distill/index_list/5<n<=10atoms.pt
+    # subset_indices_path: /global/homes/y/yuejian/project/MLFF-distill/index_list/equal_to_5atoms.pt
+
     # Below is an exmaple of label configs if you want to generate that.
     teacher_checkpoint_path: /home/yuejian/project/MLFF-distill/collection/eSEN/esen_30m_oam.pt
-    teacher_labels_folder: /data/yuejian/MLFF_DIST/data/labels/MPtrj_fairchem_labels
-    label_force_batch_size: 1
-    label_jac_batch_size: 1
+    teacher_labels_folder: /data/yuejian/MLFF_DIST/data/labels/MPtrj_fairchem_labels/debug
+    # teacher_labels_folder: /data/yuejian/MLFF_DIST/data/labels/MPtrj_fairchem_labels/debug
+    # teacher_checkpoint_path: /global/homes/y/yuejian/project/MLFF-distill/collection/eSEN/esen_30m_oam.pt
+    # teacher_labels_folder: /pscratch/sd/y/yuejian/MPtrj_labels
+    
+    label_force_batch_size: 32
+    label_jac_batch_size: 16
     vectorize_teach_jacs: False
 
 

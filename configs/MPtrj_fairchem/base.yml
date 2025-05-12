@@ -1,5 +1,5 @@
 includes:
-  - configs/slurm/regular.yml
+  - configs/slurm/debug.yml
 logger: 
   name: wandb
   project: MPtrj-Energy-FINAL
@@ -14,6 +14,7 @@ dataset:
     format: ase_db # {ase_db, lmdb}
     a2g_args: {r_forces: True, r_stress: True, r_data_keys: ['uncorrected_total_energy']}
     src: /data/ericqu/mptrj_fair/no_isolated_atoms_c12.0/train/train_mptrj.aselmdb
+    # src: /pscratch/sd/y/yuejian/mptrj_fair/no_isolated_atoms_c12.0/train/train_mptrj.aselmdb
     key_mapping:
       uncorrected_total_energy: energy
       force: forces
@@ -28,13 +29,14 @@ dataset:
     transforms:
       normalizer:
         energy: 
-          mean: 0
-          rmsd: 0.8114597201347351 # BUG: ryan's value for MPtrj
+          mean: 0 # Oam
+          rmsd: 0.6274 # Oam
         forces: 
-          mean: 0
-          rmsd: 1 # need this to match mace's value
+          mean: 0 # Oam
+          rmsd: 0.6274 # Oam
       element_references:
         file: /data/ericqu/mptrj_fair/norms-refs/element_references.pt
+        # file: /pscratch/sd/y/yuejian/mptrj_fair/norms-refs/element_references.pt
   val:
     # # orig mptrj
     # src: /data/yuejian/MLFF_DIST/data/MPtrj/MPtrj_separated_all_splits/Perovskites_noIons/val
@@ -47,7 +49,7 @@ dataset:
       force: forces
     # definately need this
     src: /data/ericqu/mptrj_fair/no_isolated_atoms_c12.0/val/val_mptrj.aselmdb
-
+    # src: /pscratch/sd/y/yuejian/mptrj_fair/no_isolated_atoms_c12.0/val/val_mptrj.aselmdb
 outputs:
   energy:
     shape: 1

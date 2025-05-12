@@ -37,6 +37,7 @@ from fairchem.core.trainers.ocp_trainer import OCPTrainer
 from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian
 from . import CombinedDataset, SimpleDataset
 from fairchem.core.common import distutils
+from torch.utils.data import Subset
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -52,6 +53,9 @@ class LabelsTrainer(OCPTrainer):
         # print(len(self.val_dataset))
         # print(self.train_dataset[0])
         # sys.exit(0)
+        # breakpoint()
+        selected_indices = torch.load(self.config['dataset']['subset_indices_path'])
+        self.train_dataset = Subset(self.train_dataset, selected_indices)
         self.load_teacher_model_and_record(self.config['dataset']['teacher_labels_folder'])
         sys.exit(0)
     
@@ -86,7 +90,7 @@ class LabelsTrainer(OCPTrainer):
         
         self.launch_record_tasks(labels_folder, 'train')
         
-        self.launch_record_tasks(labels_folder, 'val')
+        # self.launch_record_tasks(labels_folder, 'val')
 
         self.config['model'] = model_attributes_holder
 
@@ -95,6 +99,7 @@ class LabelsTrainer(OCPTrainer):
         This function launches the recording tasks across distributed workers without
         the need for manually spawning processes since they are already distributed.
         """
+        # breakpoint()
         rank = distutils.get_rank()
         world_size = distutils.get_world_size()
 
@@ -129,6 +134,7 @@ class LabelsTrainer(OCPTrainer):
             num_workers=self.config["optim"]["num_workers"],
             pin_memory=True,
             batch_size=self.config["dataset"]["label_force_batch_size"],
+            shuffle=False
         )
         
         # Define LMDB file path for this particular worker
@@ -152,6 +158,7 @@ class LabelsTrainer(OCPTrainer):
             num_workers=self.config["optim"]["num_workers"],
             pin_memory=True,
             batch_size=self.config["dataset"]["label_jac_batch_size"],
+            shuffle=False
             )
             
             jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
@@ -163,7 +170,8 @@ class LabelsTrainer(OCPTrainer):
                                             batch, 
                                             vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
                                             should_mask=should_mask,
-                                            approximation="disabled", # {"disabled","forward","central"}
+                                            # approximation="disabled", # {"disabled","forward","central"}
+                                            approximation="forward", # {"disabled","forward","central"}
                                             forward = self._forward,
                                             collater = self.collater,
                                             device = self.device
@@ -201,6 +209,9 @@ class LabelsTrainer(OCPTrainer):
                     del batch_output, batch
                     gc.collect()
                     torch.cuda.empty_cache()
+                # if id >=100:
+                #     logging.info(f"Processed {id} batches, exiting early for testing.")
+                #     break
                 # break
         env.close()
         logging.info(f"All tensors saved to LMDB:{file_path}")
