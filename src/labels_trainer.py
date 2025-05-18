@@ -49,13 +49,11 @@ device = torch.device("cuda:0")
 class LabelsTrainer(OCPTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # print(len(self.train_dataset))
-        # print(len(self.val_dataset))
-        # print(self.train_dataset[0])
-        # sys.exit(0)
-        # breakpoint()
+
         selected_indices = torch.load(self.config['dataset']['subset_indices_path'])
+        selected_val_indices = torch.load(self.config['dataset']['subset_val_indices_path'])
         self.train_dataset = Subset(self.train_dataset, selected_indices)
+        self.val_dataset = Subset(self.val_dataset, selected_val_indices)
         self.load_teacher_model_and_record(self.config['dataset']['teacher_labels_folder'])
         sys.exit(0)
     
@@ -88,9 +86,9 @@ class LabelsTrainer(OCPTrainer):
         os.makedirs(os.path.join(labels_folder, "val_forces"),exist_ok=True)
         os.makedirs(os.path.join(labels_folder, "force_jacobians"),exist_ok=True)
         
-        self.launch_record_tasks(labels_folder, 'train')
+        # self.launch_record_tasks(labels_folder, 'train')
         
-        # self.launch_record_tasks(labels_folder, 'val')
+        self.launch_record_tasks(labels_folder, 'val')
 
         self.config['model'] = model_attributes_holder
 
@@ -148,7 +146,7 @@ class LabelsTrainer(OCPTrainer):
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
-        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
         if dataset_type == 'train':
             # Only for training dataset, save jacobians as well
@@ -190,12 +188,6 @@ class LabelsTrainer(OCPTrainer):
         # Choose the appropriate context manager based on world size
         no_sync_context = self.model.no_sync() if distutils.get_world_size() > 1 else contextlib.nullcontext()
         
-        # t = next(iter(dataloader))
-        # print("t", t)
-        # large = Batch.from_data_list([t]*220)
-        # large.cell = t.cell
-        # print("large", large)
-        # sys.exit()
         id = 0
         with no_sync_context:
             for batch in tqdm(dataloader):
@@ -209,9 +201,6 @@ class LabelsTrainer(OCPTrainer):
                     del batch_output, batch
                     gc.collect()
                     torch.cuda.empty_cache()
-                # if id >=100:
-                #     logging.info(f"Processed {id} batches, exiting early for testing.")
-                #     break
-                # break
+
         env.close()
         logging.info(f"All tensors saved to LMDB:{file_path}")

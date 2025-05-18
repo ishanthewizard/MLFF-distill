@@ -22,35 +22,52 @@ import numpy as np
 
 from src.distill_utils import get_energy_jac_loss
 import torch
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from fairchem.core import __version__
 from fairchem.core.common import distutils 
 from fairchem.core.common.data_parallel import OCPCollater
 from fairchem.core.common.registry import registry
-
+from fairchem.core.datasets.base_dataset import Subset
 
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
-from . import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian
-from . import CombinedDataset, SimpleDataset
+from . import get_jacobian, get_force_jac_loss_masked, print_cuda_memory_usage, get_teacher_jacobian, create_hessian_mask
+from . import CombinedDataset, SimpleDataset, Dataset_with_Hessian_Masking
 from fairchem.core.common import distutils
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
 
 
 @registry.register_trainer("distill")
 class DistillTrainer(OCPTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        if 'subset_indices_path' in self.config['dataset']:
+            # create selected subset
+            selected_indices = torch.load(self.config['dataset']['subset_indices_path'])
+            selected_val_indices = torch.load(self.config['dataset']['subset_val_indices_path'])
+            # breakpoint()
+            self.train_dataset._metadata['natoms'] = self.train_dataset._metadata['natoms'][selected_indices]
+            train_meta_data = self.train_dataset._metadata
+            self.val_dataset._metadata['natoms'] = self.val_dataset._metadata['natoms'][selected_val_indices]
+            val_meta_data = self.val_dataset._metadata
+            self.train_dataset = Subset(self.train_dataset, indices=selected_indices, metadata= train_meta_data)
+            self.val_dataset = Subset(self.val_dataset, indices=selected_val_indices, metadata= val_meta_data)
         # sys.exit()
         self.is_validating = False
         self.force_mae =  None
         self.modify_train_val_datasets()
         print("train dataset", len(self.train_dataset),self.train_dataset[0])
-        sys.exit()
         self.start_time = time.time()
 
+        # debug
+        # batch = torch.load("/data/yuejian/MLFF_DIST/data/labels/MPtrj_fairchem_natoms<=10_300k/buggy_batch/empty_image.pt")
+        # test = self.model(batch)
+        # sys.exit()
+        
         # Compute teacher MAE
         self.calculate_teacher_loss()
         self.force_jac_loss_fn = self.loss_functions.pop()
@@ -87,9 +104,11 @@ class DistillTrainer(OCPTrainer):
                 self.config["val_dataset"]["split"], 
                 replace=False
             )
-        # print("before",next(iter(self.train_dataset)))
-        self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train', train_indxs ) # ADDED LINE
-        # print("after",next(iter(self.train_dataset)))
+        if self.config['dataset'].get('hessian_percent', False):
+            hessian_mask = create_hessian_mask(self.train_dataset,mask_out_percentage = 1. - self.config['dataset']['hessian_percent'])    
+            self.train_dataset = Dataset_with_Hessian_Masking(self.train_dataset, hessian_mask)
+
+        self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train', train_indxs) # ADDED LINE
         self.train_sampler = self.get_sampler(
             self.train_dataset,
             self.config["optim"]["batch_size"],
@@ -118,35 +137,23 @@ class DistillTrainer(OCPTrainer):
         #dataset_type either equals 'train' or 'val'
 
         labels_folder = self.config['dataset']['teacher_labels_folder']
-        # print("labeldir \n\n\n")
-        # print(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
         teacher_force_dataset = SimpleDataset(os.path.join(labels_folder,  f'{dataset_type}_forces'  ))
-        # print("here\n\n\n",len(teacher_force_dataset))
-        for i, item in enumerate(teacher_force_dataset):
-            print("item", i, item)
-        sys.exit()
+
         if self.config['optim'].get('final_node_distill', False):
             final_node_feature_dataset = SimpleDataset(os.path.join(labels_folder, f'{dataset_type}_final_node_features' ))
         else:
             final_node_feature_dataset = None
         if indxs is not None:
-            # print("\n\n\n\nINDXS:", indxs)
             teacher_force_dataset = Subset(teacher_force_dataset, torch.tensor(indxs))
             final_node_feature_dataset = Subset(final_node_feature_dataset, torch.tensor(indxs))
         if dataset_type == 'train':
-            # print("FORCE JACOBIAN FOLDER", os.path.join(labels_folder, 'force_jacobians'))
             force_jac_dataset = SimpleDataset(os.path.join(labels_folder, 'force_jacobians'))
             if indxs is not None:
                 force_jac_dataset = Subset(force_jac_dataset, torch.tensor(indxs))
-            # print("end of jac dataset")
+
         else: 
             force_jac_dataset = None
-        # print("\n\n\n\n")
-        # print(main_dataset, teacher_force_dataset, force_jac_dataset, final_node_feature_dataset)
-        # print(len(main_dataset))
-        # print(len(teacher_force_dataset))
-        # # print(len(force_jac_dataset))
-        # print(len(final_node_feature_dataset))
+
         return CombinedDataset(main_dataset,  teacher_force_dataset, force_jac_dataset, final_node_feature_dataset)
 
     def update_loss_coefficients(self):
@@ -161,11 +168,8 @@ class DistillTrainer(OCPTrainer):
             threshold = 5
             if percent_higher < threshold: 
                 self.force_jac_loss_fn[1]['coefficient'] = 0.5 * self.original_fjac_coeff
-           
+
     def _forward(self, batch):
-        # print("\n\n\n\n\n")
-        # print("FORWARD")
-        # print("\n\n\n\n")
         if not self.is_validating:
             # print("here")
             batch.pos.requires_grad_(True)
@@ -173,12 +177,8 @@ class DistillTrainer(OCPTrainer):
         res = super()._forward(batch)
         # print(res)
         return res
-        # return super()._forward(batch)
 
     def validate(self, split: str = "val", disable_tqdm: bool = False):
-        # print("\n\n\n\n\n")
-        # print("VALIDATING")
-        # print("\n\n\n\n")
         self.is_validating =True 
 
         total_rate =  self.step / (time.time() - self.start_time)  * 60
@@ -222,7 +222,7 @@ class DistillTrainer(OCPTrainer):
         # print(batch)
         # sys.exit(0)
         if self.force_jac_loss_fn[1]['coefficient'] > 0:
-            force_jac_loss = get_force_jac_loss(
+            force_jac_loss = get_force_jac_loss_masked(
                 out=out, 
                 batch=batch, 
                 num_samples=self.config['optim']['force_jac_sample_size'], 

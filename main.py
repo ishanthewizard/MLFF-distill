@@ -13,6 +13,7 @@ from __future__ import annotations
 import copy
 import logging
 from typing import TYPE_CHECKING
+import os
 
 from submitit import AutoExecutor
 from submitit.helpers import Checkpointable, DelayedSubmission
@@ -28,6 +29,9 @@ from fairchem.core.common.utils import (
 
 from src.models.gemnet_baseline import GemNetT
 from src.models.painn_baseline import PaiNN
+
+import torch.distributed as dist
+import torch
 
 if TYPE_CHECKING:
     import argparse
@@ -75,6 +79,7 @@ def main():
     args, override_args = parser.parse_known_args()
     config = build_config(args, override_args)
 
+    
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id
     # print("\n\n\n\n\n",args.submit)
@@ -116,6 +121,6 @@ def main():
 
         Runner()(config)
 
-
 if __name__ == "__main__":
+    # os.environ["WANDB_MODE"] = "disabled"
     main()
