@@ -1,5 +1,5 @@
 includes:
-- configs/MPtrj_fairchem/base.yml
+- configs/MPtrj_fairchem/base_train.yml
 
 model:
   name: gemnet_t
@@ -17,7 +17,7 @@ model:
   num_after_skip: 1
   num_concat: 1
   num_atom: 2
-  cutoff: 6.0
+  cutoff: 10.0 # 6.0
   max_neighbors: 50
   rbf:
     name: gaussian
@@ -36,7 +36,7 @@ model:
   # emb_size_teacher: 256
 
 optim:
-  batch_size: 8
+  batch_size: 16 # 8
   eval_batch_size: 16
   num_workers: 4
   lr_initial: 0.001

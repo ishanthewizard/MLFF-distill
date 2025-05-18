@@ -5,6 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
+    hessian_mask_percent: 0.99 # 0-1
     teacher_labels_folder: /data/yuejian/MLFF_DIST/data/labels/SPICE_labels/mace_off_large_SpiceMonomers
     # teacher_labels_folder: /data/yuejian/MLFF_DIST/data/labels/SPICE_labels/EScAIP_SpiceMonomers
 
