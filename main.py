@@ -82,7 +82,7 @@ def main():
     
     if args.timestamp_id is not None and len(args.identifier) == 0:
         args.identifier = args.timestamp_id
-    # print("\n\n\n\n\n",args.submit)
+
     if args.submit:  # Run on cluster
         slurm_add_params = config.get("slurm", None)  # additional slurm arguments
         if args.nersc:

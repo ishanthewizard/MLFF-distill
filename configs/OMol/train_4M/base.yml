@@ -2,18 +2,18 @@ includes:
   - configs/slurm/debug.yml
 logger: 
   name: wandb
-  project: MPtrj-Energy-20percent
+  project: OMol_train_4M
 
 trainer: ocp
 
 dataset:
   train:
-    no_shuffle: True # dangerous don't shuffle dataset!, dataloader will shuffle after this
+    no_shuffle: True
 
     # fairchem mptrj
     format: ase_db # {ase_db, lmdb}
-    a2g_args: {r_forces: True, r_stress: True, r_data_keys: ['uncorrected_total_energy']}
-    src: /data/ericqu/mptrj_fair/no_isolated_atoms_c12.0/train/train_mptrj.aselmdb
+    a2g_args: {r_forces: True, r_stress: True, r_data_keys: ['uncorrected_total_energy','spin', 'charge']}
+    src: /data/yuejian/OMol_Whole/train_4M/
     # src: /pscratch/sd/y/yuejian/mptrj_fair/no_isolated_atoms_c12.0/train/train_mptrj.aselmdb
     key_mapping:
       uncorrected_total_energy: energy
@@ -29,11 +29,11 @@ dataset:
     transforms:
       normalizer:
         energy: 
-          mean: 0 
-          rmsd: 0.8114597201347351 
+          mean: 0 # Oam
+          rmsd: 0.6274 # Oam
         forces: 
-          mean: 0 
-          rmsd: 1 
+          mean: 0 # Oam
+          rmsd: 0.6274 # Oam
       element_references:
         file: /data/ericqu/mptrj_fair/norms-refs/element_references.pt
         # file: /pscratch/sd/y/yuejian/mptrj_fair/norms-refs/element_references.pt
@@ -43,12 +43,12 @@ dataset:
 
     # fairchem mptrj
     # BUG: not sure if need this
-    a2g_args: {r_forces: True, r_stress: True, r_data_keys: ['uncorrected_total_energy']}
+    a2g_args: {r_forces: True, r_stress: True, r_data_keys: ['uncorrected_total_energy','spin', 'charge']}
     key_mapping:
       uncorrected_total_energy: energy
       force: forces
     # definately need this
-    src: /data/ericqu/mptrj_fair/no_isolated_atoms_c12.0/val/val_mptrj.aselmdb
+    src: /data/yuejian/OMol_Whole/val/
     # src: /pscratch/sd/y/yuejian/mptrj_fair/no_isolated_atoms_c12.0/val/val_mptrj.aselmdb
 outputs:
   energy:

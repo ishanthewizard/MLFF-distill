@@ -44,7 +44,6 @@ if TYPE_CHECKING:
 class DistillTrainer(OCPTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
         if 'subset_indices_path' in self.config['dataset']:
             # create selected subset
             selected_indices = torch.load(self.config['dataset']['subset_indices_path'])
