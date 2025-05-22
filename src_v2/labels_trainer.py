@@ -1,0 +1,163 @@
+"""
+Copyright (c) Meta Platforms, Inc. and affiliates.
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.
+"""
+
+from __future__ import annotations
+
+import logging
+import os, sys
+import shutil
+import gc
+import lmdb
+from tqdm import tqdm
+import contextlib
+from typing import TYPE_CHECKING, Optional, Union
+
+import torch
+import torch.distributed.checkpoint as dcp
+from omegaconf import OmegaConf
+from torchtnt.framework.callback import Callback
+from torchtnt.framework.fit import fit
+
+from fairchem.core.common import distutils
+from fairchem.core.common.utils import get_subdirectories_sorted_by_time
+from fairchem.core.components.runner import Runner
+from fairchem.core.units.mlip_unit.mlip_unit import (
+    convert_train_checkpoint_to_inference_checkpoint,
+)
+
+from .distill_utils import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian
+
+if TYPE_CHECKING:
+    from torch.distributed.checkpoint.stateful import Stateful
+    from torchtnt.framework import EvalUnit, TrainUnit
+    from torchtnt.framework.state import State
+    from torchtnt.framework.unit import TTrainUnit
+    
+
+
+
+class TeacherLabelGenerator(Runner):
+    def __init__(
+        self,
+        train_dataloader: torch.utils.data.dataloader,
+        eval_dataloader: torch.utils.data.dataloader,
+        train_eval_unit: Union[TrainUnit, EvalUnit, Stateful],
+        label_folder: str = None,
+    ):  
+        
+        self.train_dataloader = train_dataloader
+        self.eval_dataloader = eval_dataloader
+        self.train_eval_unit = train_eval_unit
+        self.device = self.train_eval_unit.model.device
+        
+        self.label_folder = label_folder
+        
+        logging.info(f"Creating Label folder at: {self.label_folder}")
+        os.makedirs(os.path.join(self.label_folder, "train_forces"),exist_ok=True)
+        os.makedirs(os.path.join(self.label_folder, "val_forces"),exist_ok=True)
+        os.makedirs(os.path.join(self.label_folder, "force_jacobians"),exist_ok=True)
+        
+        logging.info(f"Train Dataloader size {len(self.train_dataloader)}")
+        logging.info(f"Eval Dataloader size {len(self.eval_dataloader)}")
+
+    def run(self) -> None:
+        # TODO: add your label generation logic here
+        self.launch_record_tasks(self.label_folder, 'train')
+        self.launch_record_tasks(self.label_folder, 'val')
+    
+    def launch_record_tasks(self, labels_folder, dataset_type):
+        """
+        This function launches the recording tasks across distributed workers without
+        the need for manually spawning processes since they are already distributed.
+        """
+        # Each worker calls the record_labels_parallel function with its assigned indices
+        self.record_labels_parallel(labels_folder, dataset_type)
+    
+    def record_labels_parallel(self, labels_folder, dataset_type):
+        """
+        This function records labels and saves them in separate LMDB files for parallel processing.
+        Each worker handles its segment of the dataset.
+        """
+        # Subset the datasets based on the provided indices
+        if dataset_type == 'train':
+            dataloader = self.train_dataloader
+        elif dataset_type == 'val':
+            dataloader = self.eval_dataloader
+        else:
+            raise ValueError("Invalid dataset type provided")
+        
+        # Define LMDB file path for this particular worker
+        lmdb_path = os.path.join(labels_folder, f"{dataset_type}_forces", f"data.{distutils.get_rank():04d}.lmdb")
+
+        # Function to calculate forces
+        def get_seperated_forces(batch):
+            # with torch.no_grad():
+            all_forces = self.train_eval_unit.model(batch)['forces']['forces']
+            # breakpoint()
+            natoms = batch.natoms
+            return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
+        
+        # Record and save the data
+        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+
+        if dataset_type == 'train':
+            # Only for training dataset, save jacobians as well
+            jac_dataloader = self.train_dataloader
+            
+            jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
+            # should_mask = self.output_targets['forces']["train_on_free_atoms"]
+            should_mask = True
+            def get_seperated_force_jacs(batch): 
+                batch.pos.detach().requires_grad_()
+                # print(self._forward,self.collater)
+                jacs = get_teacher_jacobian(
+                                            batch, 
+                                            # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
+                                            vectorize = False,
+                                            should_mask=should_mask,
+                                            # approximation="disabled", # {"disabled","forward","central"}
+                                            approximation="forward", # {"disabled","forward","central"}
+                                            forward = self.train_eval_unit.model,
+                                            collater = None,
+                                            device = self.device
+                                            )
+                return jacs
+            self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
+
+    def record_and_save(self, dataloader, file_path, fn):
+        
+        map_size= 1099511627776 * 2
+        env = lmdb.open(file_path, map_size=map_size)
+        
+        # Choose the appropriate context manager based on world size
+        no_sync_context = self.model.no_sync() if distutils.get_world_size() > 1 else contextlib.nullcontext()
+
+        id = 0
+        with no_sync_context:
+            for _, batch in tqdm(enumerate(dataloader), total=len(dataloader)):
+                with env.begin(write=True) as txn:
+                    # batch = large
+                    batch_ids = [str(i+id) for i in range(len(batch))]
+                    id = int(batch_ids[-1]) + 1  
+                    batch_output = fn(batch.to(self.device))
+                    for i in range(len(batch_ids)):
+                        txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
+                    del batch_output, batch
+                    gc.collect()
+                    torch.cuda.empty_cache()
+
+        env.close()
+        logging.info(f"All tensors saved to LMDB:{file_path}")
+    
+    # dummy, just for instantiation
+    def save_state(self, checkpoint_location: str, is_preemption: bool = False) -> bool:
+        # need the unit to have a save_state protocol
+        pass
+
+    def load_state(self, checkpoint_location: str | None) -> None:
+        # need the unit to have a load_state protocol
+        pass
