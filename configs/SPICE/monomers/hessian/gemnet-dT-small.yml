@@ -31,4 +31,4 @@ optim:
   print_memory_usage: False
   vectorize_jacs: True
   energy_distill_coeff: 0
-  finite_differences: True
+  finite_differences: False
