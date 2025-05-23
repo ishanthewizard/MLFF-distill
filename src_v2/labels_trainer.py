@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import os, sys
+from typing import Callable
 import shutil
 import gc
 import lmdb
@@ -38,8 +39,6 @@ if TYPE_CHECKING:
     from torchtnt.framework.unit import TTrainUnit
     
 
-
-
 class TeacherLabelGenerator(Runner):
     def __init__(
         self,
@@ -55,8 +54,12 @@ class TeacherLabelGenerator(Runner):
         self.device = self.train_eval_unit.model.device
         
         self.label_folder = label_folder
-        
+        print(next(iter(self.train_dataloader)))
+        # make a snapshot of the sampled indices of current rank, will dump it to a file
+        self.indices_list_of_current_rank = list(self.train_dataloader.batch_sampler)
+
         logging.info(f"Creating Label folder at: {self.label_folder}")
+        os.makedirs(os.path.join(self.label_folder, "indices"),exist_ok=True)
         os.makedirs(os.path.join(self.label_folder, "train_forces"),exist_ok=True)
         os.makedirs(os.path.join(self.label_folder, "val_forces"),exist_ok=True)
         os.makedirs(os.path.join(self.label_folder, "force_jacobians"),exist_ok=True)
@@ -66,22 +69,17 @@ class TeacherLabelGenerator(Runner):
 
     def run(self) -> None:
         # TODO: add your label generation logic here
-        self.launch_record_tasks(self.label_folder, 'train')
-        self.launch_record_tasks(self.label_folder, 'val')
+        # self.record_labels_parallel(self.label_folder, 'train')
+        self.record_labels_parallel(self.label_folder, 'val')
     
-    def launch_record_tasks(self, labels_folder, dataset_type):
-        """
-        This function launches the recording tasks across distributed workers without
-        the need for manually spawning processes since they are already distributed.
-        """
-        # Each worker calls the record_labels_parallel function with its assigned indices
-        self.record_labels_parallel(labels_folder, dataset_type)
-    
-    def record_labels_parallel(self, labels_folder, dataset_type):
+    def record_labels_parallel(self, labels_folder: str, dataset_type: str) -> None:
         """
         This function records labels and saves them in separate LMDB files for parallel processing.
         Each worker handles its segment of the dataset.
         """
+        ##################
+        ### Dataloader ###
+        ##################
         # Subset the datasets based on the provided indices
         if dataset_type == 'train':
             dataloader = self.train_dataloader
@@ -90,20 +88,27 @@ class TeacherLabelGenerator(Runner):
         else:
             raise ValueError("Invalid dataset type provided")
         
+        ####################
+        ##### Forces #######
+        ####################
+        # dump the indices to a file
+        torch.save(self.indices_list_of_current_rank, os.path.join(labels_folder, "indices", f"{dataset_type}_indices_{distutils.get_rank():04d}.pt"))
+        
         # Define LMDB file path for this particular worker
         lmdb_path = os.path.join(labels_folder, f"{dataset_type}_forces", f"data.{distutils.get_rank():04d}.lmdb")
 
         # Function to calculate forces
         def get_seperated_forces(batch):
-            # with torch.no_grad():
             all_forces = self.train_eval_unit.model(batch)['forces']['forces']
-            # breakpoint()
             natoms = batch.natoms
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
         self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
+        #####################
+        ##### Jacobians #####
+        #####################
         if dataset_type == 'train':
             # Only for training dataset, save jacobians as well
             jac_dataloader = self.train_dataloader
@@ -113,12 +118,11 @@ class TeacherLabelGenerator(Runner):
             should_mask = True
             def get_seperated_force_jacs(batch): 
                 batch.pos.detach().requires_grad_()
-                # print(self._forward,self.collater)
                 jacs = get_teacher_jacobian(
                                             batch, 
                                             # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
                                             vectorize = False,
-                                            should_mask=should_mask,
+                                            should_mask=should_mask, # BUG
                                             # approximation="disabled", # {"disabled","forward","central"}
                                             approximation="forward", # {"disabled","forward","central"}
                                             forward = self.train_eval_unit.model,
@@ -128,13 +132,13 @@ class TeacherLabelGenerator(Runner):
                 return jacs
             self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
 
-    def record_and_save(self, dataloader, file_path, fn):
+    def record_and_save(self, dataloader: torch.utils.data.dataloader, file_path: str, fn: Callable) -> None:
         
         map_size= 1099511627776 * 2
         env = lmdb.open(file_path, map_size=map_size)
         
         # Choose the appropriate context manager based on world size
-        no_sync_context = self.model.no_sync() if distutils.get_world_size() > 1 else contextlib.nullcontext()
+        no_sync_context = self.train_eval_unit.model.no_sync() if distutils.get_world_size() > 1 else contextlib.nullcontext()
 
         id = 0
         with no_sync_context:

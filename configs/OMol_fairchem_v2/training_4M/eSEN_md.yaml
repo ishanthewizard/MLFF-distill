@@ -147,4 +147,4 @@ runner:
     print_every: 10
     clip_grad_norm: 100
     bf16: ${bf16}
-  label_folder: /home/yuejian/project/MLFF-distill/toy_label_dump
+  label_folder: /home/yuejian/project/MLFF-distill/toy_label_dump_debug
