@@ -14,12 +14,15 @@ class CombinedDataset(Dataset):
     def __init__(self, main_dataset, teach_force_dataset, force_jac_dataset=None, final_node_feature_dataset=None):
         if  len(main_dataset) != len(teach_force_dataset):
             logging.info("WARNING: TEACH FORCE DATASET DIFFERENT SIZE")
+            print("WARNING: TEACH FORCE DATASET DIFFERENT SIZE")
             raise Exception("DIFF SIZE!!")
         if force_jac_dataset and len(main_dataset) != len(force_jac_dataset):
             logging.info("WARNING: FORCE JACOBIAN DIFFERENT SIZE")
+            print("WARNING: FORCE JACOBIAN DIFFERENT SIZE")
             raise Exception("DIFF SIZE!!")
         if final_node_feature_dataset and len(main_dataset) != len(final_node_feature_dataset):
             logging.info("WARNING: FINAL NODE FEATURE DATASET DIFFERENT SIZE")
+            print("WARNING: FINAL NODE FEATURE DATASET DIFFERENT SIZE")
             raise Exception("DIFF SIZE!!")
         self.main_dataset = main_dataset
         self.teach_force_dataset = teach_force_dataset

@@ -10,9 +10,9 @@ def create_hessian_mask(dataset, mask_out_percentage=0.2):
     init_mask = torch.ones(len(dataset))
     
     hessian_mask = torch.bernoulli(init_mask*(1 - mask_out_percentage))
-    
-    logging.info(f"\nMasking out {(1-hessian_mask.sum()*100)/len(dataset):.2f}% of the Hessian\n")
-    
+    # breakpoint()
+    logging.info(f"\nMasking out {((1-hessian_mask).sum()*100)/len(dataset):.2f}% of the Hessian\n")
+    # breakpoint()
     return hessian_mask
 
 

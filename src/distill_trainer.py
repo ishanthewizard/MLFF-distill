@@ -32,7 +32,7 @@ from fairchem.core.common.registry import registry
 from fairchem.core.datasets.base_dataset import Subset
 
 from fairchem.core.trainers.ocp_trainer import OCPTrainer
-from . import get_jacobian, get_force_jac_loss_masked, print_cuda_memory_usage, get_teacher_jacobian, create_hessian_mask
+from . import get_jacobian, get_force_jac_loss_masked, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian, create_hessian_mask
 from . import CombinedDataset, SimpleDataset, Dataset_with_Hessian_Masking
 from fairchem.core.common import distutils
 if TYPE_CHECKING:
@@ -103,9 +103,10 @@ class DistillTrainer(OCPTrainer):
                 self.config["val_dataset"]["split"], 
                 replace=False
             )
-        if self.config['dataset'].get('hessian_percent', False):
-            hessian_mask = create_hessian_mask(self.train_dataset,mask_out_percentage = 1. - self.config['dataset']['hessian_percent'])    
-            self.train_dataset = Dataset_with_Hessian_Masking(self.train_dataset, hessian_mask)
+        # breakpoint()
+        # if self.config['dataset'].get('hessian_percent', False):
+        # hessian_mask = create_hessian_mask(self.train_dataset,mask_out_percentage = 1. - self.config['dataset']['hessian_percent'])    
+        # self.train_dataset = Dataset_with_Hessian_Masking(self.train_dataset, hessian_mask)
 
         self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train', train_indxs) # ADDED LINE
         self.train_sampler = self.get_sampler(
@@ -221,7 +222,18 @@ class DistillTrainer(OCPTrainer):
         # print(batch)
         # sys.exit(0)
         if self.force_jac_loss_fn[1]['coefficient'] > 0:
-            force_jac_loss = get_force_jac_loss_masked(
+            # force_jac_loss = get_force_jac_loss_masked(
+            #     out=out, 
+            #     batch=batch, 
+            #     num_samples=self.config['optim']['force_jac_sample_size'], 
+            #     mask= mask, 
+            #     should_mask=should_mask, 
+            #     finite_differences= self.config['optim'].get('finite_differences', False),
+            #     looped=(not self.config['optim']["vectorize_jacs"]),
+            #     collater = self.collater,
+            #     forward = self._forward
+            # )
+            force_jac_loss = get_force_jac_loss(
                 out=out, 
                 batch=batch, 
                 num_samples=self.config['optim']['force_jac_sample_size'], 
