@@ -55,7 +55,7 @@ def get_teacher_jacobian(batch, vectorize=True, should_mask=True, approximation=
         forces = forward(batch)['forces'].detach()
         # breakpoint()
         # print("device", forces.device, batch.pos.device,grad_outputs.device)
-        jac = get_jacobian_finite_difference(forces, batch, grad_outputs, forward=forward, collater = collater, looped=(not vectorize))
+        jac = get_jacobian_finite_difference_with_detach(forces, batch, grad_outputs, forward=forward, collater = collater, looped=(not vectorize))
         jac = jac.reshape(max_free_atom_per_mol, 3, total_num_atoms, 3)
         jacs_per_mol = [jac[:n_fr_at, :,  cum_sum:cum_sum + nat, :] for cum_sum, n_fr_at, nat in zip(cumulative_sums[:-1], num_free_atoms_per_mol, natoms)]
     elif approximation == "central":
@@ -307,14 +307,11 @@ def get_energy_jac_loss(out, batch, energy_std):
     loss  = loss / sum(batch.natoms) # different options here, currently weighting all systems the same regardless of size
     
     return loss
-    
+
+
 def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collater, looped=False, h=0.0001): 
     # currently a right difference scheme, not a central difference scheme.
-    # print("FORCES SHAPE", forces.shape)
-    # print("BATCH POS SHAPE", batch.pos.shape)
-    # print("GRAD OUTPUTS SHAPE", grad_outputs.shape)
-    # print("GRAD OUTPUTS", grad_outputs)
-    # breakpoint()
+    
     # Store original positions
     original_pos = batch.pos.clone()
 
@@ -323,13 +320,12 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
 
     # Total number of atoms
     total_num_atoms = batch.pos.shape[0]
+
     for output in grad_outputs:
-        # print("OUTPUT SHAPE", output.shape)
         # Create forward perturbation
         perturbed_batch_forward = batch.clone()
-        # perturbed_batch_forward.pos = (original_pos + h * output)
-        perturbed_batch_forward.pos = (original_pos + h * output).detach()
-        # print("PERTURBED BATCH FORWARD SHAPE", perturbed_batch_forward.pos.shape)
+        perturbed_batch_forward.pos = original_pos + h * output
+
         # Append both perturbed batches to the list
         perturbed_batches.append(perturbed_batch_forward)
 
@@ -341,60 +337,89 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
     else:
         perturbed_forces = []
         for batch in perturbed_batches:
-            # perturbed_output = forward(batch)
-            # save memory
-            # perturbed_output['energy'] = perturbed_output['energy'].detach()
-            # perturbed_output['forces'] = perturbed_output['forces'].detach()
-            # print("PERTURBED OUTPUT", perturbed_output.keys())
+            perturbed_forces.append(forward(batch)['forces'])
+        perturbed_forces = torch.cat(perturbed_forces, dim=0)
+    # Split the large batch's forces into individual forward and backward forces
+    hessian_columns = []
+    for i in range(len(perturbed_batches)):
+        forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
+        hessian_col = (forward_force - forces) / h
+        hessian_columns.append(hessian_col)
+
+    # Stack columns to form the Jacobian matrix
+    #technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
+    return torch.stack(hessian_columns, dim=0) 
+
+def get_jacobian_finite_difference_with_detach(forces, batch, grad_outputs, forward, collater, looped=False, h=0.0001): 
+    # currently a right difference scheme, not a central difference scheme.
+    # Store original positions
+    original_pos = batch.pos.clone()
+
+    # Create a list to store all perturbed batches
+    perturbed_batches = []
+
+    # Total number of atoms
+    total_num_atoms = batch.pos.shape[0]
+    for output in grad_outputs:
+        # Create forward perturbation
+        perturbed_batch_forward = batch.clone()
+
+        perturbed_batch_forward.pos = (original_pos + h * output).detach()
+
+        perturbed_batches.append(perturbed_batch_forward)
+
+    # Combine all perturbed batches into one large batch
+    if not looped:
+        large_batch = collater(perturbed_batches)
+        # Perform forward pass for all perturbed batches at once
+        perturbed_forces = forward(large_batch)['forces']
+    else:
+        perturbed_forces = []
+        for batch in perturbed_batches:
             perturbed_forces.append(forward(batch)['forces'].detach())
         perturbed_forces = torch.cat(perturbed_forces, dim=0)
     # Split the large batch's forces into individual forward and backward forces
     hessian_columns = []
     for i in range(len(perturbed_batches)):
-        # breakpoint()
         forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
         hessian_col = (forward_force - forces.detach()) / h
-        # print("HESSIAN", hessian_col.shape)
         hessian_columns.append(hessian_col)
 
-    # Stack columns to form the Jacobian matrix
-    #technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
-    # print("HESSIAN SHAPE", torch.stack(hessian_columns, dim=0).shape)
     return torch.stack(hessian_columns, dim=0) 
 
 
-def get_jacobian_central_difference(batch, forward, h=0.0001):
+# def get_jacobian_central_difference(batch, forward, h=0.0001):
     
-    batch_forward = batch.clone().detach()
-    batch_forward.pos = batch_forward.pos + h
-    forward_forces = forward(batch_forward)['forces']
+#     batch_forward = batch.clone().detach()
+#     batch_forward.pos = batch_forward.pos + h
+#     forward_forces = forward(batch_forward)['forces']
     
-    batch_backward = batch.clone().detach()
-    batch_backward.pos = batch_backward.pos - h
-    backward_forces = forward(batch_backward)['forces']
+#     batch_backward = batch.clone().detach()
+#     batch_backward.pos = batch_backward.pos - h
+#     backward_forces = forward(batch_backward)['forces']
 
-    del batch_forward
-    del batch_backward
-    del batch
+#     del batch_forward
+#     del batch_backward
+#     del batch
     
-    # calculate Forces+ - Forces- / 2h
-    delta_forces_delta_2_h = (forward_forces - backward_forces)/ (2*h)
+#     # calculate Forces+ - Forces- / 2h
+#     delta_forces_delta_2_h = (forward_forces - backward_forces)/ (2*h)
     
-    del forward_forces
-    del backward_forces
+#     del forward_forces
+#     del backward_forces
     
-    # batch to list using batch index
-    batch_idx = batch.batch
-    delta_forces_delta_2_h_list = [delta_forces_delta_2_h[batch_idx == i] for i in batch_idx.unique()]
-    print("DELTA FORCES DELTA 2 H LIST", [d.shape for d in delta_forces_delta_2_h_list])
+#     # batch to list using batch index
+#     batch_idx = batch.batch
+#     delta_forces_delta_2_h_list = [delta_forces_delta_2_h[batch_idx == i] for i in batch_idx.unique()]
+#     print("DELTA FORCES DELTA 2 H LIST", [d.shape for d in delta_forces_delta_2_h_list])
 
-    # loop through the list and create jacobian
-    jacobian_list = []
-    for dfd2h in delta_forces_delta_2_h_list:
-        (n_atom, n_dim) = dfd2h.shape
-        jacobian = dfd2h.reshape(-1)
-        pass
-    return
+#     # loop through the list and create jacobian
+#     jacobian_list = []
+#     for dfd2h in delta_forces_delta_2_h_list:
+#         (n_atom, n_dim) = dfd2h.shape
+#         jacobian = dfd2h.reshape(-1)
+#         pass
+#     return
     
 
 # def get_jacobian_forward_mode(forces, batch, grad_outputs, collater, forward, looped=False, h=0.0001):

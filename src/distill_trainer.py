@@ -35,6 +35,7 @@ from fairchem.core.trainers.ocp_trainer import OCPTrainer
 from . import get_jacobian, get_force_jac_loss_masked, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian, create_hessian_mask
 from . import CombinedDataset, SimpleDataset, Dataset_with_Hessian_Masking
 from fairchem.core.common import distutils
+from fairchem.core.common.data_parallel import BalancedBatchSampler
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -44,18 +45,24 @@ if TYPE_CHECKING:
 class DistillTrainer(OCPTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # print("\n\nDistillTrainer init\n\n")
         if 'subset_indices_path' in self.config['dataset']:
             # create selected subset
             selected_indices = torch.load(self.config['dataset']['subset_indices_path'])
-            selected_val_indices = torch.load(self.config['dataset']['subset_val_indices_path'])
-            # breakpoint()
             self.train_dataset._metadata['natoms'] = self.train_dataset._metadata['natoms'][selected_indices]
             train_meta_data = self.train_dataset._metadata
-            self.val_dataset._metadata['natoms'] = self.val_dataset._metadata['natoms'][selected_val_indices]
-            val_meta_data = self.val_dataset._metadata
             self.train_dataset = Subset(self.train_dataset, indices=selected_indices, metadata= train_meta_data)
+        # print(self.config['dataset'])
+        if 'subset_val_indices_path' in self.config['dataset']:
+            # breakpoint()
+            selected_val_indices = torch.load(self.config['dataset']['subset_val_indices_path'])
+            if self.val_dataset._metadata is not None:
+                self.val_dataset._metadata['natoms'] = self.val_dataset._metadata['natoms'][selected_val_indices]
+                val_meta_data = self.val_dataset._metadata
+            else:
+                val_meta_data = None
             self.val_dataset = Subset(self.val_dataset, indices=selected_val_indices, metadata= val_meta_data)
-        # sys.exit()
+        
         self.is_validating = False
         self.force_mae =  None
         self.modify_train_val_datasets()
@@ -103,21 +110,23 @@ class DistillTrainer(OCPTrainer):
                 self.config["val_dataset"]["split"], 
                 replace=False
             )
-        # breakpoint()
-        # if self.config['dataset'].get('hessian_percent', False):
-        # hessian_mask = create_hessian_mask(self.train_dataset,mask_out_percentage = 1. - self.config['dataset']['hessian_percent'])    
-        # self.train_dataset = Dataset_with_Hessian_Masking(self.train_dataset, hessian_mask)
+
+        hessian_mask = create_hessian_mask(self.train_dataset,mask_out_percentage = 1. - self.config['dataset']['hessian_percent'])    
+        self.train_dataset = Dataset_with_Hessian_Masking(self.train_dataset, hessian_mask)
 
         self.train_dataset = self.insert_teach_datasets(self.train_dataset, 'train', train_indxs) # ADDED LINE
+
         self.train_sampler = self.get_sampler(
             self.train_dataset,
             self.config["optim"]["batch_size"],
             shuffle=True,
         )
+        
         self.train_loader = self.get_dataloader(
             self.train_dataset,
             self.train_sampler,
         )
+        
 
         self.val_dataset = self.insert_teach_datasets(self.val_dataset, 'val', val_indxs)
 
@@ -132,6 +141,8 @@ class DistillTrainer(OCPTrainer):
             self.val_dataset,
             self.val_sampler,
         )
+        # print("train-loader", len(self.train_loader))
+        # print("val-loader", len(self.val_loader))
 
     def insert_teach_datasets(self, main_dataset, dataset_type, indxs=None):
         #dataset_type either equals 'train' or 'val'
@@ -222,18 +233,7 @@ class DistillTrainer(OCPTrainer):
         # print(batch)
         # sys.exit(0)
         if self.force_jac_loss_fn[1]['coefficient'] > 0:
-            # force_jac_loss = get_force_jac_loss_masked(
-            #     out=out, 
-            #     batch=batch, 
-            #     num_samples=self.config['optim']['force_jac_sample_size'], 
-            #     mask= mask, 
-            #     should_mask=should_mask, 
-            #     finite_differences= self.config['optim'].get('finite_differences', False),
-            #     looped=(not self.config['optim']["vectorize_jacs"]),
-            #     collater = self.collater,
-            #     forward = self._forward
-            # )
-            force_jac_loss = get_force_jac_loss(
+            force_jac_loss = get_force_jac_loss_masked(
                 out=out, 
                 batch=batch, 
                 num_samples=self.config['optim']['force_jac_sample_size'], 
@@ -244,6 +244,17 @@ class DistillTrainer(OCPTrainer):
                 collater = self.collater,
                 forward = self._forward
             )
+            # force_jac_loss = get_force_jac_loss(
+            #     out=out, 
+            #     batch=batch, 
+            #     num_samples=self.config['optim']['force_jac_sample_size'], 
+            #     mask= mask, 
+            #     should_mask=should_mask, 
+            #     finite_differences= self.config['optim'].get('finite_differences', False),
+            #     looped=(not self.config['optim']["vectorize_jacs"]),
+            #     collater = self.collater,
+            #     forward = self._forward
+            # )
             if self.config['optim'].get("print_memory_usage", False):
                 print_cuda_memory_usage()
             loss.append(force_jac_loss * self.force_jac_loss_fn[1]['coefficient'])

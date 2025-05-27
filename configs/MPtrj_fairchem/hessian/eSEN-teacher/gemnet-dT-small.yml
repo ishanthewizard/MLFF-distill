@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    hessian_percent: 1. # 0-1, how many percent of the hessian to use
+    hessian_percent: 0.3 # 0-1, how many percent of the hessian to use
     # metadata_path: /data/ericqu/mptrj_fair/no_isolated_atoms_c12.0/train/metadata.npz
     subset_indices_path: /home/yuejian/project/MLFF-distill/index_list/n<=10atoms.pt
     subset_val_indices_path: /home/yuejian/project/MLFF-distill/index_list/val_natoms<=10.pt
@@ -24,7 +24,7 @@ loss_functions:
       coefficient: 0
   - force_jacs:
       fn: l2mae
-      coefficient: 10
+      coefficient: 200
 
 optim:
   force_jac_sample_size: 4

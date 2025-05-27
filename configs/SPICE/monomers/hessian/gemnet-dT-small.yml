@@ -5,7 +5,7 @@ trainer: src.distill_trainer.DistillTrainer
 
 dataset:
   train:
-    hessian_percent: 1. # 0-1
+    hessian_percent: 0. # 0-1
     teacher_labels_folder: /data/yuejian/MLFF_DIST/data/labels/SPICE_labels/mace_off_large_SpiceMonomers
     # teacher_labels_folder: /data/yuejian/MLFF_DIST/data/labels/SPICE_labels/EScAIP_SpiceMonomers
 
@@ -31,4 +31,4 @@ optim:
   print_memory_usage: False
   vectorize_jacs: True
   energy_distill_coeff: 0
-  finite_differences: False
+  finite_differences: True

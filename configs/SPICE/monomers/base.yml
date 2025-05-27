@@ -1,5 +1,5 @@
 includes:
-  - configs/slurm/premium.yml
+  - configs/slurm/germain.yml
 logger: 
   name: wandb
   project: spice-Energy-mask-hessian

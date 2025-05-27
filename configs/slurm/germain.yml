@@ -1,0 +1,10 @@
+# includes:
+#   - configs/slurm/base.yml
+
+slurm:
+  qos: scavenger
+  partition: scavenger
+  # qos: long
+  # partition: long
+  nodelist: germain
+  time: "167:00:00"

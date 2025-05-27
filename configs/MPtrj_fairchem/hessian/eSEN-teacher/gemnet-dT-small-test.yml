@@ -1,0 +1,4 @@
+includes:
+- configs/MPtrj_fairchem/gemnet-dT-small.yml
+
+trainer: src.test_trainer.TestTrainer
