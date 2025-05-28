@@ -2,7 +2,7 @@ data_root_dir: /data/yuejian/OMol_Whole
 run_dir: /home/yuejian/project/MLFF-distill/runs/esen_md_4M
 account: ocp
 qos: ocp
-mode: LOCAL
+mode: LOCAL # LOCAL, SLURM, or SLURM_DDP
 device: CUDA
 ranks_per_node: 2
 dataloader_workers: 0
