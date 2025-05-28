@@ -1,6 +1,6 @@
 defaults:
   - cluster: ada6000_local
-  # - backbone: eSEN
+  - backbone: eSEN
   - dataset: OMol
   - element_refs: eSEN_omol
   - tasks: eSEN_direct
@@ -26,7 +26,7 @@ job:
     entity: fairchem
     project: uma
 
-starting_checkpoint: /data/yuejian/OMol_Whole/ckpt/esen_md_direct_all.pt
+# starting_checkpoint: /data/ishan-amin/ESEN_checkpoints/esen_omol/esen_md_direct_all.pt
 
 # moe_layer_type: pytorch
 # num_moe_experts: 32
@@ -119,7 +119,7 @@ heads:
     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
 
 runner:
-  _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  _target_: fairchem.core.components.train.train_runner.TrainEvalRunner # NOTE: change this to TRainEval
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   train_eval_unit:
@@ -127,9 +127,12 @@ runner:
     job_config: ${job}
     tasks: ${tasks}
     model:
-      _target_: fairchem.core.units.mlip_unit.mlip_unit.initialize_finetuning_model
-      checkpoint_location: ${starting_checkpoint}
+      _target_: fairchem.core.models.base.HydraModel
+      # NOTE: ishan, change to hydra
+      # checkpoint_location: ${starting_checkpoint} # node: ishan, get rid of checkpoint
+      # add a backbone (follow UMA) # configs/OMol_fairchem_v2/training_4M/backbone/eSEN.yaml
       # overrides: None
+      backbone: ${backbone}
       heads: ${heads}
     optimizer_fn:
       _target_: torch.optim.AdamW
@@ -147,4 +150,13 @@ runner:
     print_every: 10
     clip_grad_norm: 100
     bf16: ${bf16}
-  label_folder: /home/yuejian/project/MLFF-distill/toy_label_dump_debug
+  max_epochs: ${epochs}
+  max_steps: ${steps}
+  evaluate_every_n_steps: 10000
+  callbacks:
+    - _target_: fairchem.core.common.profiler_utils.ProfilerCallback
+      job_config: ${job}
+    - _target_: fairchem.core.components.train.train_runner.TrainCheckpointCallback
+      checkpoint_every_n_steps: 5000
+      max_saved_checkpoints: 5
+
