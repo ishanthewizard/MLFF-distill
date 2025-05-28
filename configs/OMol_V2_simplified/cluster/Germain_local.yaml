@@ -1,4 +1,4 @@
-run_dir: /home/ishan-amin/runs
+run_dir: runs
 nodelist: germain
 partition: gpu
 qos: gpu
