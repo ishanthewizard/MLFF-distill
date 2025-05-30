@@ -1,5 +1,6 @@
 defaults:
-  - cluster: ada6000_local
+  # - cluster: ada6000_local
+  - cluster: ada6000
   # - backbone: eSEN
   - dataset: OMol
   - element_refs: eSEN_omol

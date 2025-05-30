@@ -68,7 +68,7 @@ class TeacherLabelGenerator(Runner):
         logging.info(f"Eval Dataloader size {len(self.eval_dataloader)}")
 
     def run(self) -> None:
-        # TODO: add your label generation logic here
+        # add your label generation code here
         self.record_labels_parallel(self.label_folder, 'train')
         self.record_labels_parallel(self.label_folder, 'val')
     
@@ -104,7 +104,7 @@ class TeacherLabelGenerator(Runner):
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
-        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
         #####################
         ##### Jacobians #####
