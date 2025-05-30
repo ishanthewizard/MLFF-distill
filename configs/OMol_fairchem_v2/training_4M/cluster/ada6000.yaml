@@ -1,16 +1,16 @@
-data_root_dir: /data/yuejian/OMol_Whole
+data_root_dir: /data/yuejian/OMol_subset
 run_dir: /home/yuejian/project/MLFF-distill/runs/esen_md_4M
 account: null
-qos: scavenger
-partition: scavenger
+qos: long
+partition: long
 # qos: gpu
 # partition: gpu
 mode: SLURM
 device: CUDA
-ranks_per_node: 2
+ranks_per_node: 4
 dataloader_workers: 8 # 8
 debug: False
 mem_gb: 50
 cpus_per_task: 2 # 2
-timeout_hr: 1
+timeout_hr: 120
 nodelist: germain

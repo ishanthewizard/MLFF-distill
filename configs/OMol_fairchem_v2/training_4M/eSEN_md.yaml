@@ -28,7 +28,7 @@ job:
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
-    entity: yuejian
+    entity: jianyuelalala # your account name
     project: distill
 
 starting_checkpoint: /data/yuejian/OMol_Whole/ckpt/esen_md_direct_all.pt
@@ -124,8 +124,8 @@ heads:
     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
 
 runner:
-  # _target_: src_v2.labels_trainer.TeacherLabelGenerator
-  _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
+  _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  # _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   train_eval_unit:
@@ -153,4 +153,4 @@ runner:
     print_every: 10
     clip_grad_norm: 100
     bf16: ${bf16}
-  label_folder: /home/yuejian/project/MLFF-distill/toy_label_dump_debug
+  label_folder: ${dataset.omol_train.src}/labels

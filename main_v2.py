@@ -13,10 +13,5 @@ if __name__ == "__main__":
     from src_v2.cliv2 import main
     import os
     # os.environ["WANDB_MODE"] = "disabled"
-    # import torch.backends.cudnn as cudnn
 
-    # print(cudnn)                   # e.g. <module 'torch.backends.cudnn' (built-in)>
-    # print(type(cudnn))             # <class 'module'>
-    # print(dir(cudnn))              # list of all attributes
-    
     main()

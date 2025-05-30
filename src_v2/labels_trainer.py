@@ -54,6 +54,13 @@ class TeacherLabelGenerator(Runner):
         self.device = self.train_eval_unit.model.device
         
         self.label_folder = label_folder
+        # check if directory exists, if not create it, self.label_folder is a directory
+
+        if not os.path.exists(self.label_folder):
+            os.makedirs(self.label_folder, exist_ok=True)
+
+                
+        
         print(next(iter(self.train_dataloader)))
         # make a snapshot of the sampled indices of current rank, will dump it to a file
         self.indices_list_of_current_rank = list(self.train_dataloader.batch_sampler)
@@ -104,7 +111,7 @@ class TeacherLabelGenerator(Runner):
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
-        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
         #####################
         ##### Jacobians #####
