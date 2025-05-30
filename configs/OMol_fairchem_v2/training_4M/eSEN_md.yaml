@@ -14,18 +14,22 @@ job:
     ranks_per_node: ${cluster.ranks_per_node}
     num_nodes: 1
     slurm:
-      account: ${cluster.account}
+      # account: ${cluster.account}
       qos: ${cluster.qos}
       mem_gb: ${cluster.mem_gb}
       cpus_per_task: ${cluster.cpus_per_task}
+
+      partition: ${cluster.partition}
+      timeout_hr: ${cluster.timeout_hr}
+      nodelist: ${cluster.nodelist}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
   run_name: eSEN_label
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
-    entity: fairchem
-    project: uma
+    entity: yuejian
+    project: distill
 
 starting_checkpoint: /data/yuejian/OMol_Whole/ckpt/esen_md_direct_all.pt
 
@@ -120,7 +124,8 @@ heads:
     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
 
 runner:
-  _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  # _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   train_eval_unit:
