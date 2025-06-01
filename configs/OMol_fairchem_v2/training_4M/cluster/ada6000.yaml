@@ -7,10 +7,10 @@ partition: long
 # partition: gpu
 mode: SLURM
 device: CUDA
-ranks_per_node: 4
+ranks_per_node: 6
 dataloader_workers: 8 # 8
 debug: False
 mem_gb: 50
 cpus_per_task: 2 # 2
 timeout_hr: 120
-nodelist: germain
+nodelist: escher

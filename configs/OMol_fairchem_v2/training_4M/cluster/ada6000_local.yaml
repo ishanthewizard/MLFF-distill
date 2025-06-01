@@ -5,7 +5,7 @@ qos: ocp
 partition: ocp
 mode: LOCAL # LOCAL, SLURM, or SLURM_DDP
 device: CUDA
-ranks_per_node: 1
+ranks_per_node: 9
 dataloader_workers: 0
 debug: False
 mem_gb: 0

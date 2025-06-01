@@ -4,8 +4,8 @@ account: ocp
 qos: ocp
 mode: LOCAL # LOCAL, SLURM, or SLURM_DDP
 device: CUDA
-ranks_per_node: 2
-dataloader_workers: 0
+ranks_per_node: 1
+dataloader_workers: 2
 debug: False
 mem_gb: 0
 cpus_per_task: 2

@@ -23,8 +23,8 @@ job:
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
-    entity: fairchem
-    project: uma
+    entity: jianyuelalala
+    project: distill_omol
 
 starting_checkpoint: /data/yuejian/OMol_Whole/ckpt/esen_md_direct_all.pt
 
@@ -120,7 +120,7 @@ heads:
 
 runner:
   # _target_: src_v2.labels_trainer.TeacherLabelGenerator
-  _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  _target_: src_v2.distill_trainer.distill_trainer
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   train_eval_unit:

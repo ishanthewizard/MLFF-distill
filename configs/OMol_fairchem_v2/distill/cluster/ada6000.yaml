@@ -4,7 +4,7 @@ account: ocp
 qos: ocp
 mode: SLURM
 device: CUDA
-ranks_per_node: 2
+ranks_per_node: 1
 dataloader_workers: 8
 debug: False
 mem_gb: 0
