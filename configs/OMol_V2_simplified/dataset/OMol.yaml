@@ -23,10 +23,10 @@ omol_train:
 omol_val:
   splits:
     val:
-      sample_n: 20000
+      sample_n: 200
       src: ${dataset.omol_path_germain}/val
     val_metal_complexes:
-      sample_n: 20000
+      sample_n: 200
       src: ${dataset.omol_path_germain}/val
       subset_to:
         - op: in
@@ -34,7 +34,7 @@ omol_val:
           rhv:
             - metal_complexes
     val_electrolytes:
-      sample_n: 20000
+      sample_n: 200
       src: ${dataset.omol_path_germain}/val
       subset_to:
         - op: in
@@ -42,7 +42,7 @@ omol_val:
           rhv:
             - elytes
     val_biomolecules:
-      sample_n: 20000
+      sample_n: 200
       src: ${dataset.omol_path_germain}/val
       subset_to:
         - op: in
@@ -57,7 +57,7 @@ omol_val:
           rhv:
             - spice
     val_neutralorganics:
-      sample_n: 20000
+      sample_n: 200
       src: ${dataset.omol_path_germain}/val
       subset_to:
         - op: in

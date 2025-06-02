@@ -1,0 +1,41 @@
+# omol_path_germain: /data/ishan-amin/OMOL
+
+omol_train:
+  splits:
+    train:
+      src: tester_data/solvated/train
+  format: ase_db
+  a2g_args:
+    # molecule_cell_size: 120.0
+    r_energy: True
+    r_forces: True
+    # r_data_keys: ['spin', 'charge']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    energy: omol_energy
+    forces: ${omol_forces_key}
+  transforms:
+    common_transform:
+      dataset_name: omol
+
+omol_val:
+  splits:
+    val:
+      src: tester_data/solvated/val
+  format: ase_db
+  a2g_args:
+    # molecule_cell_size: 120.0
+    r_energy: True
+    r_forces: True
+    # r_data_keys: ['spin', 'charge']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    energy: omol_energy
+    forces: ${omol_forces_key}
+  transforms:
+    common_transform:
+      dataset_name: omol
