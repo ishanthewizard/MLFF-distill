@@ -16,6 +16,7 @@ import lmdb
 from tqdm import tqdm
 import contextlib
 from typing import TYPE_CHECKING, Optional, Union
+from abc import abstractmethod,ABC
 
 import torch
 import torch.distributed.checkpoint as dcp
@@ -52,7 +53,7 @@ class distill_trainer(TrainEvalRunner):
         max_steps: int | None = None,
         save_inference_ckpt: bool = True,
     ):  
-        super.__init__(
+        super().__init__(
                     train_dataloader=train_dataloader,
                     eval_dataloader=eval_dataloader,
                     train_eval_unit=train_eval_unit,
@@ -63,8 +64,10 @@ class distill_trainer(TrainEvalRunner):
                     save_inference_ckpt=save_inference_ckpt,
         )
         
-        
         self.train_dataloader = train_dataloader
+        
+        debug_dataset = self.train_dataloader.dataset
+        breakpoint()
         self.eval_dataloader = eval_dataloader
         self.train_eval_unit = train_eval_unit
         self.device = self.train_eval_unit.model.device

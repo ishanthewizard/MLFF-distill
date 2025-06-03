@@ -33,7 +33,7 @@ starting_checkpoint: /data/yuejian/OMol_Whole/ckpt/esen_md_direct_all.pt
 max_neighbors: 30
 cutoff_radius: 6
 epochs: null
-steps: 2080000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
+steps: 1000000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 max_atoms: 350 # important
 bf16: True
 cpu_graph: True
@@ -71,15 +71,25 @@ exclude_keys: [
   "total_charge", # spice
 ]
 
+# train_dataset:
+#   _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
+#   config: ${dataset.omol_train}
+
 train_dataset:
-  _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
-  config: ${dataset.omol_train}
-
-
+  _target_: src_v2.distill_datasets.TeachingDataset
+  main_dataset:
+    _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
+    config: ${dataset.omol_train}
+  
+  # expand each teacher dataset below, user responsibility
+  teach_force_dataset: null
+  force_jac_dataset: ${dataset.omol_train_force_jac}
+  final_node_feature_dataset: null
 
 val_dataset:
   _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
   config: ${dataset.omol_val}
+  
 
 
 train_dataloader:
@@ -119,8 +129,8 @@ heads:
     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
 
 runner:
-  # _target_: src_v2.labels_trainer.TeacherLabelGenerator
   _target_: src_v2.distill_trainer.distill_trainer
+  # _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   train_eval_unit:
@@ -137,15 +147,26 @@ runner:
       _partial_: true
       lr: 8e-4
       weight_decay: 1e-3
-    cosine_lr_scheduler_fn:
+    cosine_lr_scheduler_fn: 
       _target_: fairchem.core.units.mlip_unit.mlip_unit._get_consine_lr_scheduler
       _partial_: true
       warmup_factor: 0.2
-      warmup_epochs: 0.01
-      lr_min_factor: 0.01
+      warmup_epochs: 1 # 0.01
+      lr_min_factor: 1 # 0.01
       epochs: ${epochs}
       steps: ${steps}
     print_every: 10
     clip_grad_norm: 100
     bf16: ${bf16}
-  label_folder: /home/yuejian/project/MLFF-distill/toy_label_dump_debug
+  max_epochs: ${epochs}
+  max_steps: ${steps}
+  evaluate_every_n_steps: 5
+  callbacks:
+    - _target_: fairchem.core.common.profiler_utils.ProfilerCallback
+      job_config: ${job}
+    - _target_: fairchem.core.components.train.train_runner.TrainCheckpointCallback
+      checkpoint_every_n_steps: 5000
+      max_saved_checkpoints: 5
+  save_inference_ckpt: True
+
+  # label_folder: /home/yuejian/project/MLFF-distill/toy_label_dump_debug
