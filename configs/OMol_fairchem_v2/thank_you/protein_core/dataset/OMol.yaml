@@ -17,7 +17,7 @@ omol_train:
       dataset_name: omol
 
 omol_val:
-  src: ${cluster.data_root_dir}/protein_interface_val
+  src: ${cluster.data_root_dir}/protein_core_val
   format: ase_db
   a2g_args:
     molecule_cell_size: 120.0

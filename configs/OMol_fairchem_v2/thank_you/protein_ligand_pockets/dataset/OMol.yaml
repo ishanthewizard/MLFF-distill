@@ -1,5 +1,5 @@
 omol_train:
-  src: ${cluster.data_root_dir}/protein_core_train_4M
+  src: ${cluster.data_root_dir}/protein_ligand_pockets_train_4M
   format: ase_db
   a2g_args:
     molecule_cell_size: 120.0
@@ -17,7 +17,7 @@ omol_train:
       dataset_name: omol
 
 omol_val:
-  src: ${cluster.data_root_dir}/protein_interface_val
+  src: ${cluster.data_root_dir}/protein_ligand_pockets_val
   format: ase_db
   a2g_args:
     molecule_cell_size: 120.0

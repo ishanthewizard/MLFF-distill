@@ -1,6 +1,6 @@
 defaults:
-  - cluster: ada6000_local
-  # - cluster: fair_cluster
+  # - cluster: ada6000_local
+  - cluster: fair_cluster
   # - backbone: eSEN
   - dataset: OMol
   - element_refs: eSEN_omol
@@ -12,7 +12,7 @@ job:
   scheduler:
     mode: ${cluster.mode}
     ranks_per_node: ${cluster.ranks_per_node}
-    num_nodes: 1
+    num_nodes: 32
     slurm:
       # account: ${cluster.account}
       qos: ${cluster.qos}
@@ -33,7 +33,7 @@ job:
     entity: ericqu # your account name
     project: distill
 
-starting_checkpoint: /data/yuejian/OMol_Whole/ckpt/esen_md_direct_all.pt
+starting_checkpoint: /private/home/ericqu/MLFF-distill/esen_md_direct_all.pt
 
 # moe_layer_type: pytorch
 # num_moe_experts: 32

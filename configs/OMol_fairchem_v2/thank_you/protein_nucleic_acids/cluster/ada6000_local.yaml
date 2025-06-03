@@ -12,5 +12,3 @@ mem_gb: 0
 cpus_per_task: 2
 nodelist: germain
 timeout_hr: 1
-constraint: "volta32gb"
-exclude: "learnfair2242,learnfair2109,learnfair1336,learnfair2159,learnfair2150,learnfair2153"

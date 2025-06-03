@@ -330,10 +330,12 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
 
     # Combine all perturbed batches into one large batch
     if not looped:
+        # print("herere")
         large_batch = collater(perturbed_batches)
         # Perform forward pass for all perturbed batches at once
         perturbed_forces = forward(large_batch)['forces']
     else:
+        # print("here")
         perturbed_forces = []
         for batch in perturbed_batches:
             # perturbed_output = forward(batch)
