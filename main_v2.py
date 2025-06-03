@@ -12,6 +12,6 @@ if __name__ == "__main__":
     sys.path.append("./")
     from src_v2.cliv2 import main
     import os
-    # os.environ["WANDB_MODE"] = "disabled"
+    os.environ["WANDB_MODE"] = "disabled"
 
     main()

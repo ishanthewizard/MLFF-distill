@@ -102,6 +102,12 @@ class SlurmConfig:
     nodelist: Optional[str] = (
         None  # omegaconf in python 3.9 does not backport annotations
     )
+    constraint: Optional[str] = (
+        None  # omegaconf in python 3.9 does not backport annotations
+    )
+    exclude: Optional[str] = (
+        None  # omegaconf in python 3.9 does not backport annotations
+    )
 
 
 @dataclass
@@ -453,6 +459,8 @@ def main(
             slurm_qos=scheduler_cfg.slurm.qos,
             slurm_account=scheduler_cfg.slurm.account,
             slurm_nodelist=scheduler_cfg.slurm.nodelist,
+            slurm_constraint=scheduler_cfg.slurm.constraint,
+            slurm_exclude=scheduler_cfg.slurm.exclude,
         )
         if scheduler_cfg.num_array_jobs == 1:
             job = executor.submit(Submitit(), cfg)

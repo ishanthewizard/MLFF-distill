@@ -120,9 +120,9 @@ class TeacherLabelGenerator(Runner):
         def get_seperated_forces(batch):
             all_forces = self.train_eval_unit.model(batch)['forces']['forces']
             # sanity check
-            print(all_forces.shape)
-            print("batch.force ", batch.forces.shape)  
-            print("force mae",torch.linalg.vector_norm(all_forces - ((batch.forces)/1.433569), ord=2, dim=-1).mean())
+            # print(all_forces.shape)
+            # print("batch.force ", batch.forces.shape)  
+            # print("force mae",torch.linalg.vector_norm(all_forces - ((batch.forces)/1.433569), ord=2, dim=-1).mean())
             
             natoms = batch.natoms
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]

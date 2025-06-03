@@ -4,7 +4,7 @@
 # label generation
 
 python main_v2.py \
--c /home/yuejian/project/MLFF-distill/configs/OMol_fairchem_v2/training_4M/eSEN_md.yaml
+-c /private/home/ericqu/MLFF-distill/configs/OMol_fairchem_v2/training_4M/eSEN_md.yaml
 
 # model training, distillation
 
