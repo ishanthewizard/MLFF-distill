@@ -1,5 +1,5 @@
 defaults:
-  - cluster: Germain_local
+  - cluster: Germain
   - backbone: eSEN_small
   - dataset: OMol
   - element_refs: uma_v1_hof_lin_refs
@@ -21,7 +21,7 @@ job:
       cpus_per_task: ${cluster.cpus_per_task}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
-  run_name: eSEN_train_4M
+  run_name: eSEN_solvated_hessian
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
@@ -38,6 +38,7 @@ max_atoms: 1000
 normalizer_rmsd: 1.423
 direct_forces_coef: 30
 omol_energy_coef: 30
+hessian_coef: 10
 
 # regress_stress: False
 # direct_forces: True
