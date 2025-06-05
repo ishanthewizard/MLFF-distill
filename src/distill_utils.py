@@ -235,6 +235,7 @@ def get_force_jac_loss_masked(out, batch, num_samples, mask, should_mask, looped
         offset_samples[:, 0] += cumulative_sums[i]
         # Vectorized assignment to grad_outputs
         grad_outputs[torch.arange(samples.shape[0]), offset_samples[:, 0], offset_samples[:, 1]] = 1
+    # breakpoint()
     # Compute the jacobian using grad_outputs
     if not finite_differences:
         jac = get_jacobian(forces, batch.pos, grad_outputs, create_graph=True, looped=looped)

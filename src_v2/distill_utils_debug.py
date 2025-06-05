@@ -4,6 +4,7 @@ import time
 import logging
 # from fairchem.core.common.data_parallel import  OCPCollater
 from fairchem.core.common import distutils
+# from copy import deepcopy
 
 
 def create_hessian_mask(dataset, mask_out_percentage=0.2):
@@ -310,7 +311,7 @@ def get_energy_jac_loss(out, batch, energy_std):
     
     return loss
     
-def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collater, looped=False, h=0.0001): 
+def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collater, looped=False, h=10): 
     # currently a right difference scheme, not a central difference scheme.
     # Store original positions
     original_pos = batch.pos.clone()
@@ -320,16 +321,19 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
 
     # Total number of atoms
     total_num_atoms = batch.pos.shape[0]
+    # breakpoint()
     for output in grad_outputs:
         # print("OUTPUT SHAPE", output.shape)
         # Create forward perturbation
+        # perturbed_batch_forward = batch.clone()
         perturbed_batch_forward = batch.clone()
         # perturbed_batch_forward.pos = (original_pos + h * output)
+        # breakpoint()
         perturbed_batch_forward.pos = (original_pos + h * output).detach()
         # print("PERTURBED BATCH FORWARD SHAPE", perturbed_batch_forward.pos.shape)
         # Append both perturbed batches to the list
         perturbed_batches.append(perturbed_batch_forward)
-
+    # breakpoint()
     # Combine all perturbed batches into one large batch
     if not looped:
         # print("herere")
@@ -347,6 +351,7 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
             # print("PERTURBED OUTPUT", perturbed_output.keys())
             perturbed_forces.append(forward(batch)['forces']['forces'].detach())
         perturbed_forces = torch.cat(perturbed_forces, dim=0)
+        # breakpoint()
     # Split the large batch's forces into individual forward and backward forces
     hessian_columns = []
     for i in range(len(perturbed_batches)):
@@ -354,8 +359,9 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
         forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
         hessian_col = (forward_force - forces.detach()) / h
         # print("HESSIAN", hessian_col.shape)
+        # print("hessian_col",hessian_col)
         hessian_columns.append(hessian_col)
-
+    # breakpoint()
     # Stack columns to form the Jacobian matrix
     #technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
     # print("HESSIAN SHAPE", torch.stack(hessian_columns, dim=0).shape)

@@ -1,4 +1,6 @@
 omol_train:
+  # splits:
+  #   train:
   src: ${cluster.data_root_dir}/toy_train
   format: ase_db
   a2g_args:
@@ -16,18 +18,82 @@ omol_train:
     common_transform:
       dataset_name: omol
 
-omol_train_force_jac:
+omol_force_jac:
   _target_: src_v2.distill_datasets.LmdbDataset
   folder_path: ${dataset.omol_train.src}/labels_final/force_jacobians
 
+# omol_val:
+#   src: ${cluster.data_root_dir}/toy_val
+#   format: ase_db
+#   a2g_args:
+#     molecule_cell_size: 120.0
+#     r_energy: True
+#     r_forces: True
+#     r_data_keys: ['spin', 'charge','data_id']
+#     r_edges: ${cpu_graph}
+#     radius: ${cutoff_radius}
+#     max_neigh: ${max_neighbors}
+#   key_mapping:
+#     # energy: omol_energy
+#     forces: ${omol_forces_key}
+#   transforms:
+#     common_transform:
+#       dataset_name: omol
+
 omol_val:
-  src: ${cluster.data_root_dir}/toy_val
+  splits:
+    val:
+      sample_n: 40
+      src: ${cluster.data_root_dir}/toy_val
+    # val_metal_complexes:
+    #   sample_n: 20000
+    #   src: ${dataset.omol_path_germain}/val
+    #   subset_to:
+    #     - op: in
+    #       metadata_key: data_ids
+    #       rhv:
+    #         - metal_complexes
+    # val_electrolytes:
+    #   sample_n: 20000
+    #   src: ${dataset.omol_path_germain}/val
+    #   subset_to:
+    #     - op: in
+    #       metadata_key: data_ids
+    #       rhv:
+    #         - elytes
+    # val_biomolecules:
+    #   sample_n: 20000
+    #   src: ${dataset.omol_path_germain}/val
+    #   subset_to:
+    #     - op: in
+    #       metadata_key: data_ids
+    #       rhv:
+    #         - biomolecules
+    # val_spice:
+    #   src: ${dataset.omol_path_germain}/val
+    #   subset_to:
+    #     - op: in
+    #       metadata_key: data_ids
+    #       rhv:
+    #         - spice
+    # val_neutralorganics:
+    #   sample_n: 20000
+    #   src: ${dataset.omol_path_germain}/val
+    #   subset_to:
+    #     - op: in
+    #       metadata_key: data_ids
+    #       rhv:
+    #         - ani2x
+    #         - orbnet_denali
+    #         - geom_orca6
+    #         - trans1x
+    #         - rgd
   format: ase_db
   a2g_args:
     molecule_cell_size: 120.0
     r_energy: True
     r_forces: True
-    r_data_keys: ['spin', 'charge','data_id']
+    r_data_keys: ['spin', 'charge']
     r_edges: ${cpu_graph}
     radius: ${cutoff_radius}
     max_neigh: ${max_neighbors}

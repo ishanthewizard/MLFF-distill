@@ -65,14 +65,19 @@ class distill_trainer(TrainEvalRunner):
         )
         
         self.train_dataloader = train_dataloader
-        
-        debug_dataset = self.train_dataloader.dataset
-        breakpoint()
         self.eval_dataloader = eval_dataloader
+        # temporarily set the dataset names to 'omol' for compatibility with metrics
+        self.eval_dataloader.dataset.dataset_names = ['omol']
+        
         self.train_eval_unit = train_eval_unit
+        
+        # breakpoint()
         self.device = self.train_eval_unit.model.device
         
+        
         # self.label_folder = label_folder
-        print(next(iter(self.train_dataloader)))
+        # print(next(iter(self.train_dataloader)))
         # make a snapshot of the sampled indices of current rank, will dump it to a file
         self.indices_list_of_current_rank = list(self.train_dataloader.batch_sampler)
+    
+    

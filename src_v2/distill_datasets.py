@@ -8,6 +8,8 @@ import logging
 from torch.utils.data import Sampler
 from tqdm import tqdm
 import shutil
+import os
+import re
 
 
 class TeachingDataset(Dataset):
@@ -24,6 +26,7 @@ class TeachingDataset(Dataset):
             logging.info("WARNING: FINAL NODE FEATURE DATASET DIFFERENT SIZE")
             raise Exception("DIFF SIZE!!")
         self.main_dataset = main_dataset
+        # self.dataset_names = ['omol']
         self.teach_force_dataset = teach_force_dataset
         self.force_jac_dataset = force_jac_dataset 
 
@@ -127,7 +130,7 @@ def merge_lmdb_shards(input_dir, output_path, map_size=1099511627776 * 2):
     idx = 0
     for shard in tqdm(shard_dirs, desc="Merging shards"):
         init_idx = idx
-        print(f"Processing {shard},starting index: {init_idx}")
+        # print(f"Processing {shard},starting index: {init_idx}")
         env_in = lmdb.open(shard, readonly=True, lock=False)
         with env_in.begin() as txn_in, env_out.begin(write=True) as txn_out:
             cursor = txn_in.cursor()
@@ -144,7 +147,39 @@ def merge_lmdb_shards(input_dir, output_path, map_size=1099511627776 * 2):
     print(f" Done. Total entries merged: {idx}")
     print(f" Output LMDB saved at: {output_path}")
 
+def merge_indices_pt_shards(input_dir, output_path):
+    """
+    Merge multiple PyTorch tensor files (shards) into a single tensor file.
 
+    Args:
+        input_dir (str): Directory containing shard files (e.g., "/path_to", containing, data.0000.pt, data.0001.pt, ...).
+        output_path (str): Path to the output tensor file (e.g., '/path_to/merged_data.pt').
+    """
+    # List all files in the directory
+    all_files = os.listdir(input_dir)  # or replace '.' with your path
+
+    # Filter files that start with 'train_indices_' and end with '.pt'
+    train_files = [f for f in all_files if f.startswith('train_indices_') and f.endswith('.pt')]
+    val_files = [f for f in all_files if f.startswith('val_indices_') and f.endswith('.pt')]
+    # Extract numeric index using regex and sort based on it
+    sorted_train_files = sorted(train_files, key=lambda x: int(re.search(r'(\d+)', x).group()))
+    sorted_val_files = sorted(val_files, key=lambda x: int(re.search(r'(\d+)', x).group()))
+
+    # Output result
+    train_set_idx = []
+    for f in sorted_train_files:
+        path_to_f = os.path.join(input_dir, f)
+        idx_list = torch.load(path_to_f,weights_only=False)
+        train_set_idx+= [ idx for sublist in idx_list for idx in sublist]  # Flatten the list of lists
+    
+    val_set_idx = []
+    for f in sorted_val_files:
+        path_to_f = os.path.join(input_dir, f)
+        idx_list = torch.load(path_to_f,weights_only=False)
+        val_set_idx+= [ idx for sublist in idx_list for idx in sublist]  # Flatten the list of lists
+    
+    torch.save(train_set_idx, os.path.join(output_path, "train_indices.pt"))
+    torch.save(val_set_idx, os.path.join(output_path, "val_indices.pt"))
 
 if __name__ == "__main__":
     pass

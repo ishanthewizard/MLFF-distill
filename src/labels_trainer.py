@@ -141,7 +141,7 @@ class LabelsTrainer(OCPTrainer):
         # Function to calculate forces
         def get_seperated_forces(batch):
             # with torch.no_grad():
-            all_forces = self._forward(batch)['forces']
+            all_forces = self._forward(batch)['forces']          
             natoms = batch.natoms
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
