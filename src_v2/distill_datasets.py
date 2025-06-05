@@ -42,7 +42,7 @@ class HessianSampler():
     
     def sample_hessian(self, samples, num_atoms, force_jacs):
         force_jacs = force_jacs.reshape(num_atoms, 3, num_atoms, 3) # IMPORTANT: Assumes no masking
-        force_jacs = force_jacs[samples[:, 0], samples[:, 1], :]# num_samples, num_atoms, 3
+        force_jacs = force_jacs[samples[:, 0], samples[:, 1], :, :]# num_samples, num_atoms, 3
         force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1) # num_atoms, num_samples * 3 
         
         return force_jacs
@@ -69,7 +69,7 @@ class CombinedDataset(AseDBDataset):
         # print("main_batch",main_batch)
         num_atoms = main_batch.natoms
         teacher_forces = self.teacher_force_dataset[idx].reshape(num_atoms, 3)
-        num_samples = 2
+        num_samples = 1
         if self.hessian_dataset:
             # force_jacs  = self.force_jac_dataset[idx].reshape(num_free_atoms, 3, num_atoms, 3) 
             force_jacs = self.hessian_dataset[idx] # DON'T RESHAPE! We'll do it later, easier for atoms of different lengths

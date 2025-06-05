@@ -29,7 +29,6 @@ def print_cuda_memory_usage():
 
 def get_teacher_jacobian(batch, vectorize=True, should_mask=True, approximation="disabled", forward=None, collater=None, device="cuda"):
     device = device
-    # breakpoint()
     natoms = batch.natoms
     total_num_atoms = sum(batch.natoms)
     cumulative_sums = [0] + torch.cumsum(natoms, 0).tolist()
@@ -48,12 +47,10 @@ def get_teacher_jacobian(batch, vectorize=True, should_mask=True, approximation=
         offset_indices = torch.nonzero(mask_per_mol[i]).flatten() + cumulative_sums[i]
         assert len(offset_indices) == free_atoms_in_mol
         grad_outputs[indices, :, offset_indices, :] = torch.eye(3)[None, :, :].to(device)
-    # breakpoint()
     grad_outputs = grad_outputs.reshape(max_free_atom_per_mol * 3, total_num_atoms, 3)
     if approximation == "forward":
         # Forward Difference
         forces = forward(batch)['forces']['forces'].detach()
-        # breakpoint()
         # print("device", forces.device, batch.pos.device,grad_outputs.device)
         jac = get_jacobian_finite_difference(forces, batch, grad_outputs, forward=forward, collater = collater, looped=(not vectorize))
         jac = jac.reshape(max_free_atom_per_mol, 3, total_num_atoms, 3)
@@ -281,7 +278,6 @@ def get_force_jac_loss_masked(out, batch, num_samples, mask, should_mask, looped
         if hessian_mask.sum() > 0: # only count in the no masked atoms
             valid_masked_natoms.append(batch.natoms[i])
     
-    # breakpoint()
     valid_losses = [loss * 1e-8 if true_jac.abs().max().item() > 10000 else loss for loss, true_jac in zip(losses, true_jacs_per_mol)]  # filter weird hessians
 
     loss = sum(valid_losses)
@@ -346,7 +342,6 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
     # Split the large batch's forces into individual forward and backward forces
     hessian_columns = []
     for i in range(len(perturbed_batches)):
-        # breakpoint()
         forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
         hessian_col = (forward_force - forces.detach()) / h
         # print("HESSIAN", hessian_col.shape)

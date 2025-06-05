@@ -5,8 +5,8 @@ omol_train:
   splits:
     train:
       src: tester_data/solvated/train
-  format: ase_db
-  # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
+  format: src_v2.distill_datasets.CombinedDatasetTrain
+  teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
   a2g_args:
     # molecule_cell_size: 120.0
     r_energy: True
@@ -26,8 +26,8 @@ omol_val:
   splits:
     val:
       src: tester_data/solvated/val
-  format: ase_db
-  # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
+  format: src_v2.distill_datasets.CombinedDatasetVal
+  teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
   a2g_args:
     # molecule_cell_size: 120.0
     r_energy: True
