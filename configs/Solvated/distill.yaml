@@ -1,44 +1,21 @@
 defaults:
-  - /eSEN_md_train   # “/” means: from the root of conf/, load eSEN_md_train.yaml
-  - _self_           # then merge whatever is in THIS file
+  - /eSEN_md_train
+  - override tasks: hessian_task
 
 job:
-  run_name:  Solvated_distill
+  run_name: Solvated_distill
+
+hessian_coef:       60
+num_hessian_samples: 1
+
+dataset:
+  omol_train:
+    format:                 src_v2.distill_datasets.CombinedDatasetTrain
+    teacher_labels_folder:  data/labels/SPICE_labels/EScAIP_SpiceAminos
+    num_hessian_samples:    ${num_hessian_samples}
 
 runner:
   train_eval_unit:
     model:
-      _target_: fairchem.core.models.base.HydraModel
-
-
-hessian_coef: 60
-num_hessian_samples: 1
-
-omol_train:
-  format: src_v2.distill_datasets.CombinedDatasetTrain
-  teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos
-  num_hessian_samples: ${num_hessian_samples}
-
-
-tasks+:
-  - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
-    name: forces_jac
-    level: atom
-    property: forces_jac
-    train_on_free_atoms: True
-    eval_on_free_atoms: True
-    loss_fn:
-      _target_: fairchem.core.modules.loss.DDPMTLoss
-      loss_fn:
-        _target_: fairchem.core.modules.loss.L2NormLoss
-      reduction: per_structure
-      coefficient: ${hessian_coef}
-    out_spec:
-      dim: [3]
-      dtype: float32
-    normalizer:
-      _target_: fairchem.core.modules.normalization.normalizer.Normalizer
-      mean: 0.0
-      rmsd: ${normalizer_rmsd}
-    datasets:
-      - omol
+      _target_: src_v2.model_wrapper.HessianModelWrapper
+    

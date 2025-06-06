@@ -55,7 +55,7 @@ class CombinedDataset(AseDBDataset):
             self.hessian_dataset = None
 
     def __getitem__(self, idx):
-        pid = os.getpid()
+        # pid = os.getpid()
         # 1) Get the main AtomicData (always on CPU at this point)
         main_batch = super().__getitem__(idx)
 

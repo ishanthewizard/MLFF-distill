@@ -12,7 +12,7 @@ import argparse
 import os
 import logging
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from submitit import AutoExecutor
 from fairchem.core._cli import (
     SchedulerType,
@@ -220,5 +220,6 @@ def main(
 
 
 if __name__ == "__main__":
-    mp.set_start_method("spawn", force=True)
+    # mp.set_start_method("spawn", force=True)
+    OmegaConf.register_new_resolver("merge", lambda x, y : x + y)
     main()
