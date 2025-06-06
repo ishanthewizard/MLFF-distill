@@ -5,7 +5,7 @@ qos: gpu
 mode: SLURM
 device: CUDA
 ranks_per_node: 2
-dataloader_workers: 9
+dataloader_workers: 0
 timeout_hr: 12
 debug: False
 mem_gb: 50

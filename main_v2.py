@@ -34,6 +34,7 @@ from fairchem.core._cli import (
 )
 from omegaconf import OmegaConf
 from fairchem.core.common import distutils
+import multiprocessing as mp
 
 
 @dataclass
@@ -219,4 +220,5 @@ def main(
 
 
 if __name__ == "__main__":
+    mp.set_start_method("spawn", force=True)
     main()
