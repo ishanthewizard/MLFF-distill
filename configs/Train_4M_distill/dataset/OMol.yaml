@@ -4,9 +4,9 @@ teacher_labels_folder: /home/ishan-amin/MLFF-distill/data/labels/SPICE_labels/ES
 omol_train:
   splits:
     train:
-      src: /data/ishan-amin/OMOL/TOY/solvated/train
+      src: /data/ishan-amin/OMOL/4M/subsets/OMol_subset/OMol_subset/protein_core_train_4M
   format: src_v2.distill_datasets.CombinedDatasetTrain
-  teacher_labels_folder: /data/ishan-amin/OMOL/TOY/labels/EScAIP_SPiceAminos #${teacher_labels_folder}
+  teacher_labels_folder: /data/ishan-amin/OMOL/4M/subsets/OMol_subset_label_finite_difference/protein_core_train_4M/final_labels #${teacher_labels_folder}
   num_hessian_samples: 1
   a2g_args:
     # molecule_cell_size: 120.0
@@ -26,9 +26,9 @@ omol_train:
 omol_val:
   splits:
     val:
-      src: /data/ishan-amin/OMOL/TOY/solvated/val
+      src: /data/ishan-amin/OMOL/4M/subsets/OMol_subset/OMol_subset/protein_core_val
   format: src_v2.distill_datasets.CombinedDatasetVal
-  teacher_labels_folder: /data/ishan-amin/OMOL/TOY/labels/EScAIP_SPiceAminos #${teacher_labels_folder}
+  teacher_labels_folder: /data/ishan-amin/OMOL/4M/subsets/OMol_subset_label_finite_difference/protein_core_train_4M/final_labels #${teacher_labels_folder}
   a2g_args:
     # molecule_cell_size: 120.0
     r_energy: True
