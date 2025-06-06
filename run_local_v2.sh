@@ -4,6 +4,10 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate fairchem_V2
 
+############# find lithium
+# python draft/elytes.py
+
+
 ############# label generation
 
 # python main_v2.py \
@@ -12,13 +16,13 @@ conda activate fairchem_V2
 
 ############# label merging
 
-python draft/collate_hessian_results/merging.py \
---subset_root /data/ericqu/OMol_subset/test
+# python draft/collate_hessian_results/merging.py \
+# --subset_root /data/ericqu/OMol_subset/test
 
 ############# label sorting
 
-# python draft/collate_hessian_results/sorting.py \
-# --subset_root /data/ericqu/OMol_subset/test
+python draft/collate_hessian_results/sorting.py \
+--subset_root /data/ericqu/OMol_subset/test
 
 
 ############# model training, distillation
