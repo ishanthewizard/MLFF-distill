@@ -10,6 +10,7 @@ import os
 import ase
 from fairchem.core.common.registry import registry
 
+
 class HessianSampler:
     def sample_with_mask(self, num_samples, mask):
         assert num_samples <= len(mask), "System too small for the number of samples."
@@ -30,76 +31,7 @@ class HessianSampler:
         force_jacs = force_jacs[samples[:, 0], samples[:, 1], :, :]  # (num_samples, num_atoms, 3)
         force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1)  # (num_atoms, num_samples*3)
         return force_jacs
-
-class SimpleDataset(Dataset):
-    def __init__(self, folder_path, dtype=np.float32):
-        self.folder_path = folder_path
-        self.dtype = dtype
-
-        # 1) Collect all .lmdb paths
-        self.db_paths = sorted([
-            os.path.join(folder_path, f)
-            for f in os.listdir(folder_path)
-            if f.endswith('.lmdb')
-        ])
-        assert len(self.db_paths) > 0, "No LMDB files found in the specified folder."
-
-        # 2) Compute cumulative entry counts by opening+closing a temporary env
-        self._keylen_cumulative = []
-        total_entries = 0
-        for db_path in self.db_paths:
-            tmp_env = lmdb.open(db_path, readonly=True, lock=False)
-            with tmp_env.begin() as txn:
-                num_entries = txn.stat()['entries']
-            tmp_env.close()
-            total_entries += num_entries
-            self._keylen_cumulative.append(total_entries)
-
-        # print(f"[SimpleDataset __init__] Total entries = {total_entries}", flush=True)
-
-        # We do NOT open real LMDB Envs here.  Each worker will do it lazily.
-        self.envs = None
-
-    def __len__(self):
-        return self._keylen_cumulative[-1]
-
-    def _ensure_envs_opened(self):
-        # Called inside __getitem__ (once per worker) to give each worker its own lmdb.Environment
-        if self.envs is None:
-            self.envs = []
-            for db_path in self.db_paths:
-                env = lmdb.open(db_path, readonly=True, lock=False)
-                self.envs.append(env)
-
-    def __getitem__(self, index):
-        pid = os.getpid()
-        # print(f"[SimpleDataset __getitem__] worker PID={pid}, index={index}", flush=True)
-
-        if self.envs is None:
-            # first time this worker calls __getitem__, open its own env handles
-            self._ensure_envs_opened()
-
-        if isinstance(index, torch.Tensor):
-            index = index.item()
-
-        db_idx = bisect.bisect_right(self._keylen_cumulative, index)
-        with self.envs[db_idx].begin() as txn:
-            byte_data = txn.get(str(index).encode())
-            if byte_data is None:
-                raise Exception(f"Data not found for index {index} in LMDB file.")
-            arr = np.frombuffer(byte_data, dtype=self.dtype).copy()
-            tensor = torch.from_numpy(arr)  # This remains on CPU.
-            # print(f"[SimpleDataset __getitem__] worker PID={pid}, returning tensor.device={tensor.device}", flush=True)
-            return tensor
-
-    def __del__(self):
-        # Close each env if it was opened
-        if self.envs is not None:
-            for env in self.envs:
-                try:
-                    env.close()
-                except Exception:
-                    pass
+    
 
 class CombinedDataset(AseDBDataset):
     def __init__(
@@ -110,12 +42,12 @@ class CombinedDataset(AseDBDataset):
     ):
         super().__init__(config, atoms_transform)
         self.labels_folder = config['teacher_labels_folder']
-        self.teacher_force_dataset = SimpleDataset(
+        self.teacher_force_dataset = LmdbDataset(
             os.path.join(config['teacher_labels_folder'], f'{dataset_type}_forces')
         )
 
         if dataset_type == 'train':
-            self.hessian_dataset = SimpleDataset(
+            self.hessian_dataset = LmdbDataset(
                 os.path.join(config['teacher_labels_folder'], 'force_jacobians')
             )
             self.hessian_sampler = HessianSampler()
@@ -164,3 +96,49 @@ class CombinedDatasetTrain(CombinedDataset):
 class CombinedDatasetVal(CombinedDataset):
     def __init__(self, config, atoms_transform=apply_one_tags):
         super().__init__(config, 'val', atoms_transform)
+    
+    
+class LmdbDataset(Dataset):
+    def __init__(self, folder_path, dtype=np.float32):
+        self.folder_path = folder_path
+        self.dtype = dtype
+        
+        # List all LMDB files in the folder
+        self.db_paths = sorted([os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.lmdb')])
+        assert len(self.db_paths) > 0, "No LMDB files found in the specified folder."
+
+        self.envs = []
+        self._keys = []
+        self._keylen_cumulative = []
+
+        total_entries = 0
+        for db_path in self.db_paths:
+            env = lmdb.open(db_path, readonly=True, lock=False)
+            self.envs.append(env)
+            with env.begin() as txn:
+                num_entries = txn.stat()['entries']
+                total_entries += num_entries
+                self._keylen_cumulative.append(total_entries)
+
+        print(f"Total entries across all LMDB files jacs: {total_entries}")
+
+    def __len__(self):
+        return self._keylen_cumulative[-1] if self._keylen_cumulative else 0
+
+    def __getitem__(self, index):
+        if isinstance(index, torch.Tensor):
+            index = index.item()  # Convert tensor to integer
+
+        # Find which database to access
+        db_idx = bisect.bisect_right(self._keylen_cumulative, index)
+        with self.envs[db_idx].begin() as txn:
+            byte_data = txn.get(str(index).encode())
+            if byte_data:
+                # tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=self.dtype))
+                arr = np.frombuffer(byte_data, dtype=self.dtype).copy()   # now writable
+                tensor = torch.from_numpy(arr)
+                return tensor
+            else:
+                raise Exception(f"Data not found for index {index} in LMDB file.")
+
+

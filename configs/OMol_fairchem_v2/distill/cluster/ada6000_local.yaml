@@ -1,0 +1,11 @@
+data_root_dir: /data/yuejian/OMol_subset
+run_dir: /home/yuejian/project/MLFF-distill/runs/esen_md_4M
+account: ocp
+qos: ocp
+mode: LOCAL # LOCAL, SLURM, or SLURM_DDP
+device: CUDA
+ranks_per_node: 1
+dataloader_workers: 2
+debug: False
+mem_gb: 0
+cpus_per_task: 2

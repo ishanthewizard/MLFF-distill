@@ -1,0 +1,15 @@
+run_dir: /checkpoint/ericqu/MLFF-distill
+data_root_dir: /checkpoint/ericqu/OMol_subset/OMol_subset
+constraint: "volta32gb"
+exclude: "learnfair2242,learnfair2109,learnfair1336,learnfair2159,learnfair2150,learnfair2153"
+mode: SLURM
+device: CUDA
+ranks_per_node: 8
+dataloader_workers: 9
+timeout_hr: 72
+debug: False
+mem_gb: 80
+cpus_per_task: 9
+partition: "learnfair"
+qos: null
+nodelist: null

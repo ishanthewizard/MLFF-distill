@@ -214,6 +214,7 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
     return loss 
 
 def get_force_jac_loss_masked(out, batch, num_samples, mask, should_mask, looped=False, finite_differences=False, forward=None, collater=None):
+    """ Compute the force Jacobian loss with masking out certain percentage of the fixed hessian."""
     forces = out['forces']
     natoms = batch.natoms
     total_num_atoms = forces.shape[0]
@@ -232,6 +233,7 @@ def get_force_jac_loss_masked(out, batch, num_samples, mask, should_mask, looped
         offset_samples[:, 0] += cumulative_sums[i]
         # Vectorized assignment to grad_outputs
         grad_outputs[torch.arange(samples.shape[0]), offset_samples[:, 0], offset_samples[:, 1]] = 1
+    
     # Compute the jacobian using grad_outputs
     if not finite_differences:
         jac = get_jacobian(forces, batch.pos, grad_outputs, create_graph=True, looped=looped)
@@ -326,10 +328,12 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
 
     # Combine all perturbed batches into one large batch
     if not looped:
+        # print("herere")
         large_batch = collater(perturbed_batches)
         # Perform forward pass for all perturbed batches at once
         perturbed_forces = forward(large_batch)['forces']
     else:
+        # print("here")
         perturbed_forces = []
         for batch in perturbed_batches:
             # perturbed_output = forward(batch)

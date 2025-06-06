@@ -1,5 +1,6 @@
 defaults:
   - cluster: ada6000_local
+  # - cluster: fair_cluster
   # - backbone: eSEN
   - dataset: OMol
   - element_refs: eSEN_omol
@@ -13,18 +14,24 @@ job:
     ranks_per_node: ${cluster.ranks_per_node}
     num_nodes: 1
     slurm:
-      account: ${cluster.account}
+      # account: ${cluster.account}
       qos: ${cluster.qos}
       mem_gb: ${cluster.mem_gb}
       cpus_per_task: ${cluster.cpus_per_task}
+
+      partition: ${cluster.partition}
+      timeout_hr: ${cluster.timeout_hr}
+      nodelist: ${cluster.nodelist}
+      constraint: ${cluster.constraint}
+      exclude: ${cluster.exclude}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
   run_name: eSEN_label
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
-    entity: fairchem
-    project: uma
+    entity: ericqu # your account name
+    project: distill
 
 starting_checkpoint: /data/ishan-amin/ESEN_checkpoints/esen_omol/esen_md_direct_all.pt
 
@@ -89,7 +96,7 @@ train_dataloader:
     _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
     _partial_: True
     max_atoms: ${max_atoms}
-    shuffle: True
+    shuffle: False
     seed: 0
   num_workers: ${cluster.dataloader_workers}
   collate_fn:
@@ -119,7 +126,12 @@ heads:
     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
 
 runner:
+<<<<<<< HEAD:configs/OMOL_V2_complicated/training_4M/eSEN_md.yaml
   _target_: src_v2.labels_trainer.TeacherLabelGenerator # NOTE: change this to TRainEval
+=======
+  _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  # _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
+>>>>>>> dev_yj_fairchem_v2:configs/OMol_fairchem_v2/training_4M/eSEN_md.yaml
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   train_eval_unit:
@@ -127,10 +139,15 @@ runner:
     job_config: ${job}
     tasks: ${tasks}
     model:
+<<<<<<< HEAD:configs/OMOL_V2_complicated/training_4M/eSEN_md.yaml
       _target_: fairchem.core.units.mlip_unit.mlip_unit.initialize_finetuning_model
       # NOTE: ishan, change to hydra
       checkpoint_location: ${starting_checkpoint} # node: ishan, get rid of checkpoint
       # add a backbone (follow UMA) # configs/OMol_fairchem_v2/training_4M/backbone/eSEN.yaml
+=======
+      _target_: src_v2.dataset_utils.initialize_finetuning_model
+      checkpoint_location: ${starting_checkpoint}
+>>>>>>> dev_yj_fairchem_v2:configs/OMol_fairchem_v2/training_4M/eSEN_md.yaml
       # overrides: None
       heads: ${heads}
     optimizer_fn:
@@ -149,5 +166,9 @@ runner:
     print_every: 10
     clip_grad_norm: 100
     bf16: ${bf16}
+<<<<<<< HEAD:configs/OMOL_V2_complicated/training_4M/eSEN_md.yaml
   label_folder: test_data/
 
+=======
+  label_folder: ${dataset.omol_train.src}/labels
+>>>>>>> dev_yj_fairchem_v2:configs/OMol_fairchem_v2/training_4M/eSEN_md.yaml
