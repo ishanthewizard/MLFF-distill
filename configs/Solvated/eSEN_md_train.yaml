@@ -1,5 +1,5 @@
 defaults:
-  - cluster: Germain_local
+  - cluster: Germain
   - backbone: eSEN_small
   - dataset: OMol
   - element_refs: uma_v1_hof_lin_refs

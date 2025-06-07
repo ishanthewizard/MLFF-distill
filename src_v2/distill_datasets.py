@@ -74,7 +74,11 @@ class CombinedDataset(AseDBDataset):
 
             # 5) Sample one Hessian entry per atom (still on CPU)
             samples = self.hessian_sampler.sample_with_mask(num_samples, torch.ones(num_atoms))
-            force_jacs = self.hessian_sampler.sample_hessian(samples, num_atoms, raw_jac)
+            
+            ###### DEBUG STEP ########
+            # force_jacs = self.hessian_sampler.sample_hessian(samples, num_atoms, raw_jac) # TODO: revert
+            force_jacs = torch.zeros((num_atoms, num_samples * 3))
+            ############################
             # print(f"[CombinedDataset __getitem__] PID={pid}, sampled force_jacs.device = {force_jacs.device}", flush=True)
 
             main_batch.forces_jac = force_jacs

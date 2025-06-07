@@ -13,6 +13,9 @@ dataset:
     format:                 src_v2.distill_datasets.CombinedDatasetTrain
     teacher_labels_folder:  data/labels/SPICE_labels/EScAIP_SpiceAminos
     num_hessian_samples:    ${num_hessian_samples}
+  omol_val:
+    format:                 src_v2.distill_datasets.CombinedDatasetTrain
+    teacher_labels_folder:  data/labels/SPICE_labels/EScAIP_SpiceAminos
 
 runner:
   train_eval_unit:

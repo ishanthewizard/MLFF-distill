@@ -1,7 +1,7 @@
 run_dir: runs
 nodelist: germain
-partition: gpu
-qos: gpu # scavenger if you want more but want to be upended.
+partition: gpu # scavenger if you want more but want to be upended.
+qos: gpu 
 mode: LOCAL # LOCAL, SLURM, or SLURM_DDP
 device: CUDA
 ranks_per_node: 1
