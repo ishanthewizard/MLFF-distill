@@ -352,7 +352,7 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
         hessian_columns.append(hessian_col)
 
     # Stack columns to form the Jacobian matrix
-    #technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
+    # technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
     # print("HESSIAN SHAPE", torch.stack(hessian_columns, dim=0).shape)
     return torch.stack(hessian_columns, dim=0) 
 

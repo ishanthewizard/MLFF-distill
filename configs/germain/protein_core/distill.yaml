@@ -3,19 +3,19 @@ defaults:
   - override tasks: hessian_task
 
 job:
-  run_name: Solvated_distill
+  run_name: protein_nucleic_acids_train_4M_hessian
 
 hessian_coef:       60
-num_hessian_samples: 1
+num_hessian_samples: 4
 
 dataset:
   omol_train:
     format:                 src_v2.distill_datasets.CombinedDatasetTrain
-    teacher_labels_folder:  data/labels/SPICE_labels/EScAIP_SpiceAminos
+    teacher_labels_folder:  subsets/OMol_subset_label_finite_difference/protein_core_train_4M/final_labels
     num_hessian_samples:    ${num_hessian_samples}
   omol_val:
     format:                 src_v2.distill_datasets.CombinedDatasetVal
-    teacher_labels_folder:  data/labels/SPICE_labels/EScAIP_SpiceAminos
+    teacher_labels_folder:  subsets/OMol_subset_label_finite_difference/protein_core_train_4M/final_labels
 
 runner:
   train_eval_unit:

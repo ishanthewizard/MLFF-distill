@@ -12,8 +12,8 @@ conda activate fairchem_V2
 
 ############# label merging
 
-python draft/collate_hessian_results/merging.py \
---subset_root /data/ericqu/OMol_subset/test
+# python draft/collate_hessian_results/merging.py \
+# --subset_root /data/ericqu/OMol_subset/test
 
 ############# label sorting
 
@@ -21,16 +21,25 @@ python draft/collate_hessian_results/merging.py \
 # --subset_root /data/ericqu/OMol_subset/test
 
 
-############# model training, distillation
+############# model training
 
 # python main_v2.py \
-# -c /home/yuejian/project/MLFF-distill/configs/OMol_fairchem_v2/distill/eSEN_md.yaml
+# -c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/eSEN_md_train.yaml
 
 
 
 
 
 
+
+############### model distillation
+
+# python main_v2.py \
+# -c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/distill.yaml
+
+
+python main_v2.py \
+-c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_fragments/distill.yaml
 
 
 
