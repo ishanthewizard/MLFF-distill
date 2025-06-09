@@ -220,6 +220,5 @@ def main(
 
 
 if __name__ == "__main__":
-    # mp.set_start_method("spawn", force=True)
-    OmegaConf.register_new_resolver("merge", lambda x, y : x + y)
+    mp.set_start_method("spawn", force=True)
     main()
