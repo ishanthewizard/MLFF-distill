@@ -66,16 +66,11 @@ class CombinedDataset(AseDBDataset):
 
         # 3) Load teacher_forces (CPU)
         teacher_forces = self.teacher_force_dataset[idx].reshape(num_atoms, 3)
-        # print(f"[CombinedDataset __getitem__] PID={pid}, teacher_forces.device = {teacher_forces.device}", flush=True)
 
         num_samples = self.num_hessian_samples
         if self.hessian_dataset is not None:
             # 4) Load the raw force_jacobian vector (CPU)
-            ###### DEBUG STEP ########
             raw_jac = self.hessian_dataset[idx]
-            # raw_jac = torch.zeros((num_atoms * num_atoms * 9))
-            ############################
-            # print(f"[CombinedDataset __getitem__] PID={pid}, raw_jac.device = {raw_jac.device}", flush=True)
 
             # 5) Sample one Hessian entry per atom (still on CPU)
             samples = self.hessian_sampler.sample_with_mask(num_samples, torch.ones(num_atoms))
@@ -83,7 +78,6 @@ class CombinedDataset(AseDBDataset):
             
             force_jacs = self.hessian_sampler.sample_hessian(samples, num_atoms, raw_jac)
             
-            # print(f"[CombinedDataset __getitem__] PID={pid}, sampled force_jacs.device = {force_jacs.device}", flush=True)
 
             main_batch.forces_jac = force_jacs
             main_batch.samples = samples
@@ -93,7 +87,6 @@ class CombinedDataset(AseDBDataset):
             main_batch.forces_jac = torch.zeros((num_atoms, num_samples * 3))
             main_batch.num_samples = torch.tensor(num_samples)
             
-            # print(f"[CombinedDataset __getitem__] PID={pid}, forces_jac.zeros.device = {main_batch.forces_jac.device}", flush=True)
 
         main_batch.teacher_forces = teacher_forces
         return main_batch
