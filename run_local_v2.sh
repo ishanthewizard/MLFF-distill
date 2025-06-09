@@ -4,6 +4,8 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate fairchem_V2
 
+
+
 ############# label generation
 
 # python main_v2.py \
@@ -23,23 +25,25 @@ conda activate fairchem_V2
 
 ############# model training
 
-# python main_v2.py \
-# -c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/eSEN_md_train.yaml
+######## training with no distillation
 
-
-
-
+python main_v2.py \
+-c /home/yuejian/project/MLFF-distill/configs/escher/protein_ligand_pocket_autograd/eSEN_md_train.yaml
 
 
 
 ############### model distillation
 
+
+######## distillation with autograd
+
 # python main_v2.py \
-# -c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/distill.yaml
+# -c /home/yuejian/project/MLFF-distill/configs/escher/protein_ligand_pocket_autograd/distill.yaml
 
+######## distillation with finite difference
 
-python main_v2.py \
--c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_fragments/distill.yaml
+# python main_v2.py \
+# -c /home/yuejian/project/MLFF-distill/configs/escher/protein_ligand_pocket_finite_diff/distill.yaml
 
 
 
