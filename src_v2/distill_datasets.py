@@ -51,7 +51,6 @@ class CombinedDataset(AseDBDataset):
             self.hessian_dataset = LmdbDataset(
                 os.path.join(config['teacher_labels_folder'], 'force_jacobians')
             )
-            self.hessian_dataset = 'blah'
             self.hessian_sampler = HessianSampler()
         else:
             self.hessian_dataset = None
