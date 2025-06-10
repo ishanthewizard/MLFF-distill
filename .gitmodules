@@ -1,6 +1,3 @@
-[submodule "fairchem"]
-	path = fairchem
-	url = https://github.com/FAIR-Chem/fairchem.git
 [submodule "mace"]
 	path = mace
 	url = https://github.com/ACEsuit/mace
