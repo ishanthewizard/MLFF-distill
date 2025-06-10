@@ -6,7 +6,7 @@ conda activate fairchem_V2
 
 export NCCL_P2P_DISABLE="1"
 export NCCL_IB_DISABLE="1"
-export MASTER_PORT=13379
+# export MASTER_PORT=13379
 
 ############# label generation
 
