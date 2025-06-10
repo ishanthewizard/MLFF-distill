@@ -7,7 +7,7 @@ qos: scavenger
 mode: SLURM
 device: CUDA
 ranks_per_node: 2
-dataloader_workers: 1
+dataloader_workers: 0
 timeout_hr: 120
 debug: False
 mem_gb: 50
