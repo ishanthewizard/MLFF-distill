@@ -14,23 +14,19 @@ job:
     ranks_per_node: ${cluster.ranks_per_node}
     num_nodes: 1
     slurm:
-      # account: ${cluster.account}
       qos: ${cluster.qos}
-      mem_gb: ${cluster.mem_gb}
-      cpus_per_task: ${cluster.cpus_per_task}
-
       partition: ${cluster.partition}
-      timeout_hr: ${cluster.timeout_hr}
       nodelist: ${cluster.nodelist}
-      constraint: ${cluster.constraint}
-      exclude: ${cluster.exclude}
+      mem_gb: ${cluster.mem_gb}
+      timeout_hr: ${cluster.timeout_hr}
+      cpus_per_task: ${cluster.cpus_per_task}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
   run_name: eSEN_label
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
-    entity: ericqu # your account name
+    entity: jianyuelalala # your account name
     project: distill
 
 starting_checkpoint: /data/yuejian/OMol_Whole/ckpt/esen_md_direct_all.pt
