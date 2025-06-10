@@ -76,7 +76,6 @@ class CombinedDataset(AseDBDataset):
             
             
             force_jacs = self.hessian_sampler.sample_hessian(samples, num_atoms, raw_jac)
-            
 
             main_batch.forces_jac = force_jacs
             main_batch.samples = samples
@@ -86,7 +85,6 @@ class CombinedDataset(AseDBDataset):
             main_batch.forces_jac = torch.zeros((num_atoms, num_samples * 3))
             main_batch.num_samples = torch.tensor(num_samples)
             
-
         main_batch.teacher_forces = teacher_forces
         return main_batch
 
