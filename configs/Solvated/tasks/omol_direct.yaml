@@ -1,5 +1,5 @@
 - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
-  name: energy
+  name: omol_energy
   level: system
   property: energy
   loss_fn:
@@ -50,28 +50,3 @@
     - mae
     - cosine_similarity
     - magnitude_error
-
-- _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
-  name: forces_jac
-  level: atom
-  property: forces_jac
-  train_on_free_atoms: True
-  eval_on_free_atoms: True
-  loss_fn:
-    _target_: fairchem.core.modules.loss.DDPMTLoss
-    loss_fn:
-      _target_: fairchem.core.modules.loss.L2NormLoss
-    reduction: per_structure
-    coefficient: ${hessian_coef}
-  out_spec:
-    dim: [3]
-    dtype: float32
-  normalizer:
-    _target_: fairchem.core.modules.normalization.normalizer.Normalizer
-    mean: 0.0
-    rmsd: ${normalizer_rmsd}
-  datasets:
-    - omol
-  # metrics:
-
-
