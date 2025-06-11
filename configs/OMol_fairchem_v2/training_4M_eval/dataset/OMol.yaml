@@ -19,10 +19,10 @@ omol_train:
 
 omol_val:
   # src: ${cluster.data_root_dir}/protein_interface_val
-  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/solvated/val
+  src: /home/yuejian/project/MLFF-distill/OMOL/4M/subsets/OMol_subset/protein_ligand_pockets_val
   format: ase_db
   a2g_args:
-    # molecule_cell_size: 120.0
+    molecule_cell_size: 120.0
     r_energy: True
     r_forces: True
     r_data_keys: ['spin', 'charge','data_id']
