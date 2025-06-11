@@ -1,4 +1,3 @@
-# omol_path_germain: /data/ishan-amin/OMOL
 defaults: 
  - base_dataset
  - _self_
@@ -6,9 +5,12 @@ defaults:
 omol_train:
   splits:
     train:
-      src: ${cluster.omol_path}/4M/subsets/subsets/OMol_subset/protein_ligand_pockets_train_4M
+      src: ${cluster.omol_path}/4M/subsets/OMol_subset/protein_ligand_pockets_train_4M
+  teacher_labels_folder: ${cluster.omol_path}/4M/subsets/OMol_subset_label_finite_difference/protein_ligand_pockets_train_4M/final_labels
+
 omol_val:
   splits:
     val:
       sample_n: 2000
       src: ${cluster.omol_path}/4M/subsets/OMol_subset/protein_ligand_pockets_val
+  teacher_labels_folder: ${cluster.omol_path}/4M/subsets/OMol_subset_label_finite_difference/protein_ligand_pockets_train_4M/final_labels
