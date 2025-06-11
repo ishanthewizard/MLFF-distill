@@ -34,6 +34,7 @@ max_atoms: 350
 normalizer_rmsd: 1.433569
 direct_forces_coef: 30
 energy_coef: 30
+bf16: False
 
 exclude_keys: [
   "id", # only oc20,oc22 have this

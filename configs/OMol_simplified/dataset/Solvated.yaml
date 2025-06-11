@@ -16,5 +16,3 @@ omol_val:
   a2g_args:
     molecule_cell_size: ~      # ← remove it
     r_data_keys: ~
-
-teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos

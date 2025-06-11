@@ -1,5 +1,4 @@
 # omol_path_germain: /data/ishan-amin/OMOL
-# teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos
 defaults: 
  - base_dataset
  - _self_
