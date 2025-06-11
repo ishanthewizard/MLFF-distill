@@ -1,0 +1,34 @@
+defaults:
+  - /eSEN_md_train
+  - override tasks: hessian_task
+  - override cluster: Germain
+  - _self_
+
+teacher_labels_folder:  data/labels/SPICE_labels/EScAIP_SpiceAminos
+# teacher_labels_folder:  subsets/OMol_subset_label_finite_difference/protein_core_train_4M/final_labels
+# teacher_labels_folder:  subsets/OMol_subset_label_finite_difference/protein_interface_train_4M/final_labels
+# teacher_labels_folder:  subsets/OMol_subset_label_finite_difference/protein_ligand_fragments_train_4M/final_labels
+# teacher_labels_folder:  subsets/OMol_subset_label_finite_difference/protein_ligand_pockets_train_4M/final_labels
+# teacher_labels_folder:  subsets/OMol_subset_label_finite_difference/protein_nucleic_acids_train_4M/final_labels
+
+job:
+  run_name: Solvated_ZEROS
+
+hessian_coef:       60
+num_hessian_samples: 1
+
+dataset:
+  omol_train:
+    format:                 src_v2.distill_datasets.CombinedDatasetTrain
+    teacher_labels_folder:  data/labels/SPICE_labels/EScAIP_SpiceAminos
+    num_hessian_samples: ${num_hessian_samples}
+  omol_val:
+    format:                 src_v2.distill_datasets.CombinedDatasetVal
+    teacher_labels_folder:  data/labels/SPICE_labels/EScAIP_SpiceAminos
+    num_hessian_samples: ${num_hessian_samples}
+
+runner:
+  train_eval_unit:
+    model:
+      _target_: src_v2.model_wrapper.HessianModelWrapper
+    

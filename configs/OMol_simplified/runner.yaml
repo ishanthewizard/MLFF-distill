@@ -1,0 +1,11 @@
+defaults: 
+  - /eSEN_eval # OTHER OPTIONS: 1. /distill 2. /eSEN_eval 3. /eSEN_labels
+  - override cluster: Germain_local
+  # - override backbone: eSEN_xtra_small Not needed for eval
+  - override dataset: protein_ligand_pocket
+  - _self_
+
+direct_forces_coef: 30
+energy_coef: 30
+# hessian_coef:       60
+# num_hessian_samples: 1

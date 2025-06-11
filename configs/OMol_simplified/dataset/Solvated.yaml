@@ -1,0 +1,20 @@
+defaults: 
+ - base_dataset
+ - _self_
+ 
+omol_train:
+  splits:
+    train:
+      src: /data/ishan-amin/OMOL/TOY/solvated/train
+  a2g_args:
+    molecule_cell_size: ~      # ← remove it
+    r_data_keys: ~
+omol_val:
+  splits:
+    val:
+      src: /data/ishan-amin/OMOL/TOY/solvated/val
+  a2g_args:
+    molecule_cell_size: ~      # ← remove it
+    r_data_keys: ~
+
+teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos

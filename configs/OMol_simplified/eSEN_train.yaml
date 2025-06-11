@@ -1,8 +1,8 @@
 defaults:
-  - cluster: Germain
-  - backbone: eSEN_small
+  - cluster: Germain_local
+  - backbone: eSEN_xtra_small
   - dataset: OMol
-  - element_refs: uma_v1_hof_lin_refs
+  - element_refs: eSEN_omol
   - tasks: omol_direct
   - _self_
 
@@ -21,7 +21,7 @@ job:
       cpus_per_task: ${cluster.cpus_per_task}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
-  run_name: eSEN_solvated_SPAWN
+  run_name: eSEN_train_4M
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
@@ -34,15 +34,13 @@ max_neighbors: 30
 cutoff_radius: 6
 epochs: null
 steps: 100000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
-max_atoms: 1000
-normalizer_rmsd: 1.433569
+max_atoms: 350
+normalizer_rmsd: 1.423
 direct_forces_coef: 30
-omol_energy_coef: 30
+energy_coef: 30
 
 # regress_stress: False
 # direct_forces: True
-
-omol_forces_key: forces
 
 exclude_keys: [
   "id", # only oc20,oc22 have this
@@ -104,7 +102,7 @@ eval_dataloader:
     exclude_keys: ${exclude_keys}
 
 heads:
-  omol_energy:
+  energy:
     module: fairchem.core.models.uma.escn_md.MLP_Energy_Head
   forces:
     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
@@ -130,7 +128,7 @@ runner:
       _target_: fairchem.core.units.mlip_unit.mlip_unit._get_consine_lr_scheduler
       _partial_: true
       warmup_factor: 0.2
-      warmup_epochs: 1
+      warmup_epochs: 0.01
       lr_min_factor: 0.01
       epochs: ${epochs}
       steps: ${steps}

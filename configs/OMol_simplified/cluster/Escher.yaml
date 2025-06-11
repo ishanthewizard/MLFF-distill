@@ -1,0 +1,13 @@
+run_dir: runs
+nodelist: escher
+partition: gpu
+qos: gpu
+mode: SLURM
+device: CUDA
+ranks_per_node: 2
+dataloader_workers: 8
+timeout_hr: 12
+debug: False
+mem_gb: 50
+cpus_per_task: 9
+omol_path: /data/ishan-amin/OMOL

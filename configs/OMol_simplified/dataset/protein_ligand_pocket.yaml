@@ -1,0 +1,15 @@
+# omol_path_germain: /data/ishan-amin/OMOL
+# teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos
+defaults: 
+ - base_dataset
+ - _self_
+ 
+omol_train:
+  splits:
+    train:
+      src: ${cluster.omol_path}/4M/subsets/subsets/OMol_subset/protein_ligand_pockets_train_4M
+omol_val:
+  splits:
+    val:
+      sample_n: 2000
+      src: ${cluster.omol_path}/4M/subsets/OMol_subset/protein_ligand_pockets_val

@@ -1,7 +1,7 @@
 defaults:
   - cluster: Germain_local
-  - dataset: protein_ligand_pocket_eval
-  - element_refs: uma_v1_hof_lin_refs
+  - dataset: OMol
+  - element_refs: eSEN_omol
   - tasks: omol_direct
   - _self_
 
@@ -20,7 +20,7 @@ job:
       cpus_per_task: ${cluster.cpus_per_task}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
-  run_name: protein_ligand_pockets_train_4M_no_distill
+  run_name: eSEN_train_4M
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
@@ -30,15 +30,10 @@ job:
 cpu_graph: True
 max_neighbors: 30
 cutoff_radius: 6
-max_atoms: 1000
+max_atoms: 350
 normalizer_rmsd: 1.433569
 direct_forces_coef: 30
-omol_energy_coef: 30
-
-# regress_stress: False
-# direct_forces: True
-
-omol_forces_key: forces
+energy_coef: 30
 
 exclude_keys: [
   "id", # only oc20,oc22 have this
@@ -73,17 +68,3 @@ eval_dataloader:
     _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
     tasks: ${tasks}
     exclude_keys: ${exclude_keys}
-
-runner:
-  _target_: fairchem.core.components.evaluate.eval_runner.EvalRunner #fairchem.core.components.train.train_runner.TrainEvalRunner
-  dataloader: ${eval_dataloader}
-  eval_unit:
-    _target_: fairchem.core.units.mlip_unit.mlip_unit.MLIPEvalUnit
-    job_config: ${job}
-    tasks: ${tasks}
-    model:
-      # _target_: fairchem.core.units.mlip_unit.mlip_unit.load_inference_model
-      # checkpoint_location: /data/ishan-amin/ESEN_checkpoints/esen_omol/esen_md_direct_all.pt
-      # use_ema: True
-      _target_: src_v2.dataset_utils.initialize_finetuning_model
-      checkpoint_location: /data/ishan-amin/ESEN_checkpoints/esen_omol/esen_md_direct_all.pt
