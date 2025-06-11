@@ -41,7 +41,7 @@ max_neighbors: 30
 cutoff_radius: 6
 epochs: null
 steps: 2080000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
-max_atoms: 60 # important
+max_atoms: 1000 # important
 bf16: True
 cpu_graph: True
 # otf_graph: False

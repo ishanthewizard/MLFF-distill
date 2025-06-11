@@ -19,7 +19,7 @@ omol_train:
 
 omol_val:
   # src: ${cluster.data_root_dir}/protein_interface_val
-  src: /home/yuejian/project/MLFF-distill/OMOL/4M/subsets/OMol_subset/protein_ligand_pockets_val
+  src: /home/yuejian/project/MLFF-distill/OMOL/4M/subsets/OMol_subset/protein_ligand_pockets_val_small
   format: ase_db
   a2g_args:
     molecule_cell_size: 120.0
