@@ -1,0 +1,12 @@
+run_dir: runs
+nodelist: germain
+partition: long
+qos: long
+mode: SLURM
+device: CUDA
+ranks_per_node: 1
+dataloader_workers: 0
+timeout_hr: 12
+debug: False
+mem_gb: 50
+cpus_per_task: 9

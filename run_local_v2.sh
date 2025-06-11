@@ -7,6 +7,10 @@ conda activate fairchem_V2
 ############# find lithium
 # python draft/elytes.py
 
+############# validate ckpt
+
+python main_v2.py \
+-c /home/yuejian/project/MLFF-distill/configs/OMol_fairchem_v2/training_4M_eval/eSEN_md.yaml
 
 ############# label generation
 
@@ -21,8 +25,8 @@ conda activate fairchem_V2
 
 ############# label sorting
 
-python draft/collate_hessian_results/sorting.py \
---subset_root /data/ericqu/OMol_subset/test
+# python draft/collate_hessian_results/sorting.py \
+# --subset_root /data/ericqu/OMol_subset/test
 
 
 ############# model training, distillation
