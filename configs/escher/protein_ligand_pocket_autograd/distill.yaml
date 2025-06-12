@@ -3,21 +3,20 @@ defaults:
   - override tasks: hessian_task
 
 job:
-  run_name: protein_ligand_pockets_train_4M_hessian_autograd
+  run_name: protein_ligand_pockets_train_4M_hessian_autograd_cols__energy_coe_
 
 hessian_coef:       60
-num_hessian_samples: 4
+num_hessian_samples: 10
 
 dataset:
   omol_train:
     format:                 src_v2.distill_datasets.CombinedDatasetTrain
-    teacher_labels_folder:  subsets/OMol_subset_label_torch_autograd/protein_ligand_pockets_train_4M/final_labels
+    teacher_labels_folder:  /home/yuejian/project/MLFF-distill/subsets/OMol_subset_label_torch_autograd/protein_ligand_pockets_train_4M/final_labels
     num_hessian_samples:    ${num_hessian_samples}
   omol_val:
     format:                 src_v2.distill_datasets.CombinedDatasetVal
-    teacher_labels_folder:  subsets/OMol_subset_label_torch_autograd/protein_ligand_pockets_train_4M/final_labels
+    teacher_labels_folder:  /home/yuejian/project/MLFF-distill/subsets/OMol_subset_label_torch_autograd/protein_ligand_pockets_train_4M/final_labels
     num_hessian_samples:    ${num_hessian_samples}
-    
 runner:
   train_eval_unit:
     model:

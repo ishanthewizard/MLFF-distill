@@ -1,5 +1,5 @@
 run_dir: runs
-nodelist: escher
+nodelist: germain
 # partition: scavenger 
 # qos: scavenger
 partition: gpu

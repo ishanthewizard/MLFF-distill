@@ -6,7 +6,7 @@ mode: LOCAL # LOCAL, SLURM, or SLURM_DDP
 device: CUDA
 ranks_per_node: 1
 dataloader_workers: 1
-debug: True
-mem_gb: 50
+debug: False
+mem_gb: 0
 cpus_per_task: 9
 timeout_hr: 1
