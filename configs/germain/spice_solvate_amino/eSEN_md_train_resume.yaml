@@ -1,0 +1,12 @@
+defaults:
+  - /eSEN_md_train
+
+
+starting_checkpoint: /home/yuejian/project/MLFF-distill/runs/202506-1015-4400-748a/checkpoints/step_0/inference_ckpt.pt
+
+runner:
+  train_eval_unit:
+    model:
+      _target_: src_v2.dataset_utils.initialize_finetuning_model
+      checkpoint_location: ${starting_checkpoint}
+
