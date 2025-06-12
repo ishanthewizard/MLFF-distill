@@ -29,8 +29,8 @@ conda activate fairchem_V2
 
 ######## training with no distillation
 
-# python main_v2.py \
-# -c /home/yuejian/project/MLFF-distill/configs/escher/protein_ligand_pocket_autograd/eSEN_md_train.yaml
+python main_v2.py \
+-c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/eSEN_md_train.yaml
 
 
 
@@ -47,6 +47,18 @@ conda activate fairchem_V2
 # python main_v2.py \
 # -c /home/yuejian/project/MLFF-distill/configs/escher/protein_ligand_pocket_finite_diff/distill.yaml
 
+
+############# model resuming
+
+#### resuming no distillation 
+
+# python main_v2.py \
+# -c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/eSEN_md_train_resume.yaml
+
+#### resuming distillation
+
+# python main_v2.py \
+# -c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/distill_resume.yaml
 
 
 ############# debugging
