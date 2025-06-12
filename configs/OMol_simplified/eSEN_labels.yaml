@@ -2,18 +2,54 @@ defaults:
   - /base
   - _self_
 
+omol_forces_key: forces
+data_root_dir: /data/yuejian/OMol_subset
 starting_checkpoint: /private/home/ericqu/MLFF-distill/esen_md_direct_all.pt
+
+
+omol_train:
+  src: ${data_root_dir}/protein_core_train_4M
+  format: ase_db
+  a2g_args:
+    molecule_cell_size: 120.0
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    # energy: omol_energy
+    forces: ${omol_forces_key}
+  transforms:
+    common_transform:
+      dataset_name: omol
+
+omol_val:
+  src: ${data_root_dir}/protein_interface_val
+  format: ase_db
+  a2g_args:
+    molecule_cell_size: 120.0
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    # energy: omol_energy
+    forces: ${omol_forces_key}
+  transforms:
+    common_transform:
+      dataset_name: omol
 
 train_dataset:
   _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
-  config: ${dataset.omol_train}
-
-
+  config: ${omol_train}
 
 val_dataset:
   _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
-  config: ${dataset.omol_val}
-
+  config: ${omol_val}
 
 train_dataloader:
   _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
@@ -45,11 +81,11 @@ eval_dataloader:
     tasks: ${tasks}
     exclude_keys: ${exclude_keys}
 
-heads:
-  energy:
-    module: fairchem.core.models.uma.escn_md.MLP_Energy_Head
-  forces:
-    module: fairchem.core.models.uma.escn_md.Linear_Force_Head
+# heads:
+#   energy:
+#     module: fairchem.core.models.uma.escn_md.MLP_Energy_Head
+#   forces:
+#     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
 
 runner:
   _target_: src_v2.labels_trainer.TeacherLabelGenerator
@@ -78,4 +114,4 @@ runner:
     print_every: 10
     clip_grad_norm: 100
     bf16: ${bf16}
-  label_folder: ${dataset.omol_train.src}/labels
+  label_folder: ${omol_train.src}/raw_labels
