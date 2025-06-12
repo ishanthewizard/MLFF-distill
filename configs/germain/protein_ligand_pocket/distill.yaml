@@ -3,7 +3,7 @@ defaults:
   - override tasks: hessian_task
 
 job:
-  run_name: protein_ligand_pockets_train_4M_hessian_autograd
+  run_name: protein_ligand_pockets_train_4M_hessian_autograd_cols_4_energy_coe_5
 
 hessian_coef:       60
 num_hessian_samples: 4

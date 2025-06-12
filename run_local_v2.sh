@@ -4,8 +4,8 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate fairchem_V2
 
-# export NCCL_P2P_DISABLE="1"
-# export NCCL_IB_DISABLE="1"
+export NCCL_P2P_DISABLE="1"
+export NCCL_IB_DISABLE="1"
 # export MASTER_PORT=13379
 
 ############# label generation
@@ -29,8 +29,8 @@ conda activate fairchem_V2
 
 ######## training with no distillation
 
-python main_v2.py \
--c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/eSEN_md_train.yaml
+# python main_v2.py \
+# -c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/eSEN_md_train.yaml
 
 
 
@@ -39,8 +39,8 @@ python main_v2.py \
 
 ######## distillation with autograd
 
-# python main_v2.py \
-# -c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/distill.yaml
+python main_v2.py \
+-c /home/yuejian/project/MLFF-distill/configs/germain/protein_ligand_pocket/distill.yaml
 
 ######## distillation with finite difference
 

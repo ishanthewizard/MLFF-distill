@@ -1,10 +1,10 @@
 run_dir: runs
-nodelist: germain
-partition: long
-qos: long
+nodelist: escher
+partition: scavenger 
+qos: scavenger
 mode: SLURM
 device: CUDA
-ranks_per_node: 4
+ranks_per_node: 2
 dataloader_workers: 0
 timeout_hr: 24
 debug: False
