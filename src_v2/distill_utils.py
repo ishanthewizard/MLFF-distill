@@ -5,19 +5,6 @@ import logging
 # from fairchem.core.common.data_parallel import  OCPCollater
 from fairchem.core.common import distutils
 
-
-def create_hessian_mask(dataset, mask_out_percentage=0.2):
-    init_mask = torch.ones(len(dataset))
-    
-    hessian_mask = torch.bernoulli(init_mask*(1 - mask_out_percentage))
-    
-    logging.info(f"\nMasking out {(1-hessian_mask.sum()*100)/len(dataset):.2f}% of the Hessian\n")
-    
-    return hessian_mask
-
-
-
-
 def print_cuda_memory_usage():
     allocated = torch.cuda.memory_allocated() / (1024 ** 3)  # Convert bytes to GB
     reserved = torch.cuda.memory_reserved() / (1024 ** 3)    # Convert bytes to GB
@@ -389,50 +376,3 @@ def get_jacobian_central_difference(batch, forward, h=0.0001):
         jacobian = dfd2h.reshape(-1)
         pass
     return
-    
-
-# def get_jacobian_forward_mode(forces, batch, grad_outputs, collater, forward, looped=False, h=0.0001):
-#     """
-#     Compute Jacobian-vector products using forward-mode autodiff.
-#     Args:
-#         forces: Predicted forces tensor
-#         batch: Input batch containing positions
-#         grad_outputs: Vectors to compute JVP with (shape: [..., num_atoms, 3])
-#         collater: Batch collation function
-#         forward: Forward pass function
-#     Returns:
-#         JVPs stacked along first dimension
-#     """
-#     # Prepare function that computes forces given positions
-#     def forces_fn(positions):
-#         # Clone the batch to avoid mutating it
-#         # batch_copy = batch.clone()  # Ensure you have a clone method or copy mechanism for your batch
-#         # batch_copy.pos = positions  # Assign the positions to the new batch
-#         batch.pos = positions
-#         def simple_tester(batch):
-#             print(batch.pos.shape)
-#             return batch.pos ** 2
-        
-#         return simple_tester(batch)
-    
-#     # Function to compute single JVP
-#     def compute_single_jvp(tangent):
-#         _, jvp_out = jvp(
-#             func=forces_fn,
-#             primals=(batch.pos,),
-#             tangents=(tangent,)
-#         )
-#         return jvp_out
-
-#     # Vectorize over grad_outputs
-#     if len(grad_outputs.shape) == 4:
-#         # Case: grad_outputs is [batch, atom, atom, 3]
-#         compute_jvp = torch.vmap(torch.vmap(compute_single_jvp))
-#     else:
-#         # Case: grad_outputs is [atom, atom, 3]
-#         compute_jvp = torch.vmap(compute_single_jvp)
-        
-#     return compute_jvp(grad_outputs)
-    
-
-    

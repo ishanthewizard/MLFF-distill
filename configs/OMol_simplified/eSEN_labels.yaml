@@ -1,10 +1,58 @@
 defaults:
-  - /base
+  - cluster: Germain_local
+  - element_refs: eSEN_omol
+  - tasks: omol_direct
   - _self_
 
-omol_forces_key: forces
-data_root_dir: /data/yuejian/OMol_subset
-starting_checkpoint: /private/home/ericqu/MLFF-distill/esen_md_direct_all.pt
+job:
+  device_type: ${cluster.device}
+  scheduler:
+    mode: ${cluster.mode}
+    ranks_per_node: ${cluster.ranks_per_node}
+    num_nodes: ${cluster.num_nodes}
+    slurm:
+      qos: ${cluster.slurm.qos}
+      partition: ${cluster.slurm.partition}
+      nodelist: ${cluster.slurm.nodelist}
+      mem_gb: ${cluster.slurm.mem_gb}
+      timeout_hr: ${cluster.slurm.timeout_hr}
+      cpus_per_task: ${cluster.slurm.cpus_per_task}
+      constraint: ${cluster.slurm.constraint}
+      account: ${cluster.slurm.account}
+  debug: ${cluster.debug}
+  run_dir: ${cluster.run_dir}
+  run_name: eSEN_train_4M
+  logger:
+    _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
+    _partial_: true
+    entity: ishan-amin
+    project: OMOL
+
+cpu_graph: True
+max_neighbors: 30
+cutoff_radius: 6
+max_atoms: 350
+normalizer_rmsd: 1.433569
+direct_forces_coef: 30
+energy_coef: 30
+bf16: False
+
+exclude_keys: [
+  "id", # only oc20,oc22 have this
+  "fid", # only oc20,oc22 have this
+  "absolute_idx", # only ani has this
+  "target_pos", # only ani has this
+  "ref_energy", # only ani/geom have this
+  "pbc", # only ani/transition1x have this
+  "nads", # oc22
+  "oc22", # oc22
+  "formation_energy", # spice
+  "total_charge", # spice
+]
+
+
+data_root_dir: /data/ishan-amin/OMOL/4M/subsets/OMol_subset
+starting_checkpoint: /data/ishan-amin/OMOL/esen_md_direct_all.pt
 
 
 omol_train:
@@ -20,7 +68,7 @@ omol_train:
     max_neigh: ${max_neighbors}
   key_mapping:
     # energy: omol_energy
-    forces: ${omol_forces_key}
+    forces: forces
   transforms:
     common_transform:
       dataset_name: omol
@@ -38,22 +86,22 @@ omol_val:
     max_neigh: ${max_neighbors}
   key_mapping:
     # energy: omol_energy
-    forces: ${omol_forces_key}
+    forces: forces
   transforms:
     common_transform:
       dataset_name: omol
 
-train_dataset:
+train_dataset_:
   _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
   config: ${omol_train}
 
-val_dataset:
+val_dataset_:
   _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
   config: ${omol_val}
 
 train_dataloader:
   _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
-  dataset: ${train_dataset}
+  dataset: ${train_dataset_}
   batch_sampler_fn:
     _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
     _partial_: True
@@ -68,7 +116,7 @@ train_dataloader:
 
 eval_dataloader:
   _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
-  dataset: ${val_dataset}
+  dataset: ${val_dataset_}
   batch_sampler_fn:
     _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
     _partial_: True
@@ -98,6 +146,7 @@ runner:
     model:
       _target_: src_v2.dataset_utils.initialize_finetuning_model
       checkpoint_location: ${starting_checkpoint}
+      use_ema: False
     optimizer_fn:
       _target_: torch.optim.AdamW
       _partial_: true

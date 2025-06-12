@@ -1,0 +1,36 @@
+
+omol_train:
+  src: ${data_root_dir}/protein_core_train_4M
+  format: ase_db
+  a2g_args:
+    molecule_cell_size: 120.0
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    # energy: omol_energy
+    forces: forces
+  transforms:
+    common_transform:
+      dataset_name: omol
+
+omol_val:
+  src: ${data_root_dir}/protein_interface_val
+  format: ase_db
+  a2g_args:
+    molecule_cell_size: 120.0
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    # energy: omol_energy
+    forces: forces
+  transforms:
+    common_transform:
+      dataset_name: omol

@@ -141,7 +141,7 @@ class TeacherLabelGenerator(Runner):
             # should_mask = self.output_targets['forces']["train_on_free_atoms"]
             should_mask = True
             def get_seperated_force_jacs(batch): 
-                batch.pos.detach().requires_grad_()
+                batch.pos.requires_grad_()
                 jacs = get_teacher_jacobian(
                                             batch, 
                                             # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 

@@ -1,6 +1,6 @@
 device: CUDA
 mode: LOCAL
-ranks_per_node: 2
+ranks_per_node: 1
 num_nodes: 1
 
 
@@ -12,9 +12,9 @@ slurm:
   timeout_hr: 24
   cpus_per_task: 9
   constraint: gpu
-  account: m4558_g #
+  account: ~
 
-debug: False
+debug: True
 run_dir: runs
 nodelist: germain
 dataloader_workers: 4
