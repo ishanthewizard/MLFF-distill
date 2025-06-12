@@ -12,7 +12,7 @@ import argparse
 import os
 import logging
 import hydra
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 from submitit import AutoExecutor
 from fairchem.core._cli import (
     SchedulerType,
@@ -34,7 +34,6 @@ from fairchem.core._cli import (
 )
 from omegaconf import OmegaConf
 from fairchem.core.common import distutils
-import multiprocessing as mp
 
 
 @dataclass
@@ -52,6 +51,8 @@ class SlurmConfig:
     nodelist: Optional[str] = (
         None  # omegaconf in python 3.9 does not backport annotations
     )
+    constraint: Optional[str] = None
+    exclude: Optional[str] = None
 
 
 @dataclass
@@ -158,11 +159,18 @@ def main(
             slurm_nodelist=scheduler_cfg.slurm.nodelist,
             slurm_qos=scheduler_cfg.slurm.qos,
             slurm_account=scheduler_cfg.slurm.account,
+            slurm_constraint=scheduler_cfg.slurm.constraint,
+            slurm_exclude=scheduler_cfg.slurm.exclude,
         )
         if scheduler_cfg.num_array_jobs == 1:
             job = executor.submit(Submitit(), cfg)
             logging.info(
                 f"Submitted job id: {cfg.job.timestamp_id}, slurm id: {job.job_id}, logs: {cfg.job.metadata.log_dir}"
+            )
+            import time
+
+            logging.info(
+                f"For logs: {cfg.job.run_name}, {time.strftime('%m-%d', time.localtime())}, {get_commit_hash()}"
             )
             jobs = [job]
         elif scheduler_cfg.num_array_jobs > 1:
@@ -220,7 +228,4 @@ def main(
 
 
 if __name__ == "__main__":
-    # mp.set_start_method("spawn", force=True)
-    os.environ["WANDB_MODE"] = "disabled"
-    OmegaConf.register_new_resolver("merge", lambda x, y : x + y)
     main()

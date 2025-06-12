@@ -1,11 +1,14 @@
 defaults: 
-  - distill # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
-  - override cluster: Germain_local
+  - eSEN_train # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
+  - override cluster: Nersc
   - override backbone: eSEN_xtra_small  #Not needed for eval
   - override dataset: protein_ligand_pocket
   - _self_
 
+job:
+  run_name: eSEN_train_4M
+
 direct_forces_coef: 30
-energy_coef: 30
+energy_coef: 5
 # hessian_coef:       60
 # num_hessian_samples: 1
