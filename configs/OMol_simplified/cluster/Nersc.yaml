@@ -11,10 +11,10 @@ slurm:
   timeout_hr: 24
   cpus_per_task: 5
   constraint: gpu
-  account: m4558_g
+  account: m4558_g #
 
 debug: False
 run_dir: logs
-dataloader_workers: 4
+dataloader_workers: 0
 
 omol_path: /pscratch/sd/i/ishan_a/ishan_only/OMOL/
