@@ -1,6 +1,6 @@
 defaults:
   - cluster: Germain_local
-  - dataset: OMol
+  - dataset: OMol_train_4M
   - element_refs: eSEN_omol
   - tasks: omol_direct
   - _self_

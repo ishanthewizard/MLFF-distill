@@ -1,76 +1,8 @@
 defaults:
-  # - cluster: ada6000_local
-  - cluster: fair_cluster
-  # - backbone: eSEN
-  - dataset: OMol
-  - element_refs: eSEN_omol
-  - tasks: eSEN_direct
+  - /base
   - _self_
 
-job:
-  device_type: ${cluster.device}
-  scheduler:
-    mode: ${cluster.mode}
-    ranks_per_node: ${cluster.ranks_per_node}
-    num_nodes: 32
-    slurm:
-      # account: ${cluster.account}
-      qos: ${cluster.qos}
-      mem_gb: ${cluster.mem_gb}
-      cpus_per_task: ${cluster.cpus_per_task}
-
-      partition: ${cluster.partition}
-      timeout_hr: ${cluster.timeout_hr}
-      nodelist: ${cluster.nodelist}
-      constraint: ${cluster.constraint}
-      exclude: ${cluster.exclude}
-  debug: ${cluster.debug}
-  run_dir: ${cluster.run_dir}
-  run_name: eSEN_label
-  logger:
-    _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
-    _partial_: true
-    entity: ericqu # your account name
-    project: distill
-
 starting_checkpoint: /private/home/ericqu/MLFF-distill/esen_md_direct_all.pt
-
-# moe_layer_type: pytorch
-# num_moe_experts: 32
-max_neighbors: 30
-cutoff_radius: 6
-epochs: null
-steps: 2080000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
-max_atoms: 350 # important
-bf16: True
-cpu_graph: True
-# otf_graph: False
-normalizer_rmsd: 1.433569
-# direct_forces_coef: 30
-energy_coef: 10
-
-# regress_stress: False
-# direct_forces: True
-
-# oc20_forces_key: forces
-# omat_forces_key: forces
-# odac_forces_key: forces
-# omc_forces_key: forces
-
-# dataset_list: ["oc20", "omol", "omat", "odac", "omc"]
-
-exclude_keys: [
-  "id", # only oc20,oc22 have this
-  "fid", # only oc20,oc22 have this
-  "absolute_idx", # only ani has this
-  "target_pos", # only ani has this
-  "ref_energy", # only ani/geom have this
-  "pbc", # only ani/transition1x have this
-  "nads", # oc22
-  "oc22", # oc22
-  "formation_energy", # spice
-  "total_charge", # spice
-]
 
 train_dataset:
   _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
@@ -121,7 +53,6 @@ heads:
 
 runner:
   _target_: src_v2.labels_trainer.TeacherLabelGenerator
-  # _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   train_eval_unit:
@@ -131,8 +62,6 @@ runner:
     model:
       _target_: src_v2.dataset_utils.initialize_finetuning_model
       checkpoint_location: ${starting_checkpoint}
-      # overrides: None
-      heads: ${heads}
     optimizer_fn:
       _target_: torch.optim.AdamW
       _partial_: true
@@ -144,8 +73,8 @@ runner:
       warmup_factor: 0.2
       warmup_epochs: 0.01
       lr_min_factor: 0.01
-      epochs: ${epochs}
-      steps: ${steps}
+      epochs: null
+      steps: 100000
     print_every: 10
     clip_grad_norm: 100
     bf16: ${bf16}

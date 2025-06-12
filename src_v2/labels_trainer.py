@@ -147,25 +147,12 @@ class TeacherLabelGenerator(Runner):
                                             # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
                                             vectorize = False,
                                             should_mask=should_mask, # BUG
-                                            # approximation="disabled", # {"disabled","forward","central"}
-                                            approximation="forward", # {"disabled","forward","central"}
+                                            approximation="disabled", # {"disabled","forward","central"}
+                                            # approximation="forward", # {"disabled","forward","central"}
                                             forward = self.train_eval_unit.model,
                                             collater = None,
                                             device = self.device
                                             )
-                # batch.pos.requires_grad_()
-                # jacs_torch = get_teacher_jacobian(
-                #                             batch, 
-                #                             # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
-                #                             vectorize = False,
-                #                             should_mask=should_mask, # BUG
-                #                             # approximation="disabled", # {"disabled","forward","central"}
-                #                             approximation="disabled", # {"disabled","forward","central"}
-                #                             forward = self.train_eval_unit.model,
-                #                             collater = None,
-                #                             device = self.device
-                #                             )
-                # breakpoint()
                 return jacs
             self.record_and_save(jac_dataloader, jac_lmdb_path, get_seperated_force_jacs)
 
