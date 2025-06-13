@@ -1,0 +1,15 @@
+device: CUDA
+mode: SLURM
+ranks_per_node: 4
+num_nodes: 1
+qos: regular
+partition: ~
+nodelist: ~
+mem_gb: 80
+timeout_hr: 24
+cpus_per_task: 5
+constraint: gpu
+account: m4558_g #
+debug: False
+run_dir: logs
+dataloader_workers: 0
