@@ -6,8 +6,8 @@ num_nodes: 1
 
 slurm:
   qos: gpu
-  partition: ~
-  nodelist: germain
+  partition: germain
+  nodelist: ~
   mem_gb: 50
   timeout_hr: 24
   cpus_per_task: 9

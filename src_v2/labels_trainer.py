@@ -30,7 +30,7 @@ from fairchem.core.units.mlip_unit.mlip_unit import (
     convert_train_checkpoint_to_inference_checkpoint,
 )
 
-from .distill_utils import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian
+from .distill_utils import get_jacobian,  print_cuda_memory_usage, get_teacher_jacobian
 
 if TYPE_CHECKING:
     from torch.distributed.checkpoint.stateful import Stateful
