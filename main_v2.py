@@ -49,7 +49,21 @@ class SlurmConfig:
     account: Optional[str] = (
         None  # omegaconf in python 3.9 does not backport annotations
     )
+    
+    # added for germain
+    partition: Optional[str] = (
+        None 
+    )
+    # timeout_hr: Optional[str] = (
+    #     None  # omegaconf in python 3.9 does not backport annotations
+    # )
     nodelist: Optional[str] = (
+        None  # omegaconf in python 3.9 does not backport annotations
+    )
+    constraint: Optional[str] = (
+        None  # omegaconf in python 3.9 does not backport annotations
+    )
+    exclude: Optional[str] = (
         None  # omegaconf in python 3.9 does not backport annotations
     )
 
@@ -155,9 +169,11 @@ def main(
             cpus_per_task=scheduler_cfg.slurm.cpus_per_task,
             tasks_per_node=scheduler_cfg.ranks_per_node,
             nodes=scheduler_cfg.num_nodes,
-            slurm_nodelist=scheduler_cfg.slurm.nodelist,
             slurm_qos=scheduler_cfg.slurm.qos,
             slurm_account=scheduler_cfg.slurm.account,
+            slurm_nodelist=scheduler_cfg.slurm.nodelist,
+            slurm_constraint=scheduler_cfg.slurm.constraint,
+            slurm_exclude=scheduler_cfg.slurm.exclude,
         )
         if scheduler_cfg.num_array_jobs == 1:
             job = executor.submit(Submitit(), cfg)

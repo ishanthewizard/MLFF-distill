@@ -19,8 +19,8 @@ job:
       mem_gb: ${cluster.mem_gb}
       timeout_hr: ${cluster.timeout_hr}
       cpus_per_task: ${cluster.cpus_per_task}
-      constraint: ${cluster.slurm.constraint}
-      account: ${cluster.slurm.account}
+      constraint: ${cluster.constraint}
+      account: ${cluster.account}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
   run_name: protein_ligand_pockets_train_4M_no_distill
