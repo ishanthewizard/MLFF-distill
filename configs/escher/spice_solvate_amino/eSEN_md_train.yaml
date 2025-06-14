@@ -1,5 +1,5 @@
 defaults:
-  - cluster: Germain
+  - cluster: Germain_local
   - backbone: eSEN_small
   - dataset: OMol
   - element_refs: uma_v1_hof_lin_refs
@@ -34,7 +34,7 @@ max_neighbors: 30
 cutoff_radius: 6
 epochs: null
 steps: 1000000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
-max_atoms: 1000
+max_atoms: 350
 normalizer_rmsd: 1.433569
 direct_forces_coef: 30
 omol_energy_coef: 5 # 30
