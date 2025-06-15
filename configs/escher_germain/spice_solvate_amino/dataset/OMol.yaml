@@ -8,7 +8,7 @@ omol_train:
   format: ase_db
   # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
   a2g_args:
-    molecule_cell_size: 120.0
+    molecule_cell_size: null # was 120.0, since solvated amino has cell so we set it to null to prevent bug
     r_energy: True
     r_forces: True
     r_data_keys: ['spin', 'charge']
@@ -29,7 +29,7 @@ omol_val:
   format: ase_db
   # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
   a2g_args:
-    molecule_cell_size: 120.0
+    molecule_cell_size: null # was 120.0, since solvated amino has cell so we set it to null to prevent bug
     r_energy: True
     r_forces: True
     r_data_keys: ['spin', 'charge']
