@@ -5,7 +5,7 @@ defaults:
 job:
   run_name: spice_solvated_amino_hessian_autograd_302_1.43_on_hessian
 
-hessian_coef:       60
+hessian_coef:        60
 num_hessian_samples: 4
 
 dataset:
