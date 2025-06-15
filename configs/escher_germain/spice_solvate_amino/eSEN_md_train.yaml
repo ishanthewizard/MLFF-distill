@@ -1,5 +1,5 @@
 defaults:
-  - cluster: Escher
+  - cluster: Germain
   - backbone: eSEN_small
   - dataset: OMol
   - element_refs: uma_v1_hof_lin_refs
@@ -21,7 +21,7 @@ job:
       cpus_per_task: ${cluster.cpus_per_task}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
-  run_name: spice_solvated_amino_no_distill
+  run_name: spice_solvated_amino_no_distill_correct_bug
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
