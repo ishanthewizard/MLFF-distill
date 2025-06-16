@@ -1,0 +1,44 @@
+# omol_path_germain: /data/ishan-amin/OMOL
+# teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos
+
+omol_train:
+  splits:
+    train:
+      src: OMOL/TOY/solvated/single_train
+  format: ase_db
+  # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
+  a2g_args:
+    molecule_cell_size: null # was 120.0, since solvated amino has cell so we set it to null to prevent bug
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    energy: energy # omol_energy
+    forces: ${omol_forces_key}
+  transforms:
+    common_transform:
+      dataset_name: omol
+
+omol_val:
+  splits:
+    val:
+      src: OMOL/TOY/solvated/single_val
+  format: ase_db
+  # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
+  a2g_args:
+    molecule_cell_size: null # was 120.0, since solvated amino has cell so we set it to null to prevent bug
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    energy: energy # omol_energy
+    forces: ${omol_forces_key}
+  transforms:
+    common_transform:
+      dataset_name: omol

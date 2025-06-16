@@ -26,7 +26,7 @@ job:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
     entity: jianyuelalala
-    project: OMOL
+    project: OMOL_debug
 
 cpu_graph: True
 bf16: False
@@ -36,8 +36,8 @@ epochs: null
 steps: 300000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 max_atoms: 350
 normalizer_rmsd: 1.433569
-direct_forces_coef: 30
-omol_energy_coef: 30
+direct_forces_coef: 0 # 30
+omol_energy_coef: 0 # 30
 
 # regress_stress: False
 # direct_forces: True
@@ -139,7 +139,7 @@ runner:
     bf16: ${bf16}
   max_epochs: ${epochs}
   max_steps: ${steps}
-  evaluate_every_n_steps: 1000
+  evaluate_every_n_steps: 1000000 # 1000
   callbacks:
     - _target_: fairchem.core.common.profiler_utils.ProfilerCallback
       job_config: ${job}

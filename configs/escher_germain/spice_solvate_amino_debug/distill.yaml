@@ -3,19 +3,19 @@ defaults:
   - override tasks: hessian_task
 
 job:
-  run_name: spice_solvated_amino_hessian_autograd_302_1.43_on
+  run_name: spice_solvated_amino_hessian_autograd_302_1.43_on_hessian
 
-hessian_coef:       60
-num_hessian_samples: 4
+hessian_coef:        60
+num_hessian_samples: 30
 
 dataset:
   omol_train:
     format:                 src.distill_datasets.CombinedDatasetTrain
-    teacher_labels_folder:  OMOL/TOY/labels/EScAIP_SPiceAminos
+    teacher_labels_folder:  /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/single_train
     num_hessian_samples:    ${num_hessian_samples}
   omol_val:
     format:                 src.distill_datasets.CombinedDatasetVal
-    teacher_labels_folder:  OMOL/TOY/labels/EScAIP_SPiceAminos
+    teacher_labels_folder:  /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/single_train
     num_hessian_samples:    ${num_hessian_samples}
 runner:
   train_eval_unit:
