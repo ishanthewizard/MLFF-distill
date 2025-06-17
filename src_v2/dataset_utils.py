@@ -31,7 +31,7 @@ def get_inverse_indices(original_indices: list[int]) -> list[int]:
 
 
 def initialize_finetuning_model(
-    checkpoint_location: str, use_ema: True, overrides: dict | None = None, heads: dict | None = None
+    checkpoint_location: str, use_ema: False, overrides: dict | None = None, heads: dict | None = None
 ) -> torch.nn.Module:
     model, _ = load_inference_model(checkpoint_location, overrides, use_ema=use_ema)
 

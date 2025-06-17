@@ -105,7 +105,7 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
                 retain_graph=True
             )[0]
     if not looped:
-        return torch.vmap(compute_grad)
+        return torch.vmap(compute_grad)(grad_outputs)
     else:
         num_atoms = forces.shape[0]
         full_jac = torch.zeros(grad_outputs.shape[0], num_atoms, 3).to(forces.device)
@@ -190,7 +190,7 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach,
     total_num_atoms = batch.pos.shape[0]
     for output in grad_outputs:
         perturbed_batch_forward = batch.clone()
-        perturbed_batch_forward.pos = (original_pos + h * output).detach()
+        perturbed_batch_forward.pos = (original_pos + h * output).detach() if detach else (original_pos + h * output)
         perturbed_batches.append(perturbed_batch_forward)
 
     if not looped:
