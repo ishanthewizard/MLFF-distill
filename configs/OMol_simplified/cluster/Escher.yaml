@@ -1,13 +1,20 @@
-run_dir: runs
-nodelist: escher
-partition: gpu
-qos: gpu
-mode: SLURM
 device: CUDA
+mode: SLURM
 ranks_per_node: 2
-dataloader_workers: 8
-timeout_hr: 12
+num_nodes: 1
+
+
+slurm:
+  qos: gpu.  # other options: scavenger and long, also need to set partition to the same thing
+  partition: gpu
+  nodelist: germain
+  mem_gb: 50
+  timeout_hr: 24
+  cpus_per_task: 9
+  constraint: gpu
+  account: m4558_g #
+
 debug: False
-mem_gb: 50
-cpus_per_task: 9
-omol_path: /data/ishan-amin/OMOL
+run_dir: runs
+nodelist: germain
+dataloader_workers: 0

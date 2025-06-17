@@ -12,12 +12,12 @@ job:
     ranks_per_node: ${cluster.ranks_per_node}
     num_nodes: 1
     slurm:
-      qos: ${cluster.qos}
-      partition: ${cluster.partition}
-      nodelist: ${cluster.nodelist}
-      mem_gb: ${cluster.mem_gb}
-      timeout_hr: ${cluster.timeout_hr}
-      cpus_per_task: ${cluster.cpus_per_task}
+      qos: ${cluster.slurm.qos}
+      partition: ${cluster.slurm.partition}
+      nodelist: ${cluster.slurm.nodelist}
+      mem_gb: ${cluster.slurm.mem_gb}
+      timeout_hr: ${cluster.slurm.timeout_hr}
+      cpus_per_task: ${cluster.slurm.cpus_per_task}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
   run_name: eSEN_train_4M

@@ -4,19 +4,7 @@ import time
 import logging
 # from fairchem.core.common.data_parallel import  OCPCollater
 from fairchem.core.common import distutils
-
-
-def create_hessian_mask(dataset, mask_out_percentage=0.2):
-    init_mask = torch.ones(len(dataset))
-    
-    hessian_mask = torch.bernoulli(init_mask*(1 - mask_out_percentage))
-    
-    logging.info(f"\nMasking out {(1-hessian_mask.sum()*100)/len(dataset):.2f}% of the Hessian\n")
-    
-    return hessian_mask
-
-
-
+from tqdm import tqdm
 
 def print_cuda_memory_usage():
     allocated = torch.cuda.memory_allocated() / (1024 ** 3)  # Convert bytes to GB
@@ -52,7 +40,7 @@ def get_teacher_jacobian(batch, vectorize=True, should_mask=True, approximation=
         # Forward Difference
         forces = forward(batch)['forces']['forces'].detach()
         # print("device", forces.device, batch.pos.device,grad_outputs.device)
-        jac = get_jacobian_finite_difference(forces, batch, grad_outputs, forward=forward, collater = collater, looped=(not vectorize))
+        jac = get_jacobian_finite_difference(forces, batch, grad_outputs, forward=forward, detach=True, collater = collater, looped=(not vectorize))
         jac = jac.reshape(max_free_atom_per_mol, 3, total_num_atoms, 3)
         jacs_per_mol = [jac[:n_fr_at, :,  cum_sum:cum_sum + nat, :] for cum_sum, n_fr_at, nat in zip(cumulative_sums[:-1], num_free_atoms_per_mol, natoms)]
     elif approximation == "central":
@@ -105,7 +93,7 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
                 retain_graph=True
             )[0]
     if not looped:
-        return torch.vmap(compute_grad)
+        return torch.vmap(compute_grad)(grad_outputs)
     else:
         num_atoms = forces.shape[0]
         full_jac = torch.zeros(grad_outputs.shape[0], num_atoms, 3).to(forces.device)
@@ -198,7 +186,7 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach,
         perturbed_forces = forward(large_batch)['forces']
     else:
         perturbed_forces = []
-        for batch in perturbed_batches:
+        for batch in tqdm(perturbed_batches):
             pert_force = forward(batch)['forces']['forces'].detach() if detach else forward(batch)['forces']['forces']
             perturbed_forces.append(pert_force)
         perturbed_forces = torch.cat(perturbed_forces, dim=0)
