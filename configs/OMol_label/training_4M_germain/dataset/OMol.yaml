@@ -1,8 +1,8 @@
 omol_train:
-  src: ${cluster.data_root_dir}/protein_core_train_4M
+  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/solvated/toy_train
   format: ase_db
   a2g_args:
-    molecule_cell_size: 120.0
+    # molecule_cell_size: 120.0
     r_energy: True
     r_forces: True
     r_data_keys: ['spin', 'charge','data_id']
@@ -17,10 +17,10 @@ omol_train:
       dataset_name: omol
 
 omol_val:
-  src: ${cluster.data_root_dir}/protein_interface_val
+  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/solvated/toy_val
   format: ase_db
   a2g_args:
-    molecule_cell_size: 120.0
+    # molecule_cell_size: 120.0
     r_energy: True
     r_forces: True
     r_data_keys: ['spin', 'charge','data_id']

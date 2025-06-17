@@ -15,14 +15,19 @@ class HessianSampler:
     def sample_with_mask(self, num_samples, mask):
         assert num_samples <= len(mask), "System too small for the number of samples."
         valid_rows = torch.where(mask)[0]
+        # print(f"Valid rows: {valid_rows}, num_samples: {num_samples}")
         if valid_rows.numel() == 0:
             raise ValueError("No valid rows available according to the mask")
 
         # Each valid row contributes 3 indices
         valid_indices = valid_rows.repeat_interleave(3) * 3 + torch.tensor([0, 1, 2]).repeat(valid_rows.size(0)).to(mask.device)
+        # print(f"Valid indices: {valid_indices}")
         chosen_indices = valid_indices[torch.randperm(valid_indices.size(0))[:num_samples]]
+        # print(f"Chosen indices: {chosen_indices}")
         row_indices = chosen_indices // 3
+        # print(f"Row indices: {row_indices}")
         col_indices = chosen_indices % 3
+        # print(f"Column indices: {col_indices}")
         return torch.stack((row_indices, col_indices), dim=1)  # (num_samples, 2)
 
     def sample_hessian(self, samples, num_atoms, force_jacs):
@@ -70,15 +75,17 @@ class CombinedDataset(AseDBDataset):
         if self.hessian_dataset is not None:
             # 4) Load the raw force_jacobian vector (CPU)
             raw_jac = self.hessian_dataset[idx]
-
+            # print(raw_jac,raw_jac.shape)
             # 5) Sample one Hessian entry per atom (still on CPU)
             samples = self.hessian_sampler.sample_with_mask(num_samples, torch.ones(num_atoms))
-            
+            # print("inside get items",samples)
             
             force_jacs = self.hessian_sampler.sample_hessian(samples, num_atoms, raw_jac)
-
+            # print(force_jacs.shape)
             main_batch.forces_jac = force_jacs
             main_batch.samples = samples
+            main_batch.raw_jac = raw_jac  # Keep the raw jacobian for debugging or further processing
+            print(raw_jac.shape)
             main_batch.num_samples = torch.tensor(num_samples)
         else:
             # 6) If no Hessian, just fill zeros on CPU

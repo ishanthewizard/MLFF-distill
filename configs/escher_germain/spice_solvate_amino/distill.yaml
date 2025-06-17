@@ -11,11 +11,13 @@ num_hessian_samples: 4
 dataset:
   omol_train:
     format:                 src.distill_datasets.CombinedDatasetTrain
-    teacher_labels_folder:  OMOL/TOY/labels/EScAIP_SPiceAminos
+    # teacher_labels_folder:  OMOL/TOY/labels/EScAIP_SPiceAminos
+    teacher_labels_folder:  /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/toy_train
     num_hessian_samples:    ${num_hessian_samples}
   omol_val:
     format:                 src.distill_datasets.CombinedDatasetVal
-    teacher_labels_folder:  OMOL/TOY/labels/EScAIP_SPiceAminos
+    # teacher_labels_folder:  OMOL/TOY/labels/EScAIP_SPiceAminos
+    teacher_labels_folder:  /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/toy_train
     num_hessian_samples:    ${num_hessian_samples}
 runner:
   train_eval_unit:

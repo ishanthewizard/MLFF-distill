@@ -16,7 +16,7 @@ omol_train:
     radius: ${cutoff_radius}
     max_neigh: ${max_neighbors}
   key_mapping:
-    energy: energy # omol_energy
+    energy: omol_energy
     forces: ${omol_forces_key}
   transforms:
     common_transform:
@@ -37,7 +37,7 @@ omol_val:
     radius: ${cutoff_radius}
     max_neigh: ${max_neighbors}
   key_mapping:
-    energy: energy # omol_energy
+    energy: omol_energy
     forces: ${omol_forces_key}
   transforms:
     common_transform:

@@ -20,6 +20,7 @@ def get_inverse_indices(original_indices: list[int]) -> list[int]:
     duplicates are handled by taking the last occurrence of the index.
     """
     # handling the case when duplicates are present
+    print(f"Original indices: {original_indices}")
     right_cut = max(original_indices) + 1
     
     # O(n) approach to find inverse indices with handling duplicates
@@ -118,6 +119,7 @@ def merge_indices_pt_shards(input_dir, output_path):
 
     # Output result
     train_set_idx = []
+
     for f in sorted_train_files:
         path_to_f = os.path.join(input_dir, f)
         idx_list = torch.load(path_to_f,weights_only=False)
