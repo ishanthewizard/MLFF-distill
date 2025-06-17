@@ -1,0 +1,35 @@
+omol_train:
+  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/solvated/toy_train
+  format: ase_db
+  a2g_args:
+    # molecule_cell_size: 120.0
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge','data_id']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    # energy: omol_energy
+    forces: ${omol_forces_key}
+  transforms:
+    common_transform:
+      dataset_name: omol
+
+omol_val:
+  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/solvated/toy_val
+  format: ase_db
+  a2g_args:
+    # molecule_cell_size: 120.0
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge','data_id']
+    r_edges: ${cpu_graph}
+    radius: ${cutoff_radius}
+    max_neigh: ${max_neighbors}
+  key_mapping:
+    # energy: omol_energy
+    forces: ${omol_forces_key}
+  transforms:
+    common_transform:
+      dataset_name: omol

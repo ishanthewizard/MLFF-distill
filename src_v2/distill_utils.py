@@ -182,7 +182,7 @@ def get_force_jac_loss(out, batch, num_samples, mask, should_mask, looped=False,
     loss  = loss * distutils.get_world_size() / num_samples
     return loss 
 
-def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach, collater, looped=False, h=0.001): 
+def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach, collater, looped=False, h=0.0001): 
 
     original_pos = batch.pos.clone()
     perturbed_batches = []
@@ -207,7 +207,6 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach,
     for i in range(len(perturbed_batches)):
         forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
         hessian_col = (forward_force - forces.detach()) / h if detach else (forward_force - forces) / h 
-        # print("HESSIAN", hessian_col.shape)
         hessian_columns.append(hessian_col)
 
     return torch.stack(hessian_columns, dim=0)  # NOTE: this is technically the transpose of the hessian, not the hessian

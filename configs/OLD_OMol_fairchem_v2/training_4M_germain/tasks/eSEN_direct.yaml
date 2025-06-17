@@ -1,0 +1,24 @@
+- _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+  name: energy
+  level: system
+  property: energy
+  loss_fn:
+    _target_: fairchem.core.modules.loss.DDPMTLoss
+    loss_fn:
+      _target_: fairchem.core.modules.loss.PerAtomMAELoss
+    coefficient: ${energy_coef}
+  out_spec:
+    dim: [1]
+    dtype: float32
+  normalizer:
+    _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+    mean: 0.0
+    rmsd: ${normalizer_rmsd}
+  element_references:
+    _target_: fairchem.core.modules.normalization.element_references.ElementReferences
+    element_references:
+      _target_: torch.DoubleTensor
+      _args_:
+        - ${element_refs.omol_elem_refs}
+  datasets: [omol]
+  metrics: [mae]
