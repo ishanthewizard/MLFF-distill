@@ -305,8 +305,79 @@ def get_energy_jac_loss(out, batch, energy_std):
     loss  = loss / sum(batch.natoms) # different options here, currently weighting all systems the same regardless of size
     
     return loss
+
+def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach, collater, looped=False, h=0.0001): 
+    # currently a right difference scheme, not a central difference scheme.
     
-def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collater, looped=False, h=0.0001): 
+    # Store original positions
+    original_pos = batch.pos.clone()
+
+    # Create a list to store all perturbed batches
+    perturbed_batches = []
+
+    # Total number of atoms
+    total_num_atoms = batch.pos.shape[0]
+
+    for output in grad_outputs:
+        # Create forward perturbation
+        perturbed_batch_forward = batch.clone()
+        perturbed_batch_forward.pos = original_pos + h * output
+
+        # Append both perturbed batches to the list
+        perturbed_batches.append(perturbed_batch_forward)
+
+    # Combine all perturbed batches into one large batch
+    if not looped:
+        large_batch = collater(perturbed_batches)
+        # Perform forward pass for all perturbed batches at once
+        perturbed_forces = forward(large_batch)['forces']['forces']
+    else:
+        perturbed_forces = []
+        for batch in perturbed_batches:
+            perturbed_forces.append(forward(batch)['forces']['forces'])
+        perturbed_forces = torch.cat(perturbed_forces, dim=0)
+    # Split the large batch's forces into individual forward and backward forces
+    hessian_columns = []
+    for i in range(len(perturbed_batches)):
+        forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
+        hessian_col = (forward_force - forces) / h
+        hessian_columns.append(hessian_col)
+
+    # Stack columns to form the Jacobian matrix
+    #technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
+    return torch.stack(hessian_columns, dim=0) 
+
+# def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach, collater, looped=False, h=0.001): 
+
+#     original_pos = batch.pos.clone()
+#     perturbed_batches = []
+
+#     total_num_atoms = batch.pos.shape[0]
+#     for output in grad_outputs:
+#         perturbed_batch_forward = batch.clone()
+#         perturbed_batch_forward.pos = (original_pos + h * output).detach()
+#         perturbed_batches.append(perturbed_batch_forward)
+
+#     if not looped:
+#         large_batch = collater(perturbed_batches)
+#         perturbed_forces = forward(large_batch)['forces']
+#     else:
+#         perturbed_forces = []
+#         for batch in perturbed_batches:
+#             pert_force = forward(batch)['forces']['forces'].detach() if detach else forward(batch)['forces']['forces']
+#             perturbed_forces.append(pert_force)
+#         perturbed_forces = torch.cat(perturbed_forces, dim=0)
+#     # Split the large batch's forces into individual forward and backward forces
+#     hessian_columns = []
+#     for i in range(len(perturbed_batches)):
+#         forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
+#         hessian_col = (forward_force - forces.detach()) / h if detach else (forward_force - forces) / h 
+#         # print("HESSIAN", hessian_col.shape)
+#         hessian_columns.append(hessian_col)
+
+#     return torch.stack(hessian_columns, dim=0)  # NOTE: this is technically the transpose of the hessian, not the hessian
+
+def get_jacobian_finite_difference_with_detach(forces, batch, grad_outputs, forward, detach, collater, looped=False, h=0.0001): 
     # currently a right difference scheme, not a central difference scheme.
     # Store original positions
     original_pos = batch.pos.clone()
@@ -317,12 +388,9 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
     # Total number of atoms
     total_num_atoms = batch.pos.shape[0]
     for output in grad_outputs:
-        # print("OUTPUT SHAPE", output.shape)
         # Create forward perturbation
         perturbed_batch_forward = batch.clone()
-        # perturbed_batch_forward.pos = (original_pos + h * output)
         perturbed_batch_forward.pos = (original_pos + h * output).detach()
-        # print("PERTURBED BATCH FORWARD SHAPE", perturbed_batch_forward.pos.shape)
         # Append both perturbed batches to the list
         perturbed_batches.append(perturbed_batch_forward)
 
@@ -333,14 +401,8 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
         # Perform forward pass for all perturbed batches at once
         perturbed_forces = forward(large_batch)['forces']
     else:
-        # print("here")
         perturbed_forces = []
         for batch in perturbed_batches:
-            # perturbed_output = forward(batch)
-            # save memory
-            # perturbed_output['energy'] = perturbed_output['energy'].detach()
-            # perturbed_output['forces'] = perturbed_output['forces'].detach()
-            # print("PERTURBED OUTPUT", perturbed_output.keys())
             perturbed_forces.append(forward(batch)['forces']['forces'].detach())
         perturbed_forces = torch.cat(perturbed_forces, dim=0)
     # Split the large batch's forces into individual forward and backward forces
@@ -348,12 +410,10 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, collate
     for i in range(len(perturbed_batches)):
         forward_force = perturbed_forces[i * total_num_atoms:(i + 1) * total_num_atoms]
         hessian_col = (forward_force - forces.detach()) / h
-        # print("HESSIAN", hessian_col.shape)
         hessian_columns.append(hessian_col)
 
     # Stack columns to form the Jacobian matrix
     # technically, dim should be 1 here since they're columns...but since the hessian is symmetric it shouldn't matter hopefully
-    # print("HESSIAN SHAPE", torch.stack(hessian_columns, dim=0).shape)
     return torch.stack(hessian_columns, dim=0) 
 
 
