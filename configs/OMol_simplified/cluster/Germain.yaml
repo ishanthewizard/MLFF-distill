@@ -1,20 +1,13 @@
-device: CUDA
-mode: SLURM
-ranks_per_node: 2
-num_nodes: 1
-
-
-slurm:
-  qos: gpu
-  partition: germain
-  nodelist: ~
-  mem_gb: 50
-  timeout_hr: 24
-  cpus_per_task: 9
-  constraint: gpu
-  account: m4558_g #
-
-debug: False
 run_dir: runs
 nodelist: germain
-dataloader_workers: 4
+partition: scavenger
+qos: scavenger
+mode: SLURM
+device: CUDA
+ranks_per_node: 2
+dataloader_workers: 0
+timeout_hr: 12
+debug: False
+mem_gb: 50
+cpus_per_task: 9
+omol_path: /data/ishan-amin/OMOL

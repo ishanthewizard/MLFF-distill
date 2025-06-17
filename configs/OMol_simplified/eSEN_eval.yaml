@@ -18,5 +18,5 @@ runner:
     bf16: ${bf16}
     model:
       _target_: src_v2.dataset_utils.initialize_finetuning_model
-      checkpoint_location: /data/ishan-amin/OMOL/esen_md_direct_all.pt #/data/ishan-amin/ESEN_checkpoints/esen_omol/esen_md_direct_all.pt
+      checkpoint_location: /data/ishan-amin/ESEN_checkpoints/esen_omol/esen_md_direct_all.pt
       use_ema: True

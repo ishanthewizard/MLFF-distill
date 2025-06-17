@@ -11,7 +11,7 @@ conda activate fairchem_V2
 ############# label generation
 
 python main.py \
--c /home/yuejian/project/MLFF-distill/configs/OMol_simplified/eSEN_labels.yaml
+-c /home/yuejian/project/MLFF-distill/configs/OMol_fairchem_v2/training_4M_germain/eSEN_md.yaml
 
 
 ############# label merging

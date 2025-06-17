@@ -10,5 +10,4 @@ timeout_hr: 12
 debug: False
 mem_gb: 50
 cpus_per_task: 9
-num_nodes: 1
 omol_path: /data/ishan-amin/OMOL
