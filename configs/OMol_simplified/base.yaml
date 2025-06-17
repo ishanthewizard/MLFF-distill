@@ -1,6 +1,6 @@
 defaults:
   - cluster: Germain_local
-  - dataset: OMol
+  - dataset: OMol_train_4M
   - element_refs: eSEN_omol
   - tasks: omol_direct
   - _self_
@@ -10,14 +10,16 @@ job:
   scheduler:
     mode: ${cluster.mode}
     ranks_per_node: ${cluster.ranks_per_node}
-    num_nodes: 1
+    num_nodes: ${cluster.num_nodes}
     slurm:
-      qos: ${cluster.qos}
-      partition: ${cluster.partition}
-      nodelist: ${cluster.nodelist}
-      mem_gb: ${cluster.mem_gb}
-      timeout_hr: ${cluster.timeout_hr}
-      cpus_per_task: ${cluster.cpus_per_task}
+      qos: ${cluster.slurm.qos}
+      partition: ${cluster.slurm.partition}
+      nodelist: ${cluster.slurm.nodelist}
+      mem_gb: ${cluster.slurm.mem_gb}
+      timeout_hr: ${cluster.slurm.timeout_hr}
+      cpus_per_task: ${cluster.slurm.cpus_per_task}
+      constraint: ${cluster.slurm.constraint}
+      account: ${cluster.slurm.account}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
   run_name: eSEN_train_4M
@@ -30,7 +32,7 @@ job:
 cpu_graph: True
 max_neighbors: 30
 cutoff_radius: 6
-max_atoms: 350
+max_atoms: 1000
 normalizer_rmsd: 1.433569
 direct_forces_coef: 30
 energy_coef: 30
