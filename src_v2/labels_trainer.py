@@ -30,7 +30,7 @@ from fairchem.core.units.mlip_unit.mlip_unit import (
     convert_train_checkpoint_to_inference_checkpoint,
 )
 
-from .distill_utils import get_jacobian, get_force_jac_loss, print_cuda_memory_usage, get_teacher_jacobian
+from .distill_utils import get_teacher_jacobian
 
 if TYPE_CHECKING:
     from torch.distributed.checkpoint.stateful import Stateful
@@ -51,13 +51,13 @@ class TeacherLabelGenerator(Runner):
         self,
         train_dataloader: torch.utils.data.dataloader,
         eval_dataloader: torch.utils.data.dataloader,
-        train_eval_unit: Union[TrainUnit, EvalUnit, Stateful],
+        eval_unit: Union[TrainUnit, EvalUnit, Stateful],
         label_folder: str = None,
     ):  
         # initialize the class
         self.train_dataloader = train_dataloader
         self.eval_dataloader = eval_dataloader
-        self.train_eval_unit = train_eval_unit
+        self.train_eval_unit = eval_unit
         self.device = self.train_eval_unit.model.device
         
         # Check if the dataloaders are using a deterministic sampler
