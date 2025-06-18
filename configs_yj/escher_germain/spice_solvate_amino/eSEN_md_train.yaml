@@ -1,15 +1,9 @@
 defaults:
-<<<<<<<< HEAD:configs_yj/escher_germain/spice_solvate_amino/eSEN_md_train.yaml
   - cluster: Germain_local
   - backbone: eSEN_small
-========
-  # - cluster: ada6000_local
-  - cluster: fair_cluster
-  # - backbone: eSEN
->>>>>>>> fairchemV2:configs/OMol_simplified/eSEN_labels.yaml
   - dataset: OMol
-  - element_refs: eSEN_omol
-  - tasks: eSEN_direct
+  - element_refs: uma_v1_hof_lin_refs
+  - tasks: omol_direct
   - _self_
 
 job:
@@ -17,69 +11,38 @@ job:
   scheduler:
     mode: ${cluster.mode}
     ranks_per_node: ${cluster.ranks_per_node}
-    num_nodes: 32
+    num_nodes: 1
     slurm:
-      # account: ${cluster.account}
       qos: ${cluster.qos}
-      mem_gb: ${cluster.mem_gb}
-      cpus_per_task: ${cluster.cpus_per_task}
-
       partition: ${cluster.partition}
-      timeout_hr: ${cluster.timeout_hr}
       nodelist: ${cluster.nodelist}
-      constraint: ${cluster.constraint}
-      exclude: ${cluster.exclude}
+      mem_gb: ${cluster.mem_gb}
+      timeout_hr: ${cluster.timeout_hr}
+      cpus_per_task: ${cluster.cpus_per_task}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
-<<<<<<<< HEAD:configs_yj/escher_germain/spice_solvate_amino/eSEN_md_train.yaml
   run_name: spice_solvated_amino_no_distill_correct_bug_302
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
     entity: jianyuelalala
-    project: OMOL
-========
-  run_name: eSEN_label
-  logger:
-    _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
-    _partial_: true
-    entity: ericqu # your account name
-    project: distill
->>>>>>>> fairchemV2:configs/OMol_simplified/eSEN_labels.yaml
+    project: OMOL_debug
 
-starting_checkpoint: /private/home/ericqu/MLFF-distill/esen_md_direct_all.pt
-
-# moe_layer_type: pytorch
-# num_moe_experts: 32
+cpu_graph: True
+bf16: False
 max_neighbors: 30
 cutoff_radius: 6
 epochs: null
-<<<<<<<< HEAD:configs_yj/escher_germain/spice_solvate_amino/eSEN_md_train.yaml
 steps: 100000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 max_atoms: 350
 normalizer_rmsd: 1.433569
 direct_forces_coef: 30
 omol_energy_coef: 30
-========
-steps: 2080000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
-max_atoms: 350 # important
-bf16: True
-cpu_graph: True
-# otf_graph: False
-normalizer_rmsd: 1.433569
-# direct_forces_coef: 30
-energy_coef: 10
->>>>>>>> fairchemV2:configs/OMol_simplified/eSEN_labels.yaml
 
 # regress_stress: False
 # direct_forces: True
 
-# oc20_forces_key: forces
-# omat_forces_key: forces
-# odac_forces_key: forces
-# omc_forces_key: forces
-
-# dataset_list: ["oc20", "omol", "omat", "odac", "omc"]
+omol_forces_key: forces
 
 exclude_keys: [
   "id", # only oc20,oc22 have this
@@ -95,15 +58,20 @@ exclude_keys: [
 ]
 
 train_dataset:
-  _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
-  config: ${dataset.omol_train}
-
-
+  _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+  dataset_configs:
+    omol: ${dataset.omol_train}
+  combined_dataset_config:
+    sampling:
+      type: explicit
+      ratios:
+        omol.train: 1.0
 
 val_dataset:
-  _target_: fairchem.core.datasets.ase_datasets.AseDBDataset
-  config: ${dataset.omol_val}
-
+  _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+  dataset_configs:
+    omol: ${dataset.omol_val}
+  combined_dataset_config: { sampling: {type: temperature, temperature: 1.0} }
 
 train_dataloader:
   _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
@@ -112,7 +80,7 @@ train_dataloader:
     _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
     _partial_: True
     max_atoms: ${max_atoms}
-    shuffle: False
+    shuffle: True
     seed: 0
   num_workers: ${cluster.dataloader_workers}
   collate_fn:
@@ -136,14 +104,13 @@ eval_dataloader:
     exclude_keys: ${exclude_keys}
 
 heads:
-  energy:
+  omol_energy:
     module: fairchem.core.models.uma.escn_md.MLP_Energy_Head
   forces:
     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
 
 runner:
-  _target_: src_v2.labels_trainer.TeacherLabelGenerator
-  # _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
+  _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   train_eval_unit:
@@ -151,9 +118,8 @@ runner:
     job_config: ${job}
     tasks: ${tasks}
     model:
-      _target_: src_v2.dataset_utils.initialize_finetuning_model
-      checkpoint_location: ${starting_checkpoint}
-      # overrides: None
+      _target_: fairchem.core.models.base.HydraModel
+      backbone: ${backbone}
       heads: ${heads}
     optimizer_fn:
       _target_: torch.optim.AdamW
@@ -171,16 +137,12 @@ runner:
     print_every: 10
     clip_grad_norm: 100
     bf16: ${bf16}
-<<<<<<<< HEAD:configs_yj/escher_germain/spice_solvate_amino/eSEN_md_train.yaml
   max_epochs: ${epochs}
   max_steps: ${steps}
-  evaluate_every_n_steps: 1000
+  evaluate_every_n_steps: 1000000 # 1000
   callbacks:
     - _target_: fairchem.core.common.profiler_utils.ProfilerCallback
       job_config: ${job}
     - _target_: fairchem.core.components.train.train_runner.TrainCheckpointCallback
       checkpoint_every_n_steps: 5000
       max_saved_checkpoints: 10
-========
-  label_folder: ${dataset.omol_train.src}/labels
->>>>>>>> fairchemV2:configs/OMol_simplified/eSEN_labels.yaml

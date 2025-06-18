@@ -1,5 +1,5 @@
 omol_train:
-  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/solvated/toy_train
+  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/solvated/single_train
   format: ase_db
   a2g_args:
     # molecule_cell_size: 120.0
@@ -17,7 +17,7 @@ omol_train:
       dataset_name: omol
 
 omol_val:
-  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/solvated/toy_val
+  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/solvated/single_val
   format: ase_db
   a2g_args:
     # molecule_cell_size: 120.0

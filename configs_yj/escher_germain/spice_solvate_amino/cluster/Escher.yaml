@@ -12,3 +12,5 @@ timeout_hr: 24
 debug: False
 mem_gb: 50
 cpus_per_task: 9
+constraint: null
+exclude: null

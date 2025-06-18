@@ -10,3 +10,5 @@ debug: False
 mem_gb: 0
 cpus_per_task: 9
 timeout_hr: 1
+constraint: null
+exclude: null

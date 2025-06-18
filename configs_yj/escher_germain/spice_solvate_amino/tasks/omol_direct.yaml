@@ -1,12 +1,12 @@
 - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
-  name: energy
+  name: omol_energy
   level: system
   property: energy
   loss_fn:
     _target_: fairchem.core.modules.loss.DDPMTLoss
     loss_fn:
       _target_: fairchem.core.modules.loss.PerAtomMAELoss
-    coefficient: ${energy_coef}
+    coefficient: ${omol_energy_coef}
   out_spec:
     dim: [1]
     dtype: float32

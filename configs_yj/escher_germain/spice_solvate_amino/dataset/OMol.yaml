@@ -4,7 +4,7 @@
 omol_train:
   splits:
     train:
-      src: OMOL/TOY/solvated/toy_train
+      src: OMOL/TOY/solvated/single_train
   format: ase_db
   # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
   a2g_args:
@@ -25,7 +25,7 @@ omol_train:
 omol_val:
   splits:
     val:
-      src: OMOL/TOY/solvated/toy_val
+      src: OMOL/TOY/solvated/single_val
   format: ase_db
   # teacher_labels_folder: data/labels/SPICE_labels/EScAIP_SpiceAminos #${teacher_labels_folder}
   a2g_args:
