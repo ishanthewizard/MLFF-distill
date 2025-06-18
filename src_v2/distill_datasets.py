@@ -79,6 +79,7 @@ class CombinedDataset(AseDBDataset):
 
             main_batch.forces_jac = force_jacs
             main_batch.samples = samples
+            main_batch.raw_jac = raw_jac  # Keep the raw jacobian for debugging or further processing
             main_batch.num_samples = torch.tensor(num_samples)
         else:
             # 6) If no Hessian, just fill zeros on CPU

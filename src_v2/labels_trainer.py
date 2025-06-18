@@ -128,7 +128,7 @@ class TeacherLabelGenerator(Runner):
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
-        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
         #####################
         ##### Jacobians #####
@@ -141,7 +141,7 @@ class TeacherLabelGenerator(Runner):
             # should_mask = self.output_targets['forces']["train_on_free_atoms"]
             should_mask = True
             def get_seperated_force_jacs(batch): 
-                batch.pos.detach().requires_grad_()
+                batch.pos.requires_grad_()
                 jacs = get_teacher_jacobian(
                                             batch, 
                                             # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
@@ -149,6 +149,7 @@ class TeacherLabelGenerator(Runner):
                                             should_mask=should_mask, # BUG
                                             # approximation="disabled", # {"disabled","forward","central"}
                                             approximation="forward", # {"disabled","forward","central"}
+                                            # detach=True,
                                             forward = self.train_eval_unit.model,
                                             collater = None,
                                             device = self.device

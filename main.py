@@ -59,17 +59,8 @@ class SlurmConfig:
     nodelist: Optional[str] = (
         None  # omegaconf in python 3.9 does not backport annotations
     )
-<<<<<<< HEAD
-    constraint: Optional[str] = (
-        None  # omegaconf in python 3.9 does not backport annotations
-    )
-    exclude: Optional[str] = (
-        None  # omegaconf in python 3.9 does not backport annotations
-    )
-=======
-    constraint: Optional[str] = None
-    exclude: Optional[str] = None
->>>>>>> fairchemV2
+    constraint: Optional[str] = (None)
+    exclude: Optional[str] = (None)
 
 
 @dataclass
@@ -175,10 +166,6 @@ def main(
             nodes=scheduler_cfg.num_nodes,
             slurm_qos=scheduler_cfg.slurm.qos,
             slurm_account=scheduler_cfg.slurm.account,
-<<<<<<< HEAD
-            slurm_nodelist=scheduler_cfg.slurm.nodelist,
-=======
->>>>>>> fairchemV2
             slurm_constraint=scheduler_cfg.slurm.constraint,
             slurm_exclude=scheduler_cfg.slurm.exclude,
         )
