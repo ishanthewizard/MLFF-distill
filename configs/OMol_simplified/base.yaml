@@ -1,5 +1,5 @@
 defaults:
-  - cluster: Germain_local
+  - cluster: local
   - dataset: Solvated
   - element_refs: eSEN_omol
   - tasks: omol_direct
@@ -24,8 +24,8 @@ job:
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
-    entity: ishan-amin
-    project: OMOL
+    entity: jianyuelalala
+    project: OMOL_test
 
 cpu_graph: True
 max_neighbors: 30

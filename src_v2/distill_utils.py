@@ -115,7 +115,7 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach,
         perturbed_forces = forward(large_batch)['forces']
     else:
         perturbed_forces = []
-        for batch in tqdm(perturbed_batches):
+        for batch in perturbed_batches:
             pert_force = forward(batch)['forces']['forces'].detach() if detach else forward(batch)['forces']['forces']
             perturbed_forces.append(pert_force)
         perturbed_forces = torch.cat(perturbed_forces, dim=0)
