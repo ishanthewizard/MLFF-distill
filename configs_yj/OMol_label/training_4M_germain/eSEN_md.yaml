@@ -30,7 +30,7 @@ job:
     project: distill_labels
 
 
-starting_checkpoint: /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/esen_sm_direct_all.pt
+starting_checkpoint: /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/uma-s-1.pt
 
 # moe_layer_type: pytorch
 # num_moe_experts: 32
@@ -136,6 +136,7 @@ runner:
       checkpoint_location: ${starting_checkpoint}
       # overrides: None
       heads: ${heads}
+      use_ema: True
     optimizer_fn:
       _target_: torch.optim.AdamW
       _partial_: true

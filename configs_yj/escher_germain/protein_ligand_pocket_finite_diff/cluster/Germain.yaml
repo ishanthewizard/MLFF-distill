@@ -8,7 +8,7 @@ partition: gpu
 qos: gpu
 mode: SLURM
 device: CUDA
-ranks_per_node: 3
+ranks_per_node: 4
 dataloader_workers: 0
 timeout_hr: 12
 debug: False

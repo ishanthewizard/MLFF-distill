@@ -118,7 +118,8 @@ class TeacherLabelGenerator(Runner):
 
         # Function to calculate forces
         def get_seperated_forces(batch):
-            all_forces = self.train_eval_unit.model(batch)['forces']['forces']
+            # breakpoint()
+            all_forces = self.train_eval_unit.model(batch)['omol_forces']['forces']
             # sanity check
             # print(all_forces.shape)
             # print("batch.force ", batch.forces.shape)  
@@ -128,7 +129,7 @@ class TeacherLabelGenerator(Runner):
             return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
         # Record and save the data
-        self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
         #####################
         ##### Jacobians #####
@@ -147,8 +148,8 @@ class TeacherLabelGenerator(Runner):
                                             # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
                                             vectorize = False,
                                             should_mask=should_mask, # BUG
-                                            # approximation="disabled", # {"disabled","forward","central"}
-                                            approximation="forward", # {"disabled","forward","central"}
+                                            approximation="disabled", # {"disabled","forward","central"}
+                                            # approximation="forward", # {"disabled","forward","central"}
                                             # detach=True,
                                             forward = self.train_eval_unit.model,
                                             collater = None,
