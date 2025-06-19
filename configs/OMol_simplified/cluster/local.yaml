@@ -14,7 +14,7 @@ slurm:
   constraint: gpu
   account: ~
 
-debug: True
+debug: False
 run_dir: runs
 nodelist: germain
 dataloader_workers: 0

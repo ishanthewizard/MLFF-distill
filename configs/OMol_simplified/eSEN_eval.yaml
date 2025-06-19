@@ -6,7 +6,7 @@ dataset:
   omol_val:
     splits:
       val:
-        sample_n: 200   # ← your new value
+        sample_n: 1000   # ← your new value
 
 runner:
   _target_: fairchem.core.components.evaluate.eval_runner.EvalRunner #fairchem.core.components.train.train_runner.TrainEvalRunner
@@ -19,4 +19,4 @@ runner:
     model:
       _target_: src_v2.dataset_utils.initialize_finetuning_model
       checkpoint_location: /data/ishan-amin/ESEN_checkpoints/esen_omol/esen_md_direct_all.pt
-      use_ema: True
+      use_ema: False
