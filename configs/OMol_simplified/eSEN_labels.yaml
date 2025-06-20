@@ -1,6 +1,6 @@
 defaults:
   - base 
-  - override cluster: Germain
+  - override cluster: Nersc
   - override dataset: protein_ligand_pocket_300
   - _self_
 
@@ -39,7 +39,7 @@ train_dataloader:
     exclude_keys: ${exclude_keys}
 
 runner:
-  _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  _target_: src_v2.labels_trainer_v2.TeacherLabelGenerator
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   eval_unit:
