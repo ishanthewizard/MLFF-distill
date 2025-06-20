@@ -18,25 +18,15 @@ import contextlib
 from typing import TYPE_CHECKING, Optional, Union
 
 import torch
-import torch.distributed.checkpoint as dcp
-from omegaconf import OmegaConf
-from torchtnt.framework.callback import Callback
-from torchtnt.framework.fit import fit
-
 from fairchem.core.common import distutils
-from fairchem.core.common.utils import get_subdirectories_sorted_by_time
+
 from fairchem.core.components.runner import Runner
-from fairchem.core.units.mlip_unit.mlip_unit import (
-    convert_train_checkpoint_to_inference_checkpoint,
-)
 
 from .distill_utils import get_teacher_jacobian
 
 if TYPE_CHECKING:
     from torch.distributed.checkpoint.stateful import Stateful
     from torchtnt.framework import EvalUnit, TrainUnit
-    from torchtnt.framework.state import State
-    from torchtnt.framework.unit import TTrainUnit
     
 
 class TeacherLabelGenerator(Runner):
@@ -74,7 +64,7 @@ class TeacherLabelGenerator(Runner):
         # create subfolders for indices, train_forces, val_forces, and force_jacobians
         logging.info(f"Creating Label folder at: {self.label_folder}")
         os.makedirs(os.path.join(self.label_folder, "indices"),exist_ok=True)
-        os.makedirs(os.path.join(self.label_folder, "train_forces"),exist_ok=True)
+        # os.makedirs(os.path.join(self.label_folder, "train_forces"),exist_ok=True)
         os.makedirs(os.path.join(self.label_folder, "val_forces"),exist_ok=True)
         os.makedirs(os.path.join(self.label_folder, "force_jacobians"),exist_ok=True)
         
@@ -84,7 +74,7 @@ class TeacherLabelGenerator(Runner):
 
     def run(self) -> None:
         # add your label generation code here
-        self.record_labels_parallel(self.label_folder, 'train')
+        # self.record_labels_parallel(self.label_folder, 'train')
         self.record_labels_parallel(self.label_folder, 'val')
     
     def record_labels_parallel(self, labels_folder: str, dataset_type: str) -> None:
@@ -114,21 +104,17 @@ class TeacherLabelGenerator(Runner):
         ####################
 
         # Define LMDB file path for this particular worker
-        lmdb_path = os.path.join(labels_folder, f"{dataset_type}_forces", f"data.{distutils.get_rank():04d}.lmdb")
+        if dataset_type == 'val':
+            lmdb_path = os.path.join(labels_folder, f"{dataset_type}_forces", f"data.{distutils.get_rank():04d}.lmdb")
 
-        # Function to calculate forces
-        def get_seperated_forces(batch):
-            all_forces = self.train_eval_unit.model(batch)['forces']['forces']
-            # sanity check
-            # print(all_forces.shape)
-            # print("batch.force ", batch.forces.shape)  
-            # print("force mae",torch.linalg.vector_norm(all_forces - ((batch.forces)/1.433569), ord=2, dim=-1).mean())
-            
-            natoms = batch.natoms
-            return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
+            # Function to calculate forces
+            def get_seperated_forces(batch):
+                all_forces = self.train_eval_unit.model(batch)['forces']['forces']
+                natoms = batch.natoms
+                return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
         
-        # Record and save the data
-        # self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
+            # Record and save the data
+            self.record_and_save(dataloader, lmdb_path, get_seperated_forces)
 
         #####################
         ##### Jacobians #####
@@ -136,18 +122,13 @@ class TeacherLabelGenerator(Runner):
         if dataset_type == 'train':
             # Only for training dataset, save jacobians as well
             jac_dataloader = self.train_dataloader
-            
             jac_lmdb_path = os.path.join(labels_folder, "force_jacobians", f"data.{distutils.get_rank():04d}.lmdb")
-            # should_mask = self.output_targets['forces']["train_on_free_atoms"]
-            should_mask = True
             def get_seperated_force_jacs(batch): 
                 batch.pos.detach().requires_grad_()
                 jacs = get_teacher_jacobian(
                                             batch, 
                                             # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
                                             vectorize = False,
-                                            should_mask=should_mask, # BUG
-                                            # approximation="disabled", # {"disabled","forward","central"}
                                             approximation="forward", # {"disabled","forward","central"}
                                             forward = self.train_eval_unit.model,
                                             collater = None,
@@ -173,9 +154,6 @@ class TeacherLabelGenerator(Runner):
                     batch_output = fn(batch.to(self.device))
                     for i in range(len(batch_ids)):
                         txn.put(batch_ids[i].encode(), batch_output[i].detach().cpu().numpy().tobytes())
-                    del batch_output, batch
-                    gc.collect()
-                    torch.cuda.empty_cache()
 
         env.close()
         logging.info(f"All tensors saved to LMDB:{file_path}")
