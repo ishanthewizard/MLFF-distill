@@ -1,5 +1,5 @@
 defaults:
-  - cluster: ada6000_local
+  - cluster: ada6000
   # - cluster: fair_cluster
   # - backbone: eSEN
   - dataset: OMol
@@ -39,7 +39,7 @@ cutoff_radius: 6
 epochs: null
 steps: 2080000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 max_atoms: 350 # important
-bf16: True
+bf16: False
 cpu_graph: True
 # otf_graph: False
 normalizer_rmsd: 1.433569

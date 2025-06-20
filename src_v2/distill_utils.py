@@ -62,6 +62,7 @@ def get_teacher_jacobian(batch, vectorize=True, should_mask=True, approximation=
     elif approximation == "disabled":
         # Vector Jacobian Product
         forces = forward(batch)['forces']['forces']
+        # forces = forward(batch)['omol_forces']['forces']
         jac = get_jacobian(forces, batch.pos, grad_outputs, looped=(not vectorize)) # outputs a max_free_atom_per_mol x 3 x total_num_atoms x 3 matrix.
         jac = jac.reshape(max_free_atom_per_mol, 3, total_num_atoms, 3)
         jacs_per_mol = [jac[:n_fr_at, :,  cum_sum:cum_sum + nat, :].cpu() for cum_sum, n_fr_at, nat in zip(cumulative_sums[:-1], num_free_atoms_per_mol, natoms)]

@@ -5,14 +5,14 @@ qos: long
 partition: long
 # qos: gpu
 # partition: gpu
-mode: LOCAL
+mode: SLURM
 device: CUDA
-ranks_per_node: 1
+ranks_per_node: 8
 dataloader_workers: 8 # 8
 debug: False
 mem_gb: 50
 cpus_per_task: 2 # 2
 timeout_hr: 120
-nodelist: escher
+nodelist: germain
 exclude: null
 constraint: null
