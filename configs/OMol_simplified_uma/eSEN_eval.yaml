@@ -6,7 +6,7 @@ dataset:
   omol_val:
     splits:
       val:
-        sample_n: 100 # 92808   # ← your new value
+        sample_n: 500 # 92808   # ← your new value
 
 runner:
   _target_: fairchem.core.components.evaluate.eval_runner.EvalRunner #fairchem.core.components.train.train_runner.TrainEvalRunner

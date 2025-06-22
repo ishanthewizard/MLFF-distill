@@ -25,7 +25,7 @@ job:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
     entity: jianyuelalala
-    project: OMOL
+    project: OMOL_eval
 
 cpu_graph: True
 max_neighbors: 30
