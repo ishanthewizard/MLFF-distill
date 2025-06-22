@@ -237,6 +237,6 @@ def main(
 
 if __name__ == "__main__":
     # mp.set_start_method("spawn", force=True)
-    # os.environ["WANDB_MODE"] = "disabled"
+    os.environ["WANDB_MODE"] = "disabled"
     OmegaConf.register_new_resolver("merge", lambda x, y : x + y)
     main()

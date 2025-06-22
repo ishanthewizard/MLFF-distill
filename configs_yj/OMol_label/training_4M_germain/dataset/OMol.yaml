@@ -1,5 +1,5 @@
 omol_train:
-  src: OMol_Whole/toy/protein_ligand_pockets_train_4M
+  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/ligand_pocket_1
   format: ase_db
   a2g_args:
     molecule_cell_size: 120.0
@@ -17,7 +17,7 @@ omol_train:
       dataset_name: omol
 
 omol_val:
-  src: OMol_Whole/toy/protein_ligand_pockets_val
+  src: /home/yuejian/project/MLFF-distill/OMOL/TOY/ligand_pocket_1
   format: ase_db
   a2g_args:
     molecule_cell_size: 120.0

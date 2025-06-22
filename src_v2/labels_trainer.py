@@ -59,7 +59,15 @@ class TeacherLabelGenerator(Runner):
         self.eval_dataloader = eval_dataloader
         self.train_eval_unit = train_eval_unit
         self.device = self.train_eval_unit.model.device
-        
+        # testdata = next(iter(self.train_dataloader))
+        # self.train_eval_unit.model.module.module.backbone.direct_forces = False
+        # print("assert direct_forces is False", self.train_eval_unit.model.module.module.backbone.direct_forces)
+        # model = self.train_eval_unit.model.to('cuda')
+        # testdata = testdata.to('cuda')
+        # breakpoint()
+        # print("forces mae", (testdata.forces/1.433569 - model(testdata)['forces']['forces']).abs().mean())
+        # import sys
+        # sys.exit()
         # Check if the dataloaders are using a deterministic sampler
         if self.train_dataloader.batch_sampler.shuffle == True:
             raise ValueError("TrainSampler should not shuffle, as we need to sample indices in a deterministic way for labeling.")
@@ -119,7 +127,7 @@ class TeacherLabelGenerator(Runner):
         # Function to calculate forces
         def get_seperated_forces(batch):
             # breakpoint()
-            all_forces = self.train_eval_unit.model(batch)['omol_forces']['forces']
+            all_forces = self.train_eval_unit.model(batch)['forces']['forces']
             # sanity check
             # print(all_forces.shape)
             # print("batch.force ", batch.forces.shape)  
@@ -142,7 +150,7 @@ class TeacherLabelGenerator(Runner):
             # should_mask = self.output_targets['forces']["train_on_free_atoms"]
             should_mask = True
             def get_seperated_force_jacs(batch): 
-                batch.pos.detach().requires_grad_()
+                batch.pos.requires_grad_()
                 jacs = get_teacher_jacobian(
                                             batch, 
                                             # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 

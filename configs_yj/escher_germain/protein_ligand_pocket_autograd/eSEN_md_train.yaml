@@ -33,11 +33,11 @@ bf16: False
 max_neighbors: 30
 cutoff_radius: 6
 epochs: null
-steps: 1000000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
+steps: 150000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 max_atoms: 350
 normalizer_rmsd: 1.433569
 direct_forces_coef: 30
-omol_energy_coef: 2 # 30
+omol_energy_coef: 30
 
 # regress_stress: False
 # direct_forces: True

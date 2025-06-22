@@ -1,5 +1,5 @@
 defaults:
-  - cluster: ada6000
+  - cluster: ada6000_local
   # - cluster: fair_cluster
   # - backbone: eSEN
   - dataset: OMol
@@ -30,7 +30,7 @@ job:
     project: distill_labels
 
 
-starting_checkpoint: /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/uma-s-1.pt
+starting_checkpoint: /home/yuejian/project/MLFF-distill/OMOL/ESEN_OMol_ckpts/esen_sm_conserving_all.pt
 
 # moe_layer_type: pytorch
 # num_moe_experts: 32
