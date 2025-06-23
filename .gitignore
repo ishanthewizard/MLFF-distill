@@ -10,7 +10,9 @@ results
 labels/
 runs/
 MODELPATH
+slurm_logs
 logs
+*unshuffled
 *.png
 *.sh
 *.ckpt

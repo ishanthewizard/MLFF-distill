@@ -6,7 +6,8 @@ dataset:
   omol_val:
     splits:
       val:
-        sample_n: 200   # ← your new value
+        # sample_n: 300   # ← your new value
+        no_shuffle: True  # ← Prevent shuffling during dataset creation
 
 runner:
   _target_: fairchem.core.components.evaluate.eval_runner.EvalRunner #fairchem.core.components.train.train_runner.TrainEvalRunner

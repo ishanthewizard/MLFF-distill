@@ -11,6 +11,7 @@ import tempfile
 import argparse
 import os
 import logging
+import clusterscope
 import hydra
 from omegaconf import DictConfig
 from submitit import AutoExecutor
@@ -23,7 +24,7 @@ from fairchem.core._cli import (
     Submitit,
     get_timestamp_uid,
     get_commit_hash,
-    get_cluster_name,
+    # get_cluster_name,
     LOG_DIR_NAME,
     CHECKPOINT_DIR_NAME,
     RESULTS_DIR,
@@ -105,7 +106,7 @@ class JobConfig:
                 CHECKPOINT_DIR_NAME,
                 PREEMPTION_STATE_DIR_NAME,
             ),
-            cluster_name=get_cluster_name(),
+            cluster_name=clusterscope.cluster(),
         )
 
 

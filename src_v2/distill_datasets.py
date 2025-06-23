@@ -32,6 +32,19 @@ class HessianSampler:
         force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1)  # (num_atoms, num_samples*3)
         return force_jacs
     
+    def sample_diverse_atoms(self, path, idx, num_atoms):
+        # path: path to the file where the most diverse atoms of each structure in this dataset are stored
+        # idx: index of the structure in the dataset
+        # num_atoms: number of atoms to sample from each structure
+        dataset_diverse_atoms = torch.load(path)
+        
+        # TODO: this is a little sus because the first atom is randomly chosen, 
+        # so it might not be the most diverse atom if we are taking a small amount of samples
+        diverse_atoms = dataset_diverse_atoms[idx][:num_atoms] # (num_atoms) denoting the indices of atoms within the structure
+        
+        row_indices = diverse_atoms // 3
+        col_indices = diverse_atoms % 3
+        return torch.stack((row_indices, col_indices), dim=1)  # (num_samples, 2)
 
 class CombinedDataset(AseDBDataset):
     def __init__(
@@ -43,6 +56,8 @@ class CombinedDataset(AseDBDataset):
         super().__init__(config, atoms_transform)
         self.labels_folder = config['teacher_labels_folder']
         self.num_hessian_samples = int(config['num_hessian_samples'])
+        self.diverse_atoms_path = config['diverse_atoms_path']
+        self.use_diverse_atoms = config['use_diverse_atoms']
         self.teacher_force_dataset = LmdbDataset(
             os.path.join(config['teacher_labels_folder'], f'{dataset_type}_forces')
         )
@@ -70,10 +85,13 @@ class CombinedDataset(AseDBDataset):
         if self.hessian_dataset is not None:
             # 4) Load the raw force_jacobian vector (CPU)
             raw_jac = self.hessian_dataset[idx]
-
-            # 5) Sample one Hessian entry per atom (still on CPU)
-            samples = self.hessian_sampler.sample_with_mask(num_samples, torch.ones(num_atoms))
             
+            if self.use_diverse_atoms:
+                # 5) Sample the most diverse atoms for each structure
+                samples = self.hessian_sampler.sample_diverse_atoms(self.diverse_atoms_path, idx, num_samples)
+            else:
+                # 5) Sample one Hessian entry per atom (still on CPU)
+                samples = self.hessian_sampler.sample_with_mask(num_samples, torch.ones(num_atoms))
             
             force_jacs = self.hessian_sampler.sample_hessian(samples, num_atoms, raw_jac)
 
