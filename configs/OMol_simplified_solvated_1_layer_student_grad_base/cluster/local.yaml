@@ -1,23 +1,23 @@
 device: CUDA
-mode: SLURM
+mode: LOCAL
 ranks_per_node: 1
 num_nodes: 1
 
 
 slurm:
-  qos: scavenger  # other options: scavenger and long, also need to set partition to the same thing
-  partition: scavenger
-  nodelist: escher
+  qos: gpu
+  partition: ~
+  nodelist: germain
   mem_gb: 50
   timeout_hr: 24
   cpus_per_task: 9
-  constraint: null
+  constraint: gpu
   exclude: null
   account: null #
 
 debug: False
 run_dir: runs
-nodelist: escher
+nodelist: germain
 dataloader_workers: 0
 
 omol_path: /data/ishan-amin/OMOL

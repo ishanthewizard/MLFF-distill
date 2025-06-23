@@ -12,12 +12,15 @@ job:
     ranks_per_node: ${cluster.ranks_per_node}
     num_nodes: 1
     slurm:
-      qos: ${cluster.slurm.qos}
+      qos: ${cluster.slurm.qos}ß
       partition: ${cluster.slurm.partition}
       nodelist: ${cluster.slurm.nodelist}
       mem_gb: ${cluster.slurm.mem_gb}
       timeout_hr: ${cluster.slurm.timeout_hr}
       cpus_per_task: ${cluster.slurm.cpus_per_task}
+      constraint: ${cluster.slurm.constraint}
+      exclude: ${cluster.slurm.exclude}
+      account: ${cluster.slurm.account}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
   run_name: eSEN_train_4M
@@ -25,7 +28,7 @@ job:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
     entity: jianyuelalala
-    project: OMOL_eval
+    project: OMOL
 
 cpu_graph: True
 max_neighbors: 30
