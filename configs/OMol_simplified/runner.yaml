@@ -1,14 +1,14 @@
 defaults: 
-  - eSEN_eval # OTHER OPTIONS: 1. eSEN_train 2. distill 3. eSEN_eval 4. eSEN_labels
-  - override cluster: local
-  # - override backbone: eSEN_xtra_small  #Not needed for eval
-  - override dataset: protein_ligand_pocket
+  - eSEN_train # OTHER OPTIONS: 1. eSEN_train 2. distill 3. eSEN_eval 4. eSEN_labels
+  - override cluster: Escher
+  - override backbone: eSEN_xtra_small  #Not needed for eval
+  - override dataset: Solvated
   - _self_
 
 job:
-  run_name: ligand_pocket_DIST
+  run_name: Solvated_no_distill_reproduce
 
 direct_forces_coef: 30
-energy_coef:        5
+energy_coef:        30
 # hessian_coef:       30
 # num_hessian_samples: 3
