@@ -1,11 +1,11 @@
 defaults:
   - base 
-  - override cluster: local
+  - override cluster: Nersc
   - override dataset: protein_ligand_pocket_300
   - _self_
 
-teacher_checkpoint: /data/ishan-amin/OMOL/ESEN_OMol_ckpts/esen_md_direct_all.pt
-label_folder: /data/ishan-amin/OMOL/TOY/labels/ligand_pocket_300/RAW
+teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/esen_md_direct_all.pt
+label_folder: ${cluster.omol_path}/TOY/labels/ligand_pocket_300/V2
 
 dataset:
   omol_train:
@@ -39,7 +39,7 @@ train_dataloader:
     exclude_keys: ${exclude_keys}
 
 runner:
-  _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  _target_: src_v2.labels_trainer_v2.TeacherLabelGenerator
   train_dataloader: ${train_dataloader}
   eval_dataloader: ${eval_dataloader}
   eval_unit:

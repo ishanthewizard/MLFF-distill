@@ -10,7 +10,7 @@ omol_train:
   diverse_atoms_path: /home/christine/MLFF-distill/diverse_idxs_solvated_eval.pt
   use_diverse_atoms: False
   a2g_args:
-    molecule_cell_size: ~      # ← this removes it
+    molecule_cell_size: ~      # ← this sets it to None
     r_data_keys: ~
 omol_val:
   splits:
@@ -20,5 +20,5 @@ omol_val:
   diverse_atoms_path: /home/christine/MLFF-distill/diverse_idxs_solvated_eval.pt
   use_diverse_atoms: False
   a2g_args:
-    molecule_cell_size: ~      # ← this removes it
+    molecule_cell_size: ~       # ← this sets it to None
     r_data_keys: ~

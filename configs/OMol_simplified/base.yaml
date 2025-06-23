@@ -10,7 +10,7 @@ job:
   scheduler:
     mode: ${cluster.mode}
     ranks_per_node: ${cluster.ranks_per_node}
-    num_nodes: 1
+    num_nodes: ${cluster.num_nodes}
     slurm:
       qos: ${cluster.slurm.qos}
       partition: ${cluster.slurm.partition}
@@ -18,6 +18,8 @@ job:
       mem_gb: ${cluster.slurm.mem_gb}
       timeout_hr: ${cluster.slurm.timeout_hr}
       cpus_per_task: ${cluster.slurm.cpus_per_task}
+      constraint: ${cluster.slurm.constraint}
+      account: ${cluster.slurm.account}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
   run_name: eSEN_train_4M

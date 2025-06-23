@@ -18,3 +18,5 @@ debug: False
 run_dir: runs
 nodelist: germain
 dataloader_workers: 0
+
+omol_path: /data/ishan-amin/OMOL

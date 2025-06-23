@@ -49,13 +49,14 @@ def process_dataset(
 
 
     logger.info(f"Processing dataset from {src_path} to {dst_path}")
+    logger.info(f"Iterating through {subset_len} samples")
 
     # Iterate through the dataset and convert to ASE Atoms
     for i in tqdm(range(subset_len)):
         atoms = src_db.get_atoms(i)
         dst_db.write(
             atoms=atoms,
-            data=None, # atoms.info,  # Store metadata in ASE's data field
+            data=atoms.info, # atoms.info,  # Store metadata in ASE's data field
         )
     # Cleanup
     if hasattr(dst_db, 'close'):
@@ -65,9 +66,11 @@ def process_dataset(
 
 def main():
     # Configuration
-    # src_path = "/data/ishan-amin/OMOL/4M/subsets/OMol_subset/protein_ligand_pockets_train_4M"
-    src_path = "/data/ishan-amin/OMOL/4M/subsets/OMol_subset/protein_ligand_pockets_val"
-    dst_path = "/data/ishan-amin/OMOL/TOY/ligand_pocket_300/val/data0000.aselmdb"
+    src_path = "/data/ishan-amin/OMOL/4M/subsets/OMol_subset/protein_ligand_pockets_train_4M"
+    # src_path = "/data/ishan-amin/OMOL/4M/subsets/OMol_subset/protein_ligand_pockets_val"
+    dst_path = "/data/ishan-amin/OMOL/TOY/ligand_pocket_300/train/"
+    os.makedirs(dst_path)
+    dst_path = os.path.join(dst_path, 'data0000.aselmdb')
     subset_length = 300
     # Ensure destination directory exists
     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
@@ -76,7 +79,7 @@ def main():
         process_dataset(
             src_path=src_path,
             dst_path=dst_path,
-            subset_len= 500,
+            subset_len= subset_length,
             overwrite=False
         )
     except Exception as e:

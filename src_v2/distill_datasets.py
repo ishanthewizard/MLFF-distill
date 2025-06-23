@@ -58,9 +58,9 @@ class CombinedDataset(AseDBDataset):
         self.num_hessian_samples = int(config['num_hessian_samples'])
         self.diverse_atoms_path = config['diverse_atoms_path']
         self.use_diverse_atoms = config['use_diverse_atoms']
-        self.teacher_force_dataset = LmdbDataset(
-            os.path.join(config['teacher_labels_folder'], f'{dataset_type}_forces')
-        )
+        # self.teacher_force_dataset = LmdbDataset(
+        #     os.path.join(config['teacher_labels_folder'], f'{dataset_type}_forces')
+        # )
 
         if dataset_type == 'train':
             self.hessian_dataset = LmdbDataset(
@@ -79,7 +79,7 @@ class CombinedDataset(AseDBDataset):
         num_atoms = main_batch.natoms
 
         # 3) Load teacher_forces (CPU)
-        teacher_forces = self.teacher_force_dataset[idx].reshape(num_atoms, 3)
+        # teacher_forces = self.teacher_force_dataset[idx].reshape(num_atoms, 3)
 
         num_samples = self.num_hessian_samples
         if self.hessian_dataset is not None:
@@ -103,7 +103,7 @@ class CombinedDataset(AseDBDataset):
             main_batch.forces_jac = torch.zeros((num_atoms, num_samples * 3))
             main_batch.num_samples = torch.tensor(num_samples)
             
-        main_batch.teacher_forces = teacher_forces
+        # main_batch.teacher_forces = teacher_forces
         return main_batch
 
 class CombinedDatasetTrain(CombinedDataset):

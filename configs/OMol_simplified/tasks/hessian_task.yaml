@@ -69,7 +69,7 @@
   normalizer:
     _target_: fairchem.core.modules.normalization.normalizer.Normalizer
     mean: 0.0
-    rmsd: ${normalizer_rmsd}
+    rmsd: 1.0 #${normalizer_rmsd}
   datasets:
     - omol
   # metrics:
