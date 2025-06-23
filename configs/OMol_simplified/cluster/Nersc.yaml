@@ -1,14 +1,14 @@
 device: CUDA
 mode: SLURM
 ranks_per_node: 4
-num_nodes: 1
+num_nodes: 4
 
 slurm:
   qos: premium
   partition: ~
   nodelist: ~
   mem_gb: 80
-  timeout_hr: 24
+  timeout_hr: 1
   cpus_per_task: 5
   constraint: gpu
   account: m4558_g #

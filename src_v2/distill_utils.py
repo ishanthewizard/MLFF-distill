@@ -25,7 +25,7 @@ def get_teacher_jacobian(batch, vectorize=True,  approximation="disabled", forwa
     
     forces = forward(batch)['forces']['forces']
     
-    jac = get_jacobian_finite_difference(forces, batch, grad_outputs, forward=forward, collater = collater, looped=(not vectorize))
+    jac = get_jacobian_finite_difference(forces, batch, grad_outputs, forward=forward, detach=True, collater = collater, looped=(not vectorize))
     jac = jac.reshape(max_atoms, 3, total_atoms, 3)
     jacs_per_mol = [jac[:nat, :,  cum_sum:cum_sum + nat, :].cpu() for cum_sum,  nat in zip(cumsum[:-1], natoms)]
     

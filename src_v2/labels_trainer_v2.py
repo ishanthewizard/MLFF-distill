@@ -70,11 +70,12 @@ class TeacherLabelGenerator(Runner):
 
     def run(self) -> None:
         """Generate labels for train and val datasets and merge LMDBs on rank 0."""
-        self.record_labels_parallel(self.label_folder, 'train')
         self.record_labels_parallel(self.label_folder, 'val')
+        self.record_labels_parallel(self.label_folder, 'train')
+        
         
         # Synchronize all workers before merging
-        distutils.barrier()
+        distutils.synchronize()
         
         # Merge LMDBs on rank 0
         if distutils.get_rank() == 0:
