@@ -3,7 +3,7 @@ defaults:
   - override tasks: hessian_task
 
 job:
-  run_name: protein_ligand_pockets_train_4M_hessian_autograd_UMA_teacher_1_layer_student_gradient_base
+  run_name: protein_ligand_pockets_train_4M_hessian_autograd_UMA_teacher_1_layer_student_gradient_base_autgrad_student
 
 hessian_coef:       60
 num_hessian_samples: 4

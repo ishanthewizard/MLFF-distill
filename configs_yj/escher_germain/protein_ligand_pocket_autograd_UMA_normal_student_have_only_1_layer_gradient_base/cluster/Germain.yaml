@@ -2,11 +2,11 @@ run_dir: runs
 nodelist: germain
 # partition: scavenger 
 # qos: scavenger
-partition: gpu
-qos: gpu
+partition: long
+qos: long
 mode: SLURM
 device: CUDA
-ranks_per_node: 3
+ranks_per_node: 4
 dataloader_workers: 0
 timeout_hr: 12
 debug: False
