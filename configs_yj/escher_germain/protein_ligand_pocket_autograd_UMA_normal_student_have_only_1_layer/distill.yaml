@@ -1,0 +1,24 @@
+defaults:
+  - /eSEN_md_train
+  - override tasks: hessian_task
+
+job:
+  run_name: protein_ligand_pockets_train_4M_hessian_autograd_UMA_teacher_1_layer_student
+
+hessian_coef:       60
+num_hessian_samples: 4
+
+dataset:
+  omol_train:
+    format:                 src_v2.distill_datasets.CombinedDatasetTrain
+    teacher_labels_folder:  /home/yuejian/project/MLFF-distill/OMOL/4M/subsets/OMol_subset_label_torch_autograd_UMA/protein_ligand_pockets_train_4M/labels
+    num_hessian_samples:    ${num_hessian_samples}
+  omol_val:
+    format:                 src_v2.distill_datasets.CombinedDatasetVal
+    teacher_labels_folder:  /home/yuejian/project/MLFF-distill/OMOL/4M/subsets/OMol_subset_label_torch_autograd_UMA/protein_ligand_pockets_train_4M/labels
+    num_hessian_samples:    ${num_hessian_samples}
+runner:
+  train_eval_unit:
+    model:
+      _target_: src_v2.model_wrapper.HessianModelWrapper
+    
