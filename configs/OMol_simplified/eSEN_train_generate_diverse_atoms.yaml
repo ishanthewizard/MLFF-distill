@@ -1,0 +1,89 @@
+# modified this config a lot in order to get the diverse atoms
+# use this config to GENERATE the final node features that you need for the diverse atom script
+
+defaults:
+  - /base
+  # - backbone: eSEN_xtra_small
+  - _self_
+
+
+epochs: 1
+steps: null # 100000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
+
+dataset:
+  omol_train:
+    splits:
+      train:
+        no_shuffle: True 
+
+train_dataset:
+  _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+  dataset_configs:
+    omol: ${dataset.omol_train}
+  combined_dataset_config:
+    sampling:
+      type: explicit
+      ratios:
+        omol.train: 1.0
+
+train_dataloader:
+  _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
+  dataset: ${train_dataset}
+  batch_sampler_fn:
+    _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
+    _partial_: True
+    max_atoms: ${max_atoms}
+    shuffle: False # should be True for training
+    seed: 0
+  num_workers: ${cluster.dataloader_workers}
+  collate_fn:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
+    tasks: ${tasks}
+    exclude_keys: ${exclude_keys}
+
+# heads:
+#   energy:
+#     module: fairchem.core.models.uma.escn_md.MLP_Energy_Head
+#   forces:
+#     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
+
+runner:
+  _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
+  train_dataloader: ${train_dataloader}
+  eval_dataloader: ${eval_dataloader}
+  train_eval_unit:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.MLIPTrainEvalUnit
+    job_config: ${job}
+    tasks: ${tasks}
+    model:
+      # _target_: fairchem.core.models.base.HydraModel
+      # backbone: ${backbone}
+      # heads: ${heads}
+      _target_: src_v2.dataset_utils.initialize_finetuning_model
+      checkpoint_location: ${cluster.omol_path}/ESEN_OMol_ckpts/esen_md_direct_all.pt
+      use_ema: True
+    optimizer_fn:
+      _target_: torch.optim.AdamW
+      _partial_: true
+      lr: 8e-4
+      weight_decay: 1e-3
+    cosine_lr_scheduler_fn:
+      _target_: fairchem.core.units.mlip_unit.mlip_unit._get_consine_lr_scheduler
+      _partial_: true
+      warmup_factor: 0.2
+      warmup_epochs: 0.01
+      lr_min_factor: 0.01
+      epochs: ${epochs}
+      steps: ${steps}
+    print_every: 10
+    clip_grad_norm: 100
+    bf16: ${bf16}
+  max_epochs: ${epochs}
+  max_steps: ${steps}
+  evaluate_every_n_steps: 1000
+  callbacks:
+    - _target_: fairchem.core.common.profiler_utils.ProfilerCallback
+      job_config: ${job}
+    - _target_: fairchem.core.components.train.train_runner.TrainCheckpointCallback
+      checkpoint_every_n_steps: 5000
+      max_saved_checkpoints: 5

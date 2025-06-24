@@ -32,18 +32,20 @@ class HessianSampler:
         force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1)  # (num_atoms, num_samples*3)
         return force_jacs
     
-    def sample_diverse_atoms(self, path, idx, num_atoms):
-        # path: path to the file where the most diverse atoms of each structure in this dataset are stored
-        # idx: index of the structure in the dataset
-        # num_atoms: number of atoms to sample from each structure
-        dataset_diverse_atoms = torch.load(path)
+    def sample_diverse_atoms(self, diverse_atoms, num_diverse_atoms, num_samples):
+        # diverse_atoms: indices of the most diverse atoms
+        # num_diverse_atoms: number of diverse atoms to use from each structure
+        # num_samples: number of samples to take from the first num_diverse_atoms atoms
         
-        # TODO: this is a little sus because the first atom is randomly chosen, 
-        # so it might not be the most diverse atom if we are taking a small amount of samples
-        diverse_atoms = dataset_diverse_atoms[idx][:num_atoms] # (num_atoms) denoting the indices of atoms within the structure
+        # the first atom is randomly chosen, so we don't use it
+        diverse_atoms = diverse_atoms[1:num_diverse_atoms+1]
         
-        row_indices = diverse_atoms // 3
-        col_indices = diverse_atoms % 3
+        # Each atom contributes 3 indices
+        valid_indices = diverse_atoms.repeat_interleave(3) * 3 + torch.tensor([0, 1, 2]).repeat(diverse_atoms.size(0)).to(diverse_atoms.device)
+        chosen_indices = valid_indices[torch.randperm(valid_indices.size(0))[:num_samples]]
+        row_indices = chosen_indices // 3
+        col_indices = chosen_indices % 3
+        
         return torch.stack((row_indices, col_indices), dim=1)  # (num_samples, 2)
 
 class CombinedDataset(AseDBDataset):
@@ -58,6 +60,7 @@ class CombinedDataset(AseDBDataset):
         self.num_hessian_samples = int(config['num_hessian_samples'])
         self.diverse_atoms_path = config['diverse_atoms_path']
         self.use_diverse_atoms = config['use_diverse_atoms']
+        self.num_diverse_atoms = config['num_diverse_atoms']
         # self.teacher_force_dataset = LmdbDataset(
         #     os.path.join(config['teacher_labels_folder'], f'{dataset_type}_forces')
         # )
@@ -67,6 +70,7 @@ class CombinedDataset(AseDBDataset):
                 os.path.join(config['teacher_labels_folder'], 'force_jacobians')
             )
             self.hessian_sampler = HessianSampler()
+            self.dataset_diverse_atoms = torch.load(self.diverse_atoms_path)
         else:
             self.hessian_dataset = None
 
@@ -82,13 +86,15 @@ class CombinedDataset(AseDBDataset):
         # teacher_forces = self.teacher_force_dataset[idx].reshape(num_atoms, 3)
 
         num_samples = self.num_hessian_samples
+        num_diverse_atoms = self.num_diverse_atoms
         if self.hessian_dataset is not None:
             # 4) Load the raw force_jacobian vector (CPU)
             raw_jac = self.hessian_dataset[idx]
+            diverse_atoms = self.dataset_diverse_atoms[idx]
             
             if self.use_diverse_atoms:
                 # 5) Sample the most diverse atoms for each structure
-                samples = self.hessian_sampler.sample_diverse_atoms(self.diverse_atoms_path, idx, num_samples)
+                samples = self.hessian_sampler.sample_diverse_atoms(diverse_atoms, num_diverse_atoms, num_samples)
             else:
                 # 5) Sample one Hessian entry per atom (still on CPU)
                 samples = self.hessian_sampler.sample_with_mask(num_samples, torch.ones(num_atoms))
