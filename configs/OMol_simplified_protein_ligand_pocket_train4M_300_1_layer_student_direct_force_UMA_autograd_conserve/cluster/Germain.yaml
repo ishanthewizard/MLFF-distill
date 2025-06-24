@@ -7,7 +7,7 @@ num_nodes: 1
 slurm:
   qos: scavenger # other options: scavenger and long, also need to set partition to the same thing
   partition: scavenger
-  nodelist: escher
+  nodelist: germain
   mem_gb: 50
   timeout_hr: 12
   cpus_per_task: 9
@@ -17,7 +17,7 @@ slurm:
 
 debug: False
 run_dir: runs
-nodelist: escher
+nodelist: germain
 dataloader_workers: 0
 
 omol_path: /data/ishan-amin/OMOL

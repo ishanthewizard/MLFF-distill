@@ -1,0 +1,13 @@
+defaults: 
+ - base_dataset
+ - _self_
+ 
+omol_train:
+  splits:
+    train:
+      src: ${cluster.omol_path}/train_4M
+omol_val:
+  splits:
+    val:
+      sample_n: 2000
+      src: ${cluster.omol_path}/ALL/val

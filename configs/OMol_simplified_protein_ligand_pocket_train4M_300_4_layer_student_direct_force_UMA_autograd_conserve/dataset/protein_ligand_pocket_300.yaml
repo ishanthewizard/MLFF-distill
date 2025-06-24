@@ -6,11 +6,10 @@ omol_train:
   splits:
     train:
       src: ${cluster.omol_path}/TOY/ligand_pocket_300_copy/train
-  teacher_labels_folder: /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/ligand_pocket_300_copy
-
+  teacher_labels_folder: /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/ligand_pocket_300_UMA_conserve_autograd
 omol_val:
   splits:
     val:
       # sample_n: 2000
       src: ${cluster.omol_path}/TOY/ligand_pocket_300_copy/val
-  teacher_labels_folder: /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/ligand_pocket_300_copy
+  teacher_labels_folder: /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/ligand_pocket_300_UMA_conserve_autograd

@@ -1,0 +1,16 @@
+defaults: 
+ - base_dataset
+ - _self_
+ 
+omol_train:
+  splits:
+    train:
+      src: ${cluster.omol_path}/TOY/ligand_pocket_300_copy/train
+  teacher_labels_folder: /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/ligand_pocket_300_esen_md_autograd_with_detach_in_could_be_buggy
+
+omol_val:
+  splits:
+    val:
+      # sample_n: 2000
+      src: ${cluster.omol_path}/TOY/ligand_pocket_300_copy/val
+  teacher_labels_folder: /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/ligand_pocket_300_esen_md_autograd_with_detach_in_could_be_buggy

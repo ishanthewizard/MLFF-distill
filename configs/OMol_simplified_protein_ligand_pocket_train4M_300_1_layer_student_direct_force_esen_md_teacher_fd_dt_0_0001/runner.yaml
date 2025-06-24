@@ -7,8 +7,8 @@ defaults:
   - _self_
 
 job:
-  # run_name: protein_ligand_pocket_train4M_300_4_layer_student_dir_force_no_distill
-  run_name: protein_ligand_pocket_train4M_300_4_layer_student_dir_force_distill
+  # run_name: protein_ligand_pocket_train4M_300_1_layer_student_dir_force_no_distill
+  run_name: protein_ligand_pocket_train4M_300_1_layer_student_dir_force_distill_student_esen_md_teacher_fd_dt_0_0001
   
 runner:
   train_eval_unit:
