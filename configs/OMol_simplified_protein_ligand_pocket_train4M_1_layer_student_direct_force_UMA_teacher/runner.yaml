@@ -1,0 +1,19 @@
+defaults: 
+  - /distill # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
+  - override cluster: local
+  - override backbone: eSEN_xtra_small  #Not needed for eval
+  - override dataset: protein_ligand_pocket
+  - _self_
+
+job:
+  # run_name: protein_ligand_pocket_train4M_1_layer_student_direct_force_no_distill
+  run_name: protein_ligand_pocket_train4M_1_layer_student_direct_force_finite_diff_dt_0_001_learning_UMA_teacher
+
+runner:
+  train_eval_unit:
+    cosine_lr_scheduler_fn:
+      warmup_epochs: 0.1 # usually 0.01 but solvated and protein_ligand are so small if you use 0.01 you get div by 0 error
+
+direct_forces_coef: 30
+energy_coef:        30
+max_atoms: 1000

@@ -1,0 +1,22 @@
+defaults:
+  - /base
+  - _self_
+
+dataset:
+  omol_val:
+    splits:
+      val:
+        sample_n: 92808   # ← your new value
+
+runner:
+  _target_: fairchem.core.components.evaluate.eval_runner.EvalRunner #fairchem.core.components.train.train_runner.TrainEvalRunner
+  dataloader: ${eval_dataloader}
+  eval_unit:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.MLIPEvalUnit
+    job_config: ${job}
+    tasks: ${tasks}
+    bf16: ${bf16}
+    model:
+      _target_: src_v2.dataset_utils.initialize_finetuning_model
+      checkpoint_location: /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/uma-s-1.pt
+      use_ema: True

@@ -1,0 +1,20 @@
+defaults: 
+ - base_dataset
+ - _self_
+ 
+omol_train:
+  splits:
+    train:
+      src: /data/ishan-amin/OMOL/TOY/solvated/train
+  teacher_labels_folder:  /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/EScAIP_SPiceAminos
+  a2g_args:
+    molecule_cell_size: ~      # ← this removes it
+    r_data_keys: ~
+omol_val:
+  splits:
+    val:
+      src: /data/ishan-amin/OMOL/TOY/solvated/val
+  teacher_labels_folder:  /home/yuejian/project/MLFF-distill/OMOL/TOY/labels/EScAIP_SPiceAminos
+  a2g_args:
+    molecule_cell_size: ~      # ← this removes it
+    r_data_keys: ~

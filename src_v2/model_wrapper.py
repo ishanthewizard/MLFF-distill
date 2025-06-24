@@ -27,8 +27,8 @@ class HessianModelWrapper(HydraModel):
             grad_outputs[torch.arange(num_samples, device=forces.device), curr_samples[:, 0], curr_samples[:, 1]] = 1
 
         
-        jac = get_jacobian(forces, data.pos, grad_outputs, create_graph=True, looped=looped) # num_samples, num_atoms, 
-        # jac = get_jacobian_finite_difference(forces, data, grad_outputs, super().forward, detach=False, collater=None, looped=True, h= 0.001)
+        # jac = get_jacobian(forces, data.pos, grad_outputs, create_graph=True, looped=looped) # num_samples, num_atoms, 
+        jac = get_jacobian_finite_difference(forces, data, grad_outputs, super().forward, detach=False, collater=None, looped=True, h= 0.001)
         jacs_per_mol = [jac[:, cum_sum:cum_sum + nat, :] for cum_sum, nat in zip(cumulative_sums[:-1], natoms)] # arr where each elem is (num_samples, num_atoms, 3)
         jacs_per_mol = [jac.permute(1, 0, 2).reshape(nat, -1) for jac, nat in zip(jacs_per_mol, natoms)] # (arr where each elem is (num_atoms, num_samples *3))
 

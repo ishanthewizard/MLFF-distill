@@ -8,7 +8,7 @@ import os
 
 if __name__ == "__main__":
     # load dataset
-    dataset_path = "/data/yuejian/OMol_subset/toy_train"
+    dataset_path = "/home/yuejian/project/MLFF-distill/OMOL/TOY/ligand_pocket_300 copy/val"
 
     # detect if metadata.npz already exists
     metadata_path = os.path.join(dataset_path, 'metadata.npz')
