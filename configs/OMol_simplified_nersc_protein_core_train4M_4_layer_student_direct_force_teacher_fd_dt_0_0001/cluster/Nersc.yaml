@@ -1,0 +1,21 @@
+device: CUDA
+mode: SLURM
+ranks_per_node: 4
+num_nodes: 1
+
+slurm:
+  qos: premium
+  partition: ~
+  nodelist: ~
+  mem_gb: 80
+  timeout_hr: 6
+  cpus_per_task: 5
+  constraint: gpu
+  account: m4319_g #
+  exclude: null
+
+debug: False
+run_dir: logs
+dataloader_workers: 0
+
+omol_path: /global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/
