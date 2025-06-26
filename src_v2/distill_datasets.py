@@ -58,9 +58,16 @@ class CombinedDataset(AseDBDataset):
         super().__init__(config, atoms_transform)
         self.labels_folder = config['teacher_labels_folder']
         self.num_hessian_samples = int(config['num_hessian_samples'])
-        self.diverse_atoms_path = config['diverse_atoms_path']
-        self.use_diverse_atoms = config['use_diverse_atoms']
-        self.num_diverse_atoms = config['num_diverse_atoms']
+        self.use_diverse_atoms = config.get('use_diverse_atoms', False)
+        
+        # Only set these if use_diverse_atoms is True
+        if self.use_diverse_atoms:
+            self.diverse_atoms_path = config['diverse_atoms_path']
+            self.num_diverse_atoms = config['num_diverse_atoms']
+        else:
+            self.diverse_atoms_path = None
+            self.num_diverse_atoms = None
+            
         # self.teacher_force_dataset = LmdbDataset(
         #     os.path.join(config['teacher_labels_folder'], f'{dataset_type}_forces')
         # )
@@ -70,7 +77,11 @@ class CombinedDataset(AseDBDataset):
                 os.path.join(config['teacher_labels_folder'], 'force_jacobians')
             )
             self.hessian_sampler = HessianSampler()
-            self.dataset_diverse_atoms = torch.load(self.diverse_atoms_path)
+            # Only load diverse atoms data if we're using diverse atoms
+            if self.use_diverse_atoms:
+                self.dataset_diverse_atoms = torch.load(self.diverse_atoms_path)
+            else:
+                self.dataset_diverse_atoms = None
         else:
             self.hessian_dataset = None
 
@@ -90,10 +101,10 @@ class CombinedDataset(AseDBDataset):
         if self.hessian_dataset is not None:
             # 4) Load the raw force_jacobian vector (CPU)
             raw_jac = self.hessian_dataset[idx]
-            diverse_atoms = self.dataset_diverse_atoms[idx]
             
-            if self.use_diverse_atoms:
+            if self.use_diverse_atoms and self.dataset_diverse_atoms is not None:
                 # 5) Sample the most diverse atoms for each structure
+                diverse_atoms = self.dataset_diverse_atoms[idx]
                 samples = self.hessian_sampler.sample_diverse_atoms(diverse_atoms, num_diverse_atoms, num_samples)
             else:
                 # 5) Sample one Hessian entry per atom (still on CPU)

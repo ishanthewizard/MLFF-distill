@@ -4,7 +4,7 @@ defaults:
   - _self_
 
 job:
-  run_name: Solvated_distill
+  run_name: plp300_distill
 
 hessian_coef:       60
 num_hessian_samples: 4

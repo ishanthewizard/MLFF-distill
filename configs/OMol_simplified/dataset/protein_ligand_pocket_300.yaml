@@ -5,9 +5,9 @@ defaults:
 omol_train:
   splits:
     train:
-        src: ${cluster.omol_path}/TOY/ligand_pocket_300/train
+      src: ${cluster.omol_path}/TOY/ligand_pocket_300/train
   teacher_labels_folder: /data/ishan-amin/OMOL/TOY/labels/ligand_pocket_300
-  diverse_atoms_path: /home/christine/MLFF-distill/diverse_idxs_plp300_train.pt
+  diverse_atoms_path: /home/christine/MLFF-distill/random_idxs_plp300_train.pt
   use_diverse_atoms: True
   num_diverse_atoms: 10
   # teacher_labels_folder: ${cluster.omol_path}/4M/subsets/OMol_subset_label_finite_difference/protein_ligand_pockets_train_4M/final_labels
@@ -18,7 +18,7 @@ omol_val:
       # sample_n: 2000
       src: ${cluster.omol_path}/TOY/ligand_pocket_300/val
   teacher_labels_folder: /data/ishan-amin/OMOL/TOY/labels/ligand_pocket_300
-  diverse_atoms_path: /home/christine/MLFF-distill/diverse_idxs_plp300_eval.pt
+  diverse_atoms_path: /home/christine/MLFF-distill/random_idxs_plp300_eval.pt
   use_diverse_atoms: True
   num_diverse_atoms: 10
   # teacher_labels_folder: ${cluster.omol_path}/4M/subsets/OMol_subset_label_finite_difference/protein_ligand_pockets_train_4M/final_labels
