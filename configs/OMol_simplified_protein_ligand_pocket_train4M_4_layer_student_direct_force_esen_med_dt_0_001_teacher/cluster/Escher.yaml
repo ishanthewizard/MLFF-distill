@@ -1,15 +1,15 @@
 device: CUDA
 mode: SLURM
-ranks_per_node: 1
+ranks_per_node: 2
 num_nodes: 1
 
 
 slurm:
-  qos: scavenger  # other options: scavenger and long, also need to set partition to the same thing
-  partition: scavenger
+  qos: gpu  # other options: scavenger and long, also need to set partition to the same thing
+  partition: gpu
   nodelist: escher
   mem_gb: 50
-  timeout_hr: 24
+  timeout_hr: 12
   cpus_per_task: 9
   constraint: null
   exclude: null
