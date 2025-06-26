@@ -1,6 +1,6 @@
 device: CUDA
 mode: SLURM
-ranks_per_node: 5
+ranks_per_node: 2
 num_nodes: 1
 
 
@@ -11,8 +11,8 @@ slurm:
   mem_gb: 50
   timeout_hr: 12
   cpus_per_task: 9
-  constraint: gpu
-  account: m4558_g #
+  constraint: ~
+  account: ~
 
 debug: False
 run_dir: runs

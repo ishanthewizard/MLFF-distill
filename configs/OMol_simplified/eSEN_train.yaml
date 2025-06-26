@@ -5,7 +5,7 @@ defaults:
 
 
 epochs: null
-steps: 100000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
+steps: 200000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 
 train_dataset:
   _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
@@ -68,7 +68,7 @@ runner:
     bf16: ${bf16}
   max_epochs: ${epochs}
   max_steps: ${steps}
-  evaluate_every_n_steps: 1000
+  evaluate_every_n_steps: 4000
   callbacks:
     - _target_: fairchem.core.common.profiler_utils.ProfilerCallback
       job_config: ${job}
