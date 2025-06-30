@@ -1,14 +1,14 @@
 defaults: 
-  - /eSEN_train # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
-  # - /distill # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
+  # - /eSEN_train # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
+  - /distill # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
   - override cluster: Nersc
   - override backbone: eSEN_xtra_small  #Not needed for eval
   - override dataset: protein_nucleic_acids
   - _self_
 
 job:
-  run_name: pnc_4m_nd_protein_nucleic_acids_train4M_4_layer_student_dir_force_no_distill
-  # run_name: pnc_4m_d_protein_nucleic_acids_train4M_4_layer_student_dir_force_fd_dt_0_001_distill_teacher_fd_dt_0_0001_debug_run
+  # run_name: pnc_4m_nd_4_layer_student_dir_force_no_distill
+  run_name: pnc_4m_d_4_layer_student_dir_force_fd_dt_0_001_distill_teacher_fd_dt_0_0001
 
 runner:
   train_eval_unit:

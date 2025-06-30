@@ -7,8 +7,8 @@ defaults:
   - _self_
 
 job:
-  # run_name: plf_4m_nd_protein_ligand_fragments_train4M_4_layer_student_dir_force_no_distill
-  run_name: plf_4m_d_protein_ligand_fragments_train4M_4_layer_student_dir_force_fd_dt_0_001_distill_teacher_fd_dt_0_0001
+  # run_name: plf_4m_nd_4_layer_student_dir_force_no_distill
+  run_name: plf_4m_d_4_layer_student_dir_force_fd_dt_0_001_distill_teacher_fd_dt_0_0001
 
 runner:
   train_eval_unit:

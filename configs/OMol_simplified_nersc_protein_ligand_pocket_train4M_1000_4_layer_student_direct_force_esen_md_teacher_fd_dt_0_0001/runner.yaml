@@ -1,14 +1,14 @@
 defaults: 
   # - /eSEN_train # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
   - /distill # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
-  - override cluster: Escher
+  - override cluster: Nersc
   - override backbone: eSEN_xtra_small  #Not needed for eval
-  - override dataset: protein_ligand_pocket_300
+  - override dataset: protein_ligand_pocket_1000
   - _self_
 
 job:
-  # run_name: protein_ligand_pocket_train4M_300_4_layer_student_dir_force_no_distill
-  run_name: protein_ligand_pocket_train4M_300_4_layer_student_dir_force_distill_teacher_fd_dt_0_0001
+  # run_name: plp_train4M_1000_4_layer_student_dir_force_no_distill
+  run_name: plp_train4M_1000_4_layer_student_dir_force_distill_teacher_fd_dt_0_0001
   
 runner:
   train_eval_unit:

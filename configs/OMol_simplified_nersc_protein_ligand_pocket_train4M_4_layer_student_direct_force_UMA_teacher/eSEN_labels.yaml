@@ -1,0 +1,54 @@
+defaults:
+  - base 
+  - override cluster: local
+  - override dataset: protein_ligand_pocket_300
+  - _self_
+
+teacher_checkpoint: /data/ishan-amin/OMOL/ESEN_OMol_ckpts/esen_md_direct_all.pt
+label_folder: /data/ishan-amin/OMOL/TOY/labels/ligand_pocket_300/RAW
+
+dataset:
+  omol_train:
+    splits:
+      train:
+        no_shuffle: True 
+
+train_dataset:
+  _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+  dataset_configs:
+    omol: ${dataset.omol_train}
+  combined_dataset_config:
+    sampling:
+      type: explicit
+      ratios:
+        omol.train: 1.0
+
+train_dataloader:
+  _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
+  dataset: ${train_dataset}
+  batch_sampler_fn:
+    _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
+    _partial_: True
+    max_atoms: ${max_atoms}
+    shuffle: False # IMPORTANT FOR LABELS GENERATOR
+    seed: 0
+  num_workers: ${cluster.dataloader_workers}
+  collate_fn:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
+    tasks: ${tasks}
+    exclude_keys: ${exclude_keys}
+
+runner:
+  _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  train_dataloader: ${train_dataloader}
+  eval_dataloader: ${eval_dataloader}
+  eval_unit:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.MLIPEvalUnit
+    job_config: ${job}
+    tasks: ${tasks}
+    bf16: ${bf16}
+    model:
+      _target_: src_v2.dataset_utils.initialize_finetuning_model
+      checkpoint_location: ${teacher_checkpoint}
+      use_ema: True
+  label_folder: ${label_folder}

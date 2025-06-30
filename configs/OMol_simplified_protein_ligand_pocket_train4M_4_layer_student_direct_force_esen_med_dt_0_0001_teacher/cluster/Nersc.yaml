@@ -14,7 +14,7 @@ slurm:
   account: m4558_g #
 
 debug: False
-run_dir: logs
+run_dir: /global/homes/y/yuejian/project/MLFF-distill/yuejian/runs
 dataloader_workers: 0
 
 omol_path: /pscratch/sd/i/ishan_a/ishan_only/OMOL/

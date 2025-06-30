@@ -1,0 +1,16 @@
+defaults: 
+ - base_dataset
+ - _self_
+ 
+omol_train:
+  splits:
+    train:
+      src: ${cluster.omol_path}/TOY/ligand_pocket_1000/train
+  teacher_labels_folder: ${cluster.omol_path}/TOY/labels/ligand_pocket_1000_esen_md_fd_dt_0_0001
+
+omol_val:
+  splits:
+    val:
+      # sample_n: 2000
+      src: ${cluster.omol_path}/TOY/ligand_pocket_1000/val
+  teacher_labels_folder: ${cluster.omol_path}/TOY/labels/ligand_pocket_1000_esen_md_fd_dt_0_0001

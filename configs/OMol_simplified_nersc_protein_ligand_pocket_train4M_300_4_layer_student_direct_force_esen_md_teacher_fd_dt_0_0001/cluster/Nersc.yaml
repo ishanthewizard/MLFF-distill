@@ -1,7 +1,7 @@
 device: CUDA
 mode: SLURM
 ranks_per_node: 4
-num_nodes: 3
+num_nodes: 2
 
 slurm:
   qos: regular
@@ -15,7 +15,7 @@ slurm:
   exclude: null
 
 debug: False
-run_dir: logs
+run_dir: /global/homes/y/yuejian/project/MLFF-distill/yuejian/runs
 dataloader_workers: 0
 
 omol_path: /global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/
