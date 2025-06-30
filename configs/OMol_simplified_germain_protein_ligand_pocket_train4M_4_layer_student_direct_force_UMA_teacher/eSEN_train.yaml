@@ -5,7 +5,7 @@ defaults:
 
 
 epochs: null
-steps: 100000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
+steps: 300000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 
 train_dataset:
   _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset

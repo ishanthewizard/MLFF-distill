@@ -1,13 +1,14 @@
 defaults: 
   - /distill # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
+  # - /eSEN_train
   - override cluster: Germain
   - override backbone: eSEN_xtra_small  #Not needed for eval
   - override dataset: protein_ligand_pocket
   - _self_
 
 job:
-  # run_name: protein_ligand_pocket_train4M_1_layer_student_direct_force_no_distill
-  run_name: protein_ligand_pocket_train4M_4_layer_student_direct_force_finite_diff_dt_0_001_learning_UMA_teacher
+  # run_name: plp4M_4_layer_student_direct_force_no_distill
+  run_name: germainnplp4M_4_layer_student_direct_force_finite_diff_dt_0_001_learning_UMA_teacher
 
 runner:
   train_eval_unit:
