@@ -6,11 +6,15 @@ omol_train:
   splits:
     train:
       src: ${cluster.omol_path}/4M/subsets/OMol_subset/protein_ligand_pockets_train_4M
-  teacher_labels_folder: ${cluster.omol_path}/4M/subsets/OMol_subset_label_finite_difference/protein_ligand_pockets_train_4M/final_labels
+  teacher_labels_folder: ${cluster.omol_path}/4M/subsets/FINAL_LABELS/ligand_pocket
+  diverse_atoms_path: /data/christine/esen_final_node_embedding/diverse_idxs_plp20k_train.pt
+  use_diverse_atoms: True
 
 omol_val:
   splits:
     val:
-      sample_n: 200
+      sample_n: 3000
       src: ${cluster.omol_path}/4M/subsets/OMol_subset/protein_ligand_pockets_val
-  teacher_labels_folder: ${cluster.omol_path}/4M/subsets/OMol_subset_label_finite_difference/protein_ligand_pockets_train_4M/final_labels
+  teacher_labels_folder: ${cluster.omol_path}/4M/subsets/FINAL_LABELS/ligand_pocket
+  diverse_atoms_path: /data/christine/esen_final_node_embedding/diverse_idxs_plp20k_eval.pt
+  use_diverse_atoms: True

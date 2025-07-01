@@ -5,11 +5,11 @@ num_nodes: 1
 
 
 slurm:
-  qos: gpu # other options: scavenger and long, also need to set partition to the same thing
-  partition: gpu
+  qos: long # other options: scavenger and long, also need to set partition to the same thing
+  partition: long
   nodelist: germain
   mem_gb: 50
-  timeout_hr: 12
+  timeout_hr: 36
   cpus_per_task: 9
   constraint: ~
   account: ~

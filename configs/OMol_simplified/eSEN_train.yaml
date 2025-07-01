@@ -37,8 +37,8 @@ heads:
     module: fairchem.core.models.uma.escn_md.MLP_Energy_Head
   forces:
     module: fairchem.core.models.uma.escn_md.Linear_Force_Head
-  charge:
-    module: fairchem.core.models.uma.escn_md.MLP_Charge_Head
+  # charge:
+  #   module: fairchem.core.models.uma.escn_md.MLP_Charge_Head
 
 runner:
   _target_: fairchem.core.components.train.train_runner.TrainEvalRunner

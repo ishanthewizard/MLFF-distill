@@ -1,0 +1,14 @@
+defaults: 
+ - base_dataset
+ - _self_
+ 
+omol_train:
+  splits:
+    train:
+      src: /data/christine/OMOL/train_4M/metal_complexes
+
+omol_val:
+  splits:
+    val:
+      sample_n: 3000
+      src: /data/christine/OMOL/ALL/val/metal_complexes

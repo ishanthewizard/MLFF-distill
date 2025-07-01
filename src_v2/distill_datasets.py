@@ -37,8 +37,10 @@ class HessianSampler:
         # num_diverse_atoms: number of diverse atoms to use from each structure
         # num_samples: number of samples to take from the first num_diverse_atoms atoms
         
-        # the first atom is randomly chosen, so we don't use it
-        diverse_atoms = diverse_atoms[1:num_diverse_atoms+1]
+        # a thought: should we skip the first atom since it's randomly chosen?
+        diverse_atoms = diverse_atoms[:num_diverse_atoms]
+        # assert that there are no -1 in diverse_atoms since i used -1 as filler to pad the tensor when generating the diverse atoms
+        assert not (-1 in diverse_atoms), "There are -1s in the diverse atoms"
         
         # Each atom contributes 3 indices
         valid_indices = diverse_atoms.repeat_interleave(3) * 3 + torch.tensor([0, 1, 2]).repeat(diverse_atoms.size(0)).to(diverse_atoms.device)
@@ -63,10 +65,8 @@ class CombinedDataset(AseDBDataset):
         # Only set these if use_diverse_atoms is True
         if self.use_diverse_atoms:
             self.diverse_atoms_path = config['diverse_atoms_path']
-            self.num_diverse_atoms = config['num_diverse_atoms']
         else:
             self.diverse_atoms_path = None
-            self.num_diverse_atoms = None
             
         # self.teacher_force_dataset = LmdbDataset(
         #     os.path.join(config['teacher_labels_folder'], f'{dataset_type}_forces')
@@ -97,7 +97,7 @@ class CombinedDataset(AseDBDataset):
         # teacher_forces = self.teacher_force_dataset[idx].reshape(num_atoms, 3)
 
         num_samples = self.num_hessian_samples
-        num_diverse_atoms = self.num_diverse_atoms
+        num_diverse_atoms = num_atoms // 10 
         if self.hessian_dataset is not None:
             # 4) Load the raw force_jacobian vector (CPU)
             raw_jac = self.hessian_dataset[idx]
