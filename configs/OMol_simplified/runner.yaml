@@ -1,5 +1,5 @@
 defaults: 
-  - eSEN_train # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
+  - eSEN_train # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
   - override cluster: local
   - override backbone: eSEN_xtra_small  #Not needed for eval
   - override dataset: protein_ligand_pocket #Solvated
