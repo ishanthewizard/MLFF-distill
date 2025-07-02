@@ -1,6 +1,6 @@
 defaults: 
   - eSEN_train # OTHER OPTIONS: 1. eSEN_train 2. /distill 3. /eSEN_eval 4. /eSEN_labels
-  - override cluster: Nersc
+  - override cluster: local
   - override backbone: eSEN_xtra_small  #Not needed for eval
   - override dataset: protein_ligand_pocket #Solvated
   - _self_
@@ -8,13 +8,13 @@ defaults:
 job:
   run_name: ligand_pockets
 
-runner:
-  train_eval_unit:
-    cosine_lr_scheduler_fn:
-      warmup_epochs: 0.1 # usually 0.01 but solvated and protein_ligand are so small if you use 0.01 you get div by 0 error
+# runner:
+#   train_eval_unit:
+#     cosine_lr_scheduler_fn:
+#       warmup_epochs: 0.1 # usually 0.01 but solvated and protein_ligand are so small if you use 0.01 you get div by 0 error
 
-direct_forces_coef: 30
-energy_coef:        30
+# direct_forces_coef: 30
+# energy_coef:        30
 max_atoms:          1000
 # hessian_coef:       60
 # num_hessian_samples: 3

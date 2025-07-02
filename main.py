@@ -23,7 +23,7 @@ from fairchem.core._cli import (
     Submitit,
     get_timestamp_uid,
     get_commit_hash,
-    get_cluster_name,
+    # get_cluster_name,
     LOG_DIR_NAME,
     CHECKPOINT_DIR_NAME,
     RESULTS_DIR,
@@ -34,7 +34,7 @@ from fairchem.core._cli import (
 )
 from omegaconf import OmegaConf
 from fairchem.core.common import distutils
-
+import clusterscope
 
 @dataclass
 class SlurmConfig:
@@ -105,7 +105,7 @@ class JobConfig:
                 CHECKPOINT_DIR_NAME,
                 PREEMPTION_STATE_DIR_NAME,
             ),
-            cluster_name=get_cluster_name(),
+            cluster_name=clusterscope.cluster(),
         )
 
 

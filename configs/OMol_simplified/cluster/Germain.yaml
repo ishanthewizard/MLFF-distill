@@ -1,6 +1,6 @@
 device: CUDA
 mode: SLURM
-ranks_per_node: 2
+ranks_per_node: 4
 num_nodes: 1
 
 
@@ -15,7 +15,7 @@ slurm:
   account: ~
 
 debug: False
-run_dir: runs
+run_dir: logs
 nodelist: germain
 dataloader_workers: 0
 
