@@ -1,0 +1,30 @@
+defaults:
+  - backbone: eSEN
+
+model: fairchem.core.models.uma.escn_md.myeSCNMDBackbone
+max_num_elements: ${backbone.max_num_elements}
+sphere_channels: ${backbone.sphere_channels}
+lmax: ${backbone.lmax}
+mmax: ${backbone.mmax}
+otf_graph: ${backbone.otf_graph}
+max_neighbors: ${backbone.max_neighbors}
+use_pbc: ${backbone.use_pbc}
+use_pbc_single: ${backbone.use_pbc_single}
+cutoff: ${backbone.cutoff}
+edge_channels: ${backbone.edge_channels}
+distance_function: ${backbone.distance_function}
+num_distance_basis: ${backbone.num_distance_basis}
+regress_forces: ${backbone.regress_forces}
+regress_stress: ${backbone.regress_stress}
+direct_forces: ${backbone.direct_forces}
+num_layers: ${backbone.num_layers}
+hidden_channels: ${backbone.hidden_channels}
+norm_type: ${backbone.norm_type}
+act_type: ${backbone.act_type}
+ff_type: ${backbone.ff_type}
+chg_spin_emb_type: ${backbone.chg_spin_emb_type}
+cs_emb_grad: ${backbone.cs_emb_grad}
+dataset_list: ${backbone.dataset_list}
+use_dataset_embedding: ${backbone.use_dataset_embedding}
+
+adaptive_mode: true

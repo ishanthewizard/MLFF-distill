@@ -1,15 +1,15 @@
 device: CUDA
-mode: LOCAL
-ranks_per_node: 1
+mode: SLURM
+ranks_per_node: 4
 num_nodes: 1
 
 
 slurm:
-  qos: gpu
-  partition: ~
+  qos: long  # other options: scavenger and long, also need to set partition to the same thing
+  partition: long 
   nodelist: germain
   mem_gb: 50
-  timeout_hr: 24
+  timeout_hr: 48
   cpus_per_task: 9
   constraint: null
   exclude: null

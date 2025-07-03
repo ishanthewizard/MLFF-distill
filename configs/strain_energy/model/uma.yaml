@@ -1,0 +1,4 @@
+model_paths: /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/esen_sm_direct_all.pt  # Path to UMA checkpoint file
+device: cuda
+uma_energy_units: eV  # Options: "eV", "Hartrees", "kcal/mol"
+task_name: omol  # Options: "omol", "omat", "oc20", "odac", "omc" 

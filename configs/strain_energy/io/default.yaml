@@ -1,0 +1,8 @@
+input:
+  parquet_path: /home/yuejian/project/MLFF-distill/strain_relief/data/example_ligboundconf_input.parquet
+  mol_col_name: null
+  id_col_name: null
+output:
+  output_file: null
+  id_col_name: ${..input.id_col_name}
+  mol_col_name: ${..input.mol_col_name}
