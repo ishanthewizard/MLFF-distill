@@ -1,0 +1,81 @@
+defaults:
+  - _self_
+
+# Job configuration for fairchem CLI
+job:
+  run_name: strain_energy_calculation
+  device_type: cuda
+  debug: false
+  seed: 42
+  deterministic: false
+  scheduler:
+    mode: local  # Options: local, slurm
+    ranks_per_node: 1
+    num_nodes: 1
+    slurm:
+      mem_gb: 80
+      timeout_hr: 24
+      cpus_per_task: 8
+      partition: null
+      qos: null
+      account: null
+
+# Runner configuration - this is what fairchem will use
+runner:
+  _target_: ligand_strain_energy.strain_energy_runner.create_strain_energy_runner
+
+# Strain energy specific configuration
+# IO configuration
+io:
+  input:
+    input_file: null  # Set this to your input parquet file
+    mol_col_name: mol
+    id_col_name: id
+  output:
+    output_file: null  # Set this to your desired output file
+
+# Model configuration
+model:
+  model_paths: /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/uma-s-1.pt
+  device: cuda
+  uma_energy_units: eV
+  task_name: omol
+
+# Conformers configuration
+conformers:
+  num_conformers: 100
+  max_attempts: 1000
+  prune_rms_thresh: 0.5
+  random_seed: 42
+
+# Minimisation configurations
+local_min:
+  method: UMA
+  model_paths: ${model.model_paths}
+  device: ${model.device}
+  uma_energy_units: ${model.uma_energy_units}
+  task_name: ${model.task_name}
+  maxIters: 100
+  fmax: 0.05
+  fexit: 250
+
+global_min:
+  method: UMA
+  model_paths: ${model.model_paths}
+  device: ${model.device}
+  uma_energy_units: ${model.uma_energy_units}
+  task_name: ${model.task_name}
+  maxIters: 100
+  fmax: 0.05
+  fexit: 250
+
+# Energy evaluation configuration
+energy_eval:
+  method: UMA
+  model_paths: ${model.model_paths}
+  device: ${model.device}
+  uma_energy_units: ${model.uma_energy_units}
+  task_name: ${model.task_name}
+
+# Strain energy threshold
+threshold: 16.1 
