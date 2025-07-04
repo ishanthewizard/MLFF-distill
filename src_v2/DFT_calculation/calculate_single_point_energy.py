@@ -30,9 +30,9 @@ def run_orca_calculation(orca_path: str, input_file: Path, output_dir: Path) -> 
         # Prepare command with output redirection using absolute paths
         output_file = input_file.stem + ".out"
         input_abs_path = str(input_file.absolute())
-        output_abs_path = str((input_file.parent / output_file).absolute())
+        output_abs_path = str((input_file.parent.parent / output_file).absolute())
         cmd = f"{orca_path} {input_abs_path} > {output_abs_path}"
-        
+        breakpoint()
         # Run ORCA calculation with timeout (e.g., 24 hours)
         timeout_seconds = 24 * 3600  # 24 hours
         
