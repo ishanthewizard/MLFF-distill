@@ -46,15 +46,19 @@ def run_orca_calculation(orca_path: str, input_file: Path, output_dir: Path) -> 
             timeout=timeout_seconds,
             text=True
         )
-        
+
         # Check if calculation was successful
         if result.returncode == 0:
-            # Check for ORCA-specific success indicators
-            output_content = result.stdout
-            if "ORCA TERMINATED NORMALLY" in output_content:
-                return True, ""
-            else:
-                return False, "ORCA did not terminate normally"
+            # Read the output file to check for ORCA-specific success indicators
+            try:
+                with open(output_abs_path, 'r') as f:
+                    output_content = f.read()
+                if "ORCA TERMINATED NORMALLY" in output_content:
+                    return True, ""
+                else:
+                    return False, "ORCA did not terminate normally"
+            except FileNotFoundError:
+                return False, "Output file not found after calculation"
         else:
             return False, f"ORCA failed with return code {result.returncode}"
             

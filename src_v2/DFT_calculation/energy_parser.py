@@ -4,9 +4,11 @@ Simple module to parse ORCA energies from a root directory.
 Returns a dictionary with ligand IDs as keys and energy values as values.
 """
 
+import sys
+import argparse
 from pathlib import Path
 from typing import Dict, Any
-from batch_parse_energies import batch_parse_energies
+from utils.batch_parse_energies import batch_parse_energies
 
 
 def parse_ligand_energies_from_root(root_path: str) -> Dict[str, Dict[str, float]]:
@@ -35,11 +37,12 @@ def parse_ligand_energies_from_root(root_path: str) -> Dict[str, Dict[str, float
 
 # Example usage
 if __name__ == "__main__":
-    # Example: parse energies from the test directory
-    root_path = "/home/yuejian/project/MLFF-distill/data/ligandboundconf3.0/test"
+    parser = argparse.ArgumentParser(description="Parse ORCA energies from a root directory")
+    parser.add_argument("root_path", help="Path to root directory containing ligand subdirectories")
+    args = parser.parse_args()
     
-    print("Parsing energies from:", root_path)
-    results = parse_ligand_energies_from_root(root_path)
+    print("Parsing energies from:", args.root_path)
+    results = parse_ligand_energies_from_root(args.root_path)
     
     print(f"\nFound {len(results)} ligands with energy data:")
     for ligand_id, energies in results.items():
