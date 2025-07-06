@@ -255,11 +255,14 @@ def main():
     print(f"ORCA executable: {orca_path}")
     print("=" * 50)
     
-    # Confirm before starting
-    response = input("Do you want to proceed with the calculations? (y/N): ")
-    if response.lower() not in ['y', 'yes']:
-        print("Calculation cancelled.")
-        return
+    # Confirm before starting (skip in batch mode)
+    if not os.environ.get('SLURM_JOB_ID'):
+        response = input("Do you want to proceed with the calculations? (y/N): ")
+        if response.lower() not in ['y', 'yes']:
+            print("Calculation cancelled.")
+            return
+    else:
+        print("Running in batch mode - proceeding automatically...")
     
     process_directory(root_dir, orca_path)
 
