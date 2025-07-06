@@ -213,3 +213,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# Example command line usage:
+# python prepare_orca_input.py /path/to/ligand/directory --nprocs 16 --max-iter 200 --guessmix 30
