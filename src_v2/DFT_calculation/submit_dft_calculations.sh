@@ -2,37 +2,32 @@
 
 # SLURM Parameters for DFT Calculations
 #SBATCH --account=m5024_g
-#SBATCH --constraint=gpu
-#SBATCH --cpus-per-task=8
-#SBATCH --error=/global/homes/y/yuejian/project/MLFF-distill/yuejian/runs/dft_calculations/logs/%j_%t_log.err
-#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=128
+#SBATCH --error=/global/homes/y/yuejian/project/MLFF-distill/yuejian/DFT_output/%j_%t_log.err
 #SBATCH --job-name=dft_single_point_calculations
-#SBATCH --mem=64GB
+#SBATCH --mem=256GB
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --open-mode=append
-#SBATCH --output=/global/homes/y/yuejian/project/MLFF-distill/yuejian/runs/dft_calculations/logs/%j_%t_log.out
+#SBATCH --output=/global/homes/y/yuejian/project/MLFF-distill/yuejian/DFT_output/%j_%t_log.out
 #SBATCH --qos=regular
 #SBATCH --signal=USR2@90
-#SBATCH --time=48:00:00
+#SBATCH --time=24:00:00
 #SBATCH --wckey=submitit
 
-# Load necessary modules (adjust as needed for your NERSC setup)
-module load python/3.9
-
-# Set up environment variables
-export PYTHONPATH="/global/homes/y/yuejian/project/MLFF-distill:$PYTHONPATH"
+# Note: Activate your conda environment before running this script
+# Example: conda activate your_env_name
 
 # Create log directory if it doesn't exist
-mkdir -p /global/homes/y/yuejian/project/MLFF-distill/yuejian/runs/dft_calculations/logs
+mkdir -p /global/homes/y/yuejian/project/MLFF-distill/yuejian/DFT_output
 
 # Set the root directory containing ligand subdirectories
-# Modify this path to point to your actual data directory
-ROOT_DIR="/global/homes/y/yuejian/project/MLFF-distill/data/ligands"
+# Path to the ligand data directory
+ROOT_DIR="/global/homes/y/yuejian/project/MLFF-distill/yuejian/ligandboundconf3/xtb_local_min"
 
 # Set the ORCA executable path
-# Modify this path to point to your ORCA installation
-ORCA_PATH="/global/homes/y/yuejian/project/MLFF-distill/yuejian/orca/orca_6_0_0_shared_openmpi416/orca"
+# Path to ORCA installation on NERSC
+ORCA_PATH="/global/homes/y/yuejian/project/MLFF-distill/yuejian/orca"
 
 # Change to the project directory
 cd /global/homes/y/yuejian/project/MLFF-distill
