@@ -1,0 +1,24 @@
+defaults:
+  - /eSEN_train
+  - override tasks: hessian_task
+  - _self_
+
+job:
+  run_name: Solvated_distill
+
+hessian_coef:       60
+num_hessian_samples: 4
+
+dataset:
+  omol_train:
+    format:                 src_v2.distill_datasets.CombinedDatasetTrain
+    num_hessian_samples: ${num_hessian_samples}
+  omol_val:
+    format:                 src_v2.distill_datasets.CombinedDatasetVal
+    num_hessian_samples: ${num_hessian_samples}
+
+runner:
+  train_eval_unit:
+    model:
+      _target_: src_v2.model_wrapper.HessianModelWrapper
+    
