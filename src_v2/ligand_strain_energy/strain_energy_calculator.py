@@ -63,6 +63,7 @@ def strain_relief(df: pd.DataFrame, cfg: DictConfig) -> pd.DataFrame:
 
     # Find the local minimum using a looser convergence criteria
     logging.info("Minimising docked conformer...")
+
     local_minima = minimise_conformers(local_minima, **cfg.local_min)
 
     # Generate conformers from the docked conformer
