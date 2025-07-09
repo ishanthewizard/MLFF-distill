@@ -1,8 +1,8 @@
 input:
-  parquet_path: /home/yuejian/project/MLFF-distill/strain_relief/data/example_ligboundconf_input.parquet
-  mol_col_name: null
-  id_col_name: null
+  parquet_path: /home/yuejian/project/MLFF-distill/data/test_relaxation/subset_with_all_energies_need_to_update_student_model_no_teacher_and_student_model_when_train_finish_first5.parquet
+  mol_col_name: raw_mol
+  id_col_name: ligand_id
 output:
-  output_file: null
+  output_file: /home/yuejian/project/MLFF-distill/data/test_relaxation/${global_min.method}_${ckpt_name}&_subset_with_all_energies_need_to_update_student_model_no_teacher_and_student_model_when_train_finish_first5_output.parquet
   id_col_name: ${..input.id_col_name}
   mol_col_name: ${..input.mol_col_name}

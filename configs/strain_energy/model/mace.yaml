@@ -1,4 +1,5 @@
 model_paths: null
+ckpt_name: mace
 device: cuda
 default_dtype: float32
 mace_energy_units: eV

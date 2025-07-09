@@ -2,11 +2,23 @@ defaults:
   - _self_
   - io: default
   - conformers: default
+  # Model options: uma, mace
   - model: uma
-  - minimisation@local_min: uma
-  - minimisation@global_min: uma
+  # Minimisation options: uma, mace, mmff94, mmff94s
+  - minimisation@local_min: mmff94s
+  - minimisation@global_min: mmff94s
   - energy_eval: default
   - experiment: null
+
+# Shared checkpoint name, should be the name in /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/{ckpt_name}.pt
+# Available choices:
+# - distill_uma-s-1_inference_ckpt
+# - esen_md_direct_all
+# - esen_sm_conserving_all
+# - esen_sm_direct_all
+# - uma-s-1
+# - undistill_inference_ckpt
+ckpt_name: esen_sm_direct_all
 
 seed: -1
 threshold: 16.1
