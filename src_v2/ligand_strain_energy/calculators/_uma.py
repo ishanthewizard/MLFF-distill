@@ -79,5 +79,4 @@ def UMA_min(
     calculator = FAIRChemCalculator(predictor, task_name=task_name)
     
     energies, mols = method_min(mols, calculator, maxIters, fmax, fexit, conversion_factor)
-
     return energies, mols 
