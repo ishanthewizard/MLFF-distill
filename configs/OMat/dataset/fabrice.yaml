@@ -1,0 +1,27 @@
+normalizer_rmsd: 0.26729827332005784
+regress_stress: false
+dataset_name: omat
+pass_through_head_outputs: true
+
+train_dataset:
+  splits:
+    train:
+      src: /home/ishan-amin/MLFF-distill/tester_data/outputs/train
+  format: ase_db
+  transforms:
+    common_transform:
+      dataset_name: ${dataset.dataset_name}
+    stress_reshape_transform:
+      dataset_name: ${dataset.dataset_name}
+
+val_dataset:
+  splits:
+    val:
+      sample_n: 200
+      src: /home/ishan-amin/MLFF-distill/tester_data/outputs/val
+  format: ase_db
+  transforms:
+    common_transform:
+      dataset_name: ${dataset.dataset_name}
+    stress_reshape_transform:
+      dataset_name: ${dataset.dataset_name}
