@@ -1,5 +1,5 @@
 method: MMFF94s
-maxIters: 250 # 1000
+maxIters: 500 # 1000
 MMFFGetMoleculeProperties:
   mmffVariant: ${..method}
 MMFFGetMoleculeForceField: {}
