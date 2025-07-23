@@ -4,18 +4,18 @@ import numpy as np
 import sys
 import os
 
-
-
-if __name__ == "__main__":
-    # load dataset
-    dataset_path = "/home/yuejian/project/MLFF-distill/OMOL/TOY/ligand_pocket_300 copy/val"
-
-    # detect if metadata.npz already exists
+def compute_metadata(dataset_path: str) -> None:
+    """
+    Compute and save metadata.npz for the dataset at the given path.
+    Args:
+        dataset_path (str): Path to the dataset directory.
+    Returns:
+        None. Saves metadata.npz in the dataset directory.
+    """
     metadata_path = os.path.join(dataset_path, 'metadata.npz')
     if os.path.exists(metadata_path):
         print(f"Metadata file already exists at {metadata_path}. Exiting to avoid overwriting.")
-        sys.exit(0)
-    
+        return
     a2g_args = {  
         "molecule_cell_size": 120.0,
         "r_energy": True,
@@ -23,32 +23,26 @@ if __name__ == "__main__":
         # "r_stress": True,
         "r_data_keys": [ 'spin','charge', "data_id"],
         # 'sid': 'data_id',
-
     }
-    
     dataset = AseDBDataset({
-                            "src": dataset_path,
-                            "a2g_args": a2g_args,
-                            })
-
-    # --- your data ---
-    # e.g., lists of values; replace with your actual data
+        "src": dataset_path,
+        "a2g_args": a2g_args,
+    })
     natoms_list   = []            # number of atoms per structure
     data_ids_list = []
-
-    # extracting metadata from the dataset
     for i in tqdm(range(len(dataset))):
         natoms_list.append(dataset[i].natoms.item())
         data_ids_list.append(dataset[i].data_id)
-        
-    # convert to numpy arrays
-    natoms   = np.array(natoms_list,   dtype=int).reshape(-1)  # adjust dtype/shape as needed
-    data_ids = np.array(data_ids_list, dtype='<U15').reshape(-1)  # adjust dtype/length as needed
-
-    # --- save to .npz ---
+    natoms   = np.array(natoms_list,   dtype=int).reshape(-1)
+    data_ids = np.array(data_ids_list, dtype='<U15').reshape(-1)
     out_path = os.path.join(dataset_path,'metadata.npz')
     np.savez(out_path,
             natoms=natoms,
             data_ids=data_ids)
-
     print(f"Saved NPZ to {out_path} with keys: {list(np.load(out_path).keys())}")
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python compute_metadata.py /path/to/dataset")
+        sys.exit(1)
+    compute_metadata(sys.argv[1])

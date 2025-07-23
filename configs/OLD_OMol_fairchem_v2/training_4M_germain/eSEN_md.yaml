@@ -1,5 +1,5 @@
 defaults:
-  - cluster: ada6000_local
+  - cluster: ada6000
   # - cluster: fair_cluster
   # - backbone: eSEN
   - dataset: OMol
@@ -29,7 +29,7 @@ job:
     entity: jianyuelalala # your account name
     project: distill
 
-starting_checkpoint: /data/yuejian/OMol_Whole/ckpt/esen_md_direct_all.pt
+starting_checkpoint: /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/uma-s-1.pt
 
 # moe_layer_type: pytorch
 # num_moe_experts: 32
@@ -133,6 +133,7 @@ runner:
     model:
       _target_: src_v2.dataset_utils.initialize_finetuning_model
       checkpoint_location: ${starting_checkpoint}
+      use_ema: True
       # overrides: None
       heads: ${heads}
     optimizer_fn:

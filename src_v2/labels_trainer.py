@@ -147,8 +147,8 @@ class TeacherLabelGenerator(Runner):
                                             # vectorize=self.config["dataset"]["vectorize_teach_jacs"], 
                                             vectorize = False,
                                             should_mask=should_mask, # BUG
-                                            # approximation="disabled", # {"disabled","forward","central"}
-                                            approximation="forward", # {"disabled","forward","central"}
+                                            approximation="disabled", # {"disabled","forward","central"}
+                                            # approximation="forward", # {"disabled","forward","central"}
                                             forward = self.train_eval_unit.model,
                                             collater = None,
                                             device = self.device
