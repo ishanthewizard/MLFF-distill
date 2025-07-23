@@ -141,3 +141,20 @@ class LmdbDataset(Dataset):
                 raise Exception(f"Data not found for index {index} in LMDB file.")
 
 
+
+class LmdbHessianIndexDataset(LmdbDataset):
+    def __getitem__(self, index):
+        if isinstance(index, torch.Tensor):
+            index = index.item()  # Convert tensor to integer
+
+        # Find which database to access
+        db_idx = bisect.bisect_right(self._keylen_cumulative, index)
+        with self.envs[db_idx].begin() as txn:
+            byte_data = txn.get((str(index) + "_idxs").encode())
+            if byte_data:
+                # tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=self.dtype))
+                arr = np.frombuffer(byte_data, dtype=self.dtype).copy()   # now writable
+                tensor = torch.from_numpy(arr).long()
+                return tensor
+            else:
+                raise Exception(f"Data not found for index {index} in LMDB file.")

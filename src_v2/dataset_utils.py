@@ -8,7 +8,7 @@ import os
 from tqdm import tqdm
 import  lmdb
 import shutil
-
+from src_v2.model_wrapper import Node_Embedding_Head
 
 def initialize_finetuning_model(
     checkpoint_location: str, use_ema: True, overrides: dict | None = None, heads: dict | None = None
@@ -18,6 +18,8 @@ def initialize_finetuning_model(
     logging.warning(
         f"initialize_finetuning_model starting from checkpoint_location: {checkpoint_location}"
     )
+    
+    model.module.output_heads['node_embedding'] = Node_Embedding_Head()
     return model
 
 def load_existing_indices(lmdb_path: str) -> set[int]:
@@ -28,7 +30,9 @@ def load_existing_indices(lmdb_path: str) -> set[int]:
         idxs = set()
         with env.begin() as txn:
             for k, _ in txn.cursor():
-                idxs.add(int(k.decode()))  # Decode bytes to string, then to int
+                key_str = k.decode()
+                if key_str.isdigit():
+                    idxs.add(int(key_str))
         env.close()
         return idxs
     except lmdb.Error as e:

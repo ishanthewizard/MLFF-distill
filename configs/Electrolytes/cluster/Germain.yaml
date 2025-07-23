@@ -1,6 +1,6 @@
 device: CUDA
 mode: SLURM
-ranks_per_node: 6
+ranks_per_node: 4
 num_nodes: 1
 
 

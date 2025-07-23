@@ -22,7 +22,7 @@ from src_v2.dataset_utils import load_existing_indices
 import torch
 from fairchem.core.common import distutils
 from fairchem.core.components.runner import Runner
-from .distill_utils import get_teacher_jacobian
+from .distill_utils import get_teacher_jac_diverse, get_teacher_jacobian
 
 if TYPE_CHECKING:
     from torch.distributed.checkpoint.stateful import Stateful
@@ -43,17 +43,19 @@ class TeacherLabelGenerator(Runner):
         eval_dataloader: torch.utils.data.dataloader,
         eval_unit: Union[TrainUnit, EvalUnit, Stateful],
         label_folder: str,
+        n_diverse_samples: int = 20, # This is the number of atoms that will be sampled from each molecule, so the number of force jac rows is actually 3x this
     ):  
         # Initialize the class
         self.train_dataloader = train_dataloader
         self.eval_dataloader = eval_dataloader
         self.train_eval_unit = eval_unit
         self.device = self.train_eval_unit.model.device
-        
+        self.n_diverse_samples = n_diverse_samples
+        self.lazy_model_initialized = False
         # Check if the dataloaders are using a deterministic sampler
-        if self.train_dataloader.batch_sampler.shuffle:
+        if hasattr(self.train_dataloader.batch_sampler, "shuffle") and self.train_dataloader.batch_sampler.shuffle:
             raise ValueError("TrainSampler should not shuffle for deterministic indexing.")
-        if self.eval_dataloader.batch_sampler.shuffle:
+        if hasattr(self.eval_dataloader.batch_sampler, "shuffle") and self.eval_dataloader.batch_sampler.shuffle:
             raise ValueError("EvalSampler should not shuffle for deterministic indexing.")
         
         # Create the label folder if it does not exist
@@ -74,9 +76,10 @@ class TeacherLabelGenerator(Runner):
 
     def run(self) -> None:
         """Generate labels for train and val datasets and merge LMDBs on rank 0."""
-        self.record_labels_parallel(self.label_folder, 'val')
-        self.record_labels_parallel(self.label_folder, 'train')
+        self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
+        self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
         
+        self.record_labels_parallel(self.label_folder, 'train', is_hessian=True)
         
         # Synchronize all workers before merging
         distutils.synchronize()
@@ -92,40 +95,80 @@ class TeacherLabelGenerator(Runner):
             train_jacobians_dir = os.path.join(self.label_folder, "unmerged_force_jacobians")
             merged_train_jacobians_path = os.path.join(self.label_folder, "force_jacobians")
             self.merge_lmdb_shards(train_jacobians_dir, merged_train_jacobians_path)
+            
+            train_forces_dir = os.path.join(self.label_folder, "unmerged_train_forces")
+            merged_train_forces_path = os.path.join(self.label_folder, "train_forces")
+            self.merge_lmdb_shards(train_forces_dir, merged_train_forces_path)
 
-    def _get_label_fn(self, dataset_type):
-        if dataset_type == 'train':
+    def _get_label_fn(self, is_hessian):
+        if is_hessian:
             def get_separated_force_jacs(batch): 
+                self.merge_mole_model(batch)
                 batch.pos.detach().requires_grad_()
-                jacs = get_teacher_jacobian(
+                jacs = get_teacher_jac_diverse(
                     batch, 
+                    forward=self.train_eval_unit.model,
+                    n_diverse_samples=self.n_diverse_samples,
                     vectorize=False,
                     approximation="forward",
-                    forward=self.train_eval_unit.model,
                     collater=None,
-                    device=self.device
                 )
                 return jacs
             return get_separated_force_jacs
-        if dataset_type == 'val':
+        else:
             def get_separated_forces(batch):
-                all_forces = self.train_eval_unit.model(batch)['forces']['forces']
+                self.train_eval_unit.model.eval()
+                self.merge_mole_model(batch)
+                out = self.train_eval_unit.model(batch) 
+                # logging.info('OUT KEYS: ' + str(out.keys()))
+                all_forces = out['omol_forces']['forces']
                 natoms = batch.natoms
                 return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
             return get_separated_forces
     
-        
     
-    def record_labels_parallel(self, labels_folder: str, dataset_type: str) -> None:
+    def merge_mole_model(self, data):
+        return
+        if self.lazy_model_initialized:
+            return
+        self.lazy_model_initialized = True
+        m = self.train_eval_unit.model
+        bb = m.module.module.backbone.to("cpu")
+        merged = bb.merge_MOLE_model(data.clone().to("cpu"))
+        m.module.module.backbone = merged.to(self.device)
+        torch.cuda.empty_cache()
+        
+    # def merge_mole_model(self, data):
+    #     if not self.lazy_model_initialized:
+    #         self.lazy_model_initialized = True
+    #         assert (
+    #                 data.natoms.numel() == 1
+    #             ), f"Cannot merge model with multiple systems in batch. Must be exactly 1 system, found {data.natoms.numel()}"
+    #         logging.info(f"Merging MOLE model for {data.natoms.numel()} atoms")
+    #         logging.info(f"Original param count: {sum(p.numel() for p in self.train_eval_unit.model.parameters())}")
+    #         self.train_eval_unit.model.module.module.backbone = (
+    #             self.train_eval_unit.model.module.module.backbone.merge_MOLE_model(data.clone())
+    #         )
+    #         m = self.train_eval_unit.model
+    #         old_bb = m.module.module.backbone
+    #         new_bb = old_bb.merge_MOLE_model(data.clone())
+    #         m.module.module.backbone = new_bb
+    #         del old_bb
+    #         # m.eval()
+    #         m.to(self.device)
+    #         torch.cuda.empty_cache()
+    #         logging.info(f"New param count: {sum(p.numel() for p in self.train_eval_unit.model.parameters())}")
+    
+    def record_labels_parallel(self, labels_folder: str, dataset_type: str, is_hessian: bool = False) -> None:
         # pick dataloader & get_fn exactly as before…
         if dataset_type == 'val':
             dataloader = self.eval_dataloader
             subdir = "unmerged_val_forces"
         else:  # 'train'
             dataloader = self.train_dataloader
-            subdir = "unmerged_force_jacobians"
+            subdir = "unmerged_force_jacobians" if is_hessian else "unmerged_train_forces"
             
-        get_fn = self._get_label_fn(dataset_type)
+        get_fn = self._get_label_fn(is_hessian)
 
         shard_dir = os.path.join(labels_folder, subdir)
         os.makedirs(shard_dir, exist_ok=True)
@@ -146,6 +189,7 @@ class TeacherLabelGenerator(Runner):
             file_path=shard_path,
             fn=get_fn,
             skip_indices=seen,
+            is_hessian = is_hessian
         )
 
     def _record_and_save_filtered(
@@ -154,6 +198,7 @@ class TeacherLabelGenerator(Runner):
         file_path: str,
         fn: Callable,
         skip_indices: set[int],
+        is_hessian: bool = False,
     ) -> None:
         """
         Iterate through dataloader.batch_sampler to get the *original* indices,
@@ -190,13 +235,22 @@ class TeacherLabelGenerator(Runner):
                 mini_batch = mini_batch.to(self.device) if hasattr(mini_batch, "to") else mini_batch
 
                 # expensive forward call only on new samples
-                outs = fn(mini_batch)
-
+                outs = fn(mini_batch) # in diverse mode, this is an array of 2-tuples
                 # write each result under its original key
                 with env.begin(write=True) as txn:
                     for idx, out in zip(new_idxs, outs):
-                        txn.put(str(idx).encode(),
-                                out.detach().cpu().numpy().tobytes())
+                        if is_hessian:
+                            # 1.  force-jacobian → fp32 → contiguous → 1-D
+                            main_np = out[0].detach().float().contiguous().view(-1).cpu().numpy()
+                            # 2.  diverse indices → fp32 → contiguous → 1-D
+                            idxs_np = out[1].detach().float().contiguous().view(-1).cpu().numpy()
+
+                            txn.put(str(idx).encode(),       main_np.tobytes())
+                            txn.put(f"{idx}_idxs".encode(),  idxs_np.tobytes())
+                        else:
+                            txn.put(str(idx).encode(),
+                                    out.detach().float().contiguous().view(-1).cpu().numpy().tobytes())
+                        
                         skip_indices.add(idx)
 
         env.close()

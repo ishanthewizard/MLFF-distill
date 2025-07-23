@@ -1,7 +1,8 @@
 from fairchem.core.models.base import HydraModel
 import torch
 from src_v2.distill_utils import get_jacobian, get_jacobian_finite_difference
-
+from fairchem.core.models.base import HeadInterface
+import torch.nn as nn
 
 class HessianModelWrapper(HydraModel):
     def get_sampled_hessian(self, data, out):
@@ -41,4 +42,8 @@ class HessianModelWrapper(HydraModel):
         force_jacs = torch.zeros((sum(data.natoms), data.num_samples[0] * 3), device=data.pos.device)  if is_validating else  self.get_sampled_hessian(data, out)#self.get_sampled_hessian(data, out) # torch.zeros((sum(data.natoms), data.num_samples[0] * 3))
         out['forces_jac'] = {'forces_jac': force_jacs}
         return out
-        
+
+
+class Node_Embedding_Head(nn.Module, HeadInterface):
+    def forward(self, data_dict, emb: dict[str, torch.Tensor]):
+        return {"node_embedding": emb["node_embedding"]}

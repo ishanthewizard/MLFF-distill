@@ -104,11 +104,9 @@ if __name__ == "__main__":
 
     # sanity check
     print("sanity check: checking if the source names match the subset name")
-    # breakpoint()
     for i in tqdm(protein_ligand_fragments_indices_in_train_4M):
         assert (dataset[i][0].source[0].split("/")[0] in subset_name_dictionary[subset_name]) == True, f"Unexpected source name: {dataset[i][0].source[0].split('/')[0]}"
     
-    # breakpoint()
     os.makedirs(dst_dir, exist_ok=True)
 
     # initialize

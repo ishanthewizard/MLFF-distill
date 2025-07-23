@@ -1,12 +1,13 @@
 defaults: 
-  - eval # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
+  - labels # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
   - override cluster: local
   # - override backbone: eSEN_xtra_small  #Not needed for eval
-  - override dataset: protein_ligand_pocket_300 #Solvated
+  - override dataset: NA_PF6 #Solvated
   - _self_
 
 job:
   run_name: ligand_pockets
+  graph_parallel_group_size: 1
 
 # runner:
 #   train_eval_unit:
@@ -15,6 +16,5 @@ job:
 
 # direct_forces_coef: 30
 # energy_coef:        30
-max_atoms:          350
 # hessian_coef:       60
 # num_hessian_samples: 3
