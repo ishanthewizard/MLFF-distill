@@ -1,11 +1,11 @@
 defaults:
   - base 
-  - override cluster: Nersc
+  - override cluster: local 
   - override dataset: protein_ligand_pocket
   - _self_
 
-teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/esen_md_direct_all.pt
-label_folder: ${cluster.omol_path}/TOY/labels/ligand_pocket_300_TEST
+teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/uma-s-1p1.pt
+label_folder: ${cluster.omol_path}/TOY/labels/ligand_pocket_300_DEBUG
 
 dataset:
   omol_train:

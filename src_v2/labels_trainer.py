@@ -128,14 +128,15 @@ class TeacherLabelGenerator(Runner):
     
     
     def merge_mole_model(self, data):
-        return
         if self.lazy_model_initialized:
             return
         self.lazy_model_initialized = True
         m = self.train_eval_unit.model
+        logging.info(f"Number of parameters in model: {sum(p.numel() for p in m.parameters())}")
         bb = m.module.module.backbone.to("cpu")
         merged = bb.merge_MOLE_model(data.clone().to("cpu"))
         m.module.module.backbone = merged.to(self.device)
+        logging.info(f"Number of parameters in model: {sum(p.numel() for p in m.parameters())}")
         torch.cuda.empty_cache()
         
     # def merge_mole_model(self, data):
