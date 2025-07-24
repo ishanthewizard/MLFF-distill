@@ -103,12 +103,12 @@ class TeacherLabelGenerator(Runner):
     def _get_label_fn(self, is_hessian):
         if is_hessian:
             def get_separated_force_jacs(batch): 
-                self.merge_mole_model(batch)
-                batch.pos.detach().requires_grad_()
+                self.train_eval_unit.model.eval()
                 jacs = get_teacher_jac_diverse(
                     batch, 
                     forward=self.train_eval_unit.model,
                     n_diverse_samples=self.n_diverse_samples,
+                    force_keyword='omol_forces',
                     vectorize=False,
                     approximation="forward",
                     collater=None,
@@ -118,47 +118,12 @@ class TeacherLabelGenerator(Runner):
         else:
             def get_separated_forces(batch):
                 self.train_eval_unit.model.eval()
-                self.merge_mole_model(batch)
                 out = self.train_eval_unit.model(batch) 
                 # logging.info('OUT KEYS: ' + str(out.keys()))
                 all_forces = out['omol_forces']['forces']
                 natoms = batch.natoms
                 return [all_forces[sum(natoms[:i]):sum(natoms[:i+1])] for i in range(len(natoms))]
             return get_separated_forces
-    
-    
-    def merge_mole_model(self, data):
-        if self.lazy_model_initialized:
-            return
-        self.lazy_model_initialized = True
-        m = self.train_eval_unit.model
-        logging.info(f"Number of parameters in model: {sum(p.numel() for p in m.parameters())}")
-        bb = m.module.module.backbone.to("cpu")
-        merged = bb.merge_MOLE_model(data.clone().to("cpu"))
-        m.module.module.backbone = merged.to(self.device)
-        logging.info(f"Number of parameters in model: {sum(p.numel() for p in m.parameters())}")
-        torch.cuda.empty_cache()
-        
-    # def merge_mole_model(self, data):
-    #     if not self.lazy_model_initialized:
-    #         self.lazy_model_initialized = True
-    #         assert (
-    #                 data.natoms.numel() == 1
-    #             ), f"Cannot merge model with multiple systems in batch. Must be exactly 1 system, found {data.natoms.numel()}"
-    #         logging.info(f"Merging MOLE model for {data.natoms.numel()} atoms")
-    #         logging.info(f"Original param count: {sum(p.numel() for p in self.train_eval_unit.model.parameters())}")
-    #         self.train_eval_unit.model.module.module.backbone = (
-    #             self.train_eval_unit.model.module.module.backbone.merge_MOLE_model(data.clone())
-    #         )
-    #         m = self.train_eval_unit.model
-    #         old_bb = m.module.module.backbone
-    #         new_bb = old_bb.merge_MOLE_model(data.clone())
-    #         m.module.module.backbone = new_bb
-    #         del old_bb
-    #         # m.eval()
-    #         m.to(self.device)
-    #         torch.cuda.empty_cache()
-    #         logging.info(f"New param count: {sum(p.numel() for p in self.train_eval_unit.model.parameters())}")
     
     def record_labels_parallel(self, labels_folder: str, dataset_type: str, is_hessian: bool = False) -> None:
         # pick dataloader & get_fn exactly as before…
@@ -226,7 +191,11 @@ class TeacherLabelGenerator(Runner):
                 indices = next(batch_iter)               # list of ints
 
                 # figure out which ones are truly new
-                new_idxs = [i for i in indices if i not in skip_indices]
+                if hasattr(indices[0], "item"):
+                    new_idxs = [i.to(self.device) for i in indices if i.item() not in skip_indices]
+                else:
+                    new_idxs = [i for i in indices if i not in skip_indices]
+                    
                 if not new_idxs:
                     continue
 

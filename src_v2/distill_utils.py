@@ -82,10 +82,10 @@ def get_diverse_idxs(x, natoms, num_samples):
 
 
 
-def get_teacher_jac_diverse(data, forward, n_diverse_samples,  vectorize=True,  approximation="disabled", collater=None):
+def get_teacher_jac_diverse(data, forward, n_diverse_samples,  force_keyword='forces', vectorize=True,  approximation="disabled", collater=None):
     out = forward(data)
-    forces = out['forces']['forces']
-    node_embedding = out['node_embedding']['node_embedding']
+    forces = out[force_keyword]['forces'].detach()
+    node_embedding = out['node_embedding'] #['node_embedding']
     natoms = data.natoms
     total_atoms = forces.shape[0]
     num_samples = n_diverse_samples # NOTE: this is the number of atoms that will be sampled from each molecule, so the number of force jac rows is actually 3x this 
@@ -103,7 +103,7 @@ def get_teacher_jac_diverse(data, forward, n_diverse_samples,  vectorize=True,  
     sample_idxs = torch.arange(n_rows, device=forces.device).repeat(len(natoms)) # repeat for each molecule
     grad_outputs[sample_idxs, offset_samples[:, 0], offset_samples[:, 1]] = 1
 
-    jac = get_jacobian_finite_difference(forces, data, grad_outputs, forward=forward, detach=True, collater=None, looped=True, h= 0.001)
+    jac = get_jacobian_finite_difference(forces, data, grad_outputs, forward=forward, detach=True, force_keyword=force_keyword, collater=None, looped=True, h= 0.001)
     jacs_per_mol = [jac[:, cum_sum:cum_sum + nat, :].cpu() for cum_sum,  nat in zip(cumulative_sums, natoms)]
 
     return zip(jacs_per_mol, diverse_indices)
@@ -158,7 +158,7 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
         return full_jac
 
 
-def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach, collater, looped=False, h=0.001):
+def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach, collater, looped=False, force_keyword='forces', h=0.001):
 
     original_pos = batch.pos.clone()
     perturbed_batches = []
@@ -171,11 +171,11 @@ def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach,
 
     if not looped:
         large_batch = collater(perturbed_batches)
-        perturbed_forces = forward(large_batch)['forces']
+        perturbed_forces = forward(large_batch)[force_keyword]['forces']
     else:
         perturbed_forces = []
-        for batch in perturbed_batches:
-            pert_force = forward(batch)['forces']['forces'].detach() if detach else forward(batch)['forces']['forces']
+        for batch in tqdm(perturbed_batches):
+            pert_force = forward(batch)[force_keyword]['forces'].detach() if detach else forward(batch)[force_keyword]['forces']
             perturbed_forces.append(pert_force)
         perturbed_forces = torch.cat(perturbed_forces, dim=0)
     # Split the large batch's forces into individual forward and backward forces

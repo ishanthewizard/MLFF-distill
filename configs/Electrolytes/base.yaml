@@ -23,10 +23,7 @@ job:
     entity: ishan-amin
     project: OMOL
 
-
-batch_size: 1
 bf16: False
-
 
 val_dataset:
   _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
@@ -40,10 +37,16 @@ val_dataset:
 eval_dataloader:
   _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
   dataset: ${val_dataset}
+  # batch_sampler_fn:
+  #   _target_: fairchem.core.common.data_parallel.BalancedBatchSampler
+  #   _partial_: true
+  #   batch_size: ${batch_size}
+  #   shuffle: false
+  #   seed: 0
   batch_sampler_fn:
-    _target_: fairchem.core.common.data_parallel.BalancedBatchSampler
-    _partial_: true
-    batch_size: ${batch_size}
+    _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
+    _partial_: True
+    max_atoms: ${max_atoms}
     shuffle: false
     seed: 0
   num_workers: 0
