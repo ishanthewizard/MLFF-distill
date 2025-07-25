@@ -1,11 +1,11 @@
-normalizer_rmsd: 0.8882235505930679
+normalizer_rmsd: 0.8195104628817489
 regress_stress: true
 dataset_name: omol
 
 train_dataset:
   splits:
     train:
-      src: ${cluster.omol_path}/electrolytes_application/data/1k_napf6_md_model/train
+      src: ${cluster.omol_path}/electrolytes_application/aselmdb_data/NAPF6/s1p1/train
   format: ase_db
   transforms:
     common_transform:
@@ -16,7 +16,7 @@ train_dataset:
 val_dataset:
   splits:
     val:
-      src: ${cluster.omol_path}/electrolytes_application/data/1k_napf6_md_model/val
+      src: ${cluster.omol_path}/electrolytes_application/aselmdb_data/NAPF6/s1p1/val
   format: ase_db
   transforms:
     common_transform:

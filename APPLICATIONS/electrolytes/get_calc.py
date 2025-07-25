@@ -4,7 +4,8 @@ from ase.calculators.calculator import Calculator
 import numpy as np
 
 uma_path = "/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt"
-
+# uma_path = '/data/ishan-amin/OMOL/electrolytes_application/checkpoints/bad_xxsmall_napf6.pt'
+# uma_path = '/home/ishan-amin/MLFF-distill/runs/202507-2415-5252-99e7/checkpoints/step_9000/inference_ckpt.pt'
 class UMACalculatorWrapper(Calculator):
     """Wrapper around FAIRChemCalculator to implement ASE Calculator interface"""
     
@@ -53,7 +54,7 @@ class UMACalculatorWrapper(Calculator):
 
 def get_uma_calc():
     predictor = load_predict_unit(uma_path, device="cuda")
-    calc = UMACalculatorWrapper(predictor, task_name="oc20")
+    calc = UMACalculatorWrapper(predictor, task_name="omol")
     return calc
 
 def voigt_to_tensor6(six):

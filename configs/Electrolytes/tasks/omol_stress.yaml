@@ -37,7 +37,7 @@
     loss_fn:
       _target_: fairchem.core.modules.loss.L2NormLoss
     reduction: mean
-    coefficient: 10
+    coefficient: 20
   out_spec:
     dim:
     - 3
@@ -61,7 +61,7 @@
     loss_fn:
       _target_: fairchem.core.modules.loss.MAELoss
     reduction: mean
-    coefficient: 1
+    coefficient: 20
   out_spec:
     dim:
     - 1

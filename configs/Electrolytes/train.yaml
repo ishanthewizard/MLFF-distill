@@ -56,6 +56,7 @@ runner:
       _target_: fairchem.core.models.base.HydraModel
       backbone: ${backbone}
       heads: ${heads}
+      pass_through_head_outputs: true
     optimizer_fn:
       _target_: torch.optim.AdamW
       _partial_: true
@@ -74,7 +75,7 @@ runner:
     bf16: ${bf16}
   max_epochs: ${epochs}
   max_steps: ${steps}
-  evaluate_every_n_steps: 1000
+  evaluate_every_n_steps: 250
   callbacks:
     - _target_: fairchem.core.common.profiler_utils.ProfilerCallback
       job_config: ${job}

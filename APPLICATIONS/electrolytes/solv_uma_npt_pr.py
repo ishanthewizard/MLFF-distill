@@ -53,16 +53,43 @@ dyn.attach(traj.write, interval=10)
 
 log_fh = open(output_log, "w", buffering=1)
 
+import time
+
+# Variables to track timing for iterations per second
+_last_print_step = [None]
+_last_print_time = [None]
+
 def print_status(a=structure, fh=log_fh):
+    # Use nonlocal to update the outer variables
     epot = a.get_potential_energy()
     ekin = a.get_kinetic_energy()
     temp = a.get_temperature()
     vol = a.get_volume()
-    line = (f"Step {dyn.nsteps:>8} | T={temp:6.1f} K | Epot={epot:10.3f} eV | "
-            f"Ekin={ekin:10.3f} eV | Vol={vol:10.3f} Å³")
-    print(line); print(line, file=fh)
+    step = dyn.nsteps
 
-dyn.attach(print_status, interval=10)
-dyn.run(steps=100)
+    # Compute iterations per second over the last 20 steps
+    its_per_sec_str = ""
+    if _last_print_step[0] is not None and _last_print_time[0] is not None:
+        steps_since = step - _last_print_step[0]
+        time_since = time.time() - _last_print_time[0]
+        if steps_since > 0 and time_since > 0:
+            its_per_sec = steps_since / time_since
+            its_per_sec_str = f" | {its_per_sec:6.2f} it/s"
+    # Update last print step/time
+    _last_print_step[0] = step
+    _last_print_time[0] = time.time()
+
+    line = (f"Step {step:>8} | T={temp:6.1f} K | Epot={epot:10.3f} eV | "
+            f"Ekin={ekin:10.3f} eV | Vol={vol:10.3f} Å³{its_per_sec_str}")
+    print(line)
+    print(line, file=fh)
+
+dyn.attach(print_status, interval=20)
+
+start_time = time.time()
+dyn.run(steps=300)
+end_time = time.time()
+elapsed = end_time - start_time
+print(f"NPT run completed in {elapsed:.2f} seconds")
+print(f"NPT run completed in {elapsed:.2f} seconds", file=log_fh)
 log_fh.close()
-
