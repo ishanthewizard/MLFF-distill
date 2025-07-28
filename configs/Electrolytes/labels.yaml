@@ -9,7 +9,7 @@ defaults:
 
 teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/uma-s-1p1.pt
 # teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/esen_sm_conserving_all.pt
-label_folder: ${cluster.omol_path}/electrolytes_application/labels/NAFP6
+label_folder: ${cluster.omol_path}/electrolytes_application/labels/NAFP6/s1p1
 
 dataset:
   omol_train:
