@@ -7,13 +7,13 @@ job:
   run_name: electrolyte_xxsmall_dist
 
 hessian_coef:       40
-num_hessian_samples: 4
+num_hessian_samples: 3
 
 dataset:
-  omol_train:
+  train_dataset:
     format:                 src_v2.distill_datasets.CombinedDatasetTrain
     num_hessian_samples: ${num_hessian_samples}
-  omol_val:
+  val_dataset:
     format:                 src_v2.distill_datasets.CombinedDatasetVal
     num_hessian_samples: ${num_hessian_samples}
 
