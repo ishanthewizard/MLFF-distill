@@ -25,11 +25,17 @@ class HessianSampler:
         col_indices = chosen_indices % 3
         return torch.stack((row_indices, col_indices), dim=1)  # (num_samples, 2)
 
-    def sample_hessian(self, samples, num_atoms, force_jacs):
-        # force_jacs: flat 1D tensor of length num_atoms*3*num_atoms*3
-        force_jacs = force_jacs.reshape(num_atoms, 3, num_atoms, 3)
-        force_jacs = force_jacs[samples[:, 0], samples[:, 1], :, :]  # (num_samples, num_atoms, 3)
-        force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1)  # (num_atoms, num_samples*3)
+    # def sample_hessian(self, samples, num_atoms, force_jacs):
+    #     # force_jacs: flat 1D tensor of length num_atoms*3*num_atoms*3
+    #     force_jacs = force_jacs.reshape(num_atoms, 3, num_atoms, 3)
+    #     force_jacs = force_jacs[samples[:, 0], samples[:, 1], :, :]  # (num_samples, num_atoms, 3)
+    #     force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1)  # (num_atoms, num_samples*3)
+    #     return force_jacs
+
+    def sample_diverse_hessian(self, sampled_indices, num_atoms, force_jacs):
+        force_jacs = force_jacs.reshape(60, num_atoms, 3)
+        force_jacs = force_jacs[sampled_indices, :, :]
+        force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1) # (n_samples, natoms, 3) ->(natoms, nsamples, 3) -> (natoms, nsamples*3)
         return force_jacs
     
 
@@ -51,6 +57,9 @@ class CombinedDataset(AseDBDataset):
             self.hessian_dataset = LmdbDataset(
                 os.path.join(config['teacher_labels_folder'], 'force_jacobians')
             )
+            self.hessian_idxs_dataset = LmdbHessianIndexDataset(
+                os.path.join(config['teacher_labels_folder'], 'force_jacobians')
+            )
             self.hessian_sampler = HessianSampler()
         else:
             self.hessian_dataset = None
@@ -65,18 +74,19 @@ class CombinedDataset(AseDBDataset):
 
         # 3) Load teacher_forces (CPU)
         # teacher_forces = self.teacher_force_dataset[idx].reshape(num_atoms, 3)
-
         num_samples = self.num_hessian_samples
         if self.hessian_dataset is not None:
             # 4) Load the raw force_jacobian vector (CPU)
             raw_jac = self.hessian_dataset[idx]
-
-            # 5) Sample one Hessian entry per atom (still on CPU)
-            samples = self.hessian_sampler.sample_with_mask(num_samples, torch.ones(num_atoms))
             
+            idxs = self.hessian_idxs_dataset[idx]
+            idxs = idxs.reshape(60, 2)
+            # Randomly sample num_samples rows from idxs
+            sampled_indices = torch.randperm(idxs.shape[0])[:num_samples]
+            samples = idxs[sampled_indices]
             
-            force_jacs = self.hessian_sampler.sample_hessian(samples, num_atoms, raw_jac)
-
+            force_jacs = self.hessian_sampler.sample_diverse_hessian(sampled_indices, num_atoms, raw_jac)
+            
             main_batch.forces_jac = force_jacs
             main_batch.samples = samples
             main_batch.num_samples = torch.tensor(num_samples)
@@ -104,7 +114,7 @@ class LmdbDataset(Dataset):
         
         # List all LMDB files in the folder
         self.db_paths = sorted([os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.lmdb')])
-        assert len(self.db_paths) > 0, "No LMDB files found in the specified folder."
+        assert len(self.db_paths) > 0, f"No LMDB files found in the specified folder: {folder_path}."
 
         self.envs = []
         self._keys = []

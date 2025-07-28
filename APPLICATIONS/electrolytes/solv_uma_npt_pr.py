@@ -9,14 +9,13 @@ from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from get_calc import get_uma_calc
 
 # === Get ion type from command line ===
-path = '/data/ishan-amin/OMOL/electrolytes_application/datasets'
-identifier = 'napf6_s1p1_val'
-
+identifier = 'napf6_xxsmall'
+working_dir = "/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/md_trajs"
 # === Input traj and output files ===
 
-input_traj =f"{path}/{identifier}.traj"
-output_traj = f"{identifier}_test.traj"
-output_log = f"{identifier}_test.log"
+input_traj ="/data/ishan-amin/OMOL/electrolytes_application/npt_trajs_distillation/npt_trajs_napf6_dme_uma_omol/s1p1/md_omol_re5_small_1p1_wrapped.traj"
+output_traj = f"{working_dir}/{identifier}.traj"
+output_log = f"{working_dir}/md_logs/{identifier}_test.log"
 
 if not os.path.exists(input_traj):
     raise FileNotFoundError(f"Trajectory not found: {input_traj}")
@@ -51,6 +50,7 @@ dyn = NPT(
 traj = Trajectory(output_traj, "w", structure)
 dyn.attach(traj.write, interval=10)
 
+# Create log directory if it doesn't exist
 log_fh = open(output_log, "w", buffering=1)
 
 import time
@@ -81,15 +81,13 @@ def print_status(a=structure, fh=log_fh):
 
     line = (f"Step {step:>8} | T={temp:6.1f} K | Epot={epot:10.3f} eV | "
             f"Ekin={ekin:10.3f} eV | Vol={vol:10.3f} Å³{its_per_sec_str}")
-    print(line)
     print(line, file=fh)
 
 dyn.attach(print_status, interval=20)
 
 start_time = time.time()
-dyn.run(steps=300)
+dyn.run(steps=150000)
 end_time = time.time()
 elapsed = end_time - start_time
-print(f"NPT run completed in {elapsed:.2f} seconds")
 print(f"NPT run completed in {elapsed:.2f} seconds", file=log_fh)
 log_fh.close()

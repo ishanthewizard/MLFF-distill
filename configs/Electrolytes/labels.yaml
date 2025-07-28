@@ -2,14 +2,14 @@ defaults:
   - cluster: local
   - dataset: NA_PF6
   - element_refs: NA_PF6_refs
-  - tasks: omol_stress
+  - tasks: hessian_task
   - /base
   - _self_
 
 
 teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/uma-s-1p1.pt
 # teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/esen_sm_conserving_all.pt
-label_folder: ${cluster.omol_path}/electrolytes_application/labels/NAFP6
+label_folder: ${cluster.omol_path}/electrolytes_application/labels/NAFP6/s1p1
 
 dataset:
   omol_train:
