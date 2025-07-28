@@ -1,8 +1,8 @@
 defaults:
   - cluster: local
   - dataset: NA_PF6
-  # - element_refs: NA_PF6_refs
-  # - tasks: hessian_task
+  - element_refs: NA_PF6_refs
+  - tasks: omol_stress
   - /base
   - _self_
 
