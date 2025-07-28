@@ -43,6 +43,7 @@ class TeacherLabelGenerator(Runner):
         eval_dataloader: torch.utils.data.dataloader,
         eval_unit: Union[TrainUnit, EvalUnit, Stateful],
         label_folder: str,
+        teacher_normalization: float,
         n_diverse_samples: int = 20, # This is the number of atoms that will be sampled from each molecule, so the number of force jac rows is actually 3x this
     ):  
         # Initialize the class
@@ -60,6 +61,7 @@ class TeacherLabelGenerator(Runner):
         
         # Create the label folder if it does not exist
         self.label_folder = label_folder
+        self.teacher_normalization = teacher_normalization
         if not os.path.exists(self.label_folder):
             os.makedirs(self.label_folder, exist_ok=True)
         
@@ -210,6 +212,7 @@ class TeacherLabelGenerator(Runner):
                 with env.begin(write=True) as txn:
                     for idx, out in zip(new_idxs, outs):
                         if is_hessian:
+                            main_np = out[0] * self.teacher_normalization
                             # 1.  force-jacobian → fp32 → contiguous → 1-D
                             main_np = out[0].detach().float().contiguous().view(-1).cpu().numpy()
                             # 2.  diverse indices → fp32 → contiguous → 1-D
@@ -218,6 +221,7 @@ class TeacherLabelGenerator(Runner):
                             txn.put(str(idx).encode(),       main_np.tobytes())
                             txn.put(f"{idx}_idxs".encode(),  idxs_np.tobytes())
                         else:
+                            out = out * self.teacher_normalization
                             txn.put(str(idx).encode(),
                                     out.detach().float().contiguous().view(-1).cpu().numpy().tobytes())
                         

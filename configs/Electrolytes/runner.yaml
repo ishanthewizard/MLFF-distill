@@ -1,5 +1,5 @@
 defaults: 
-  - distill # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
+  - labels # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
   - override cluster: local
   # - override backbone: eSEN_xtra_small  #Not needed for eval
   - override dataset: NA_PF6 #Solvated

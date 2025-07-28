@@ -1,15 +1,16 @@
 defaults:
   - cluster: local
   - dataset: NA_PF6
-  - element_refs: NA_PF6_refs
-  - tasks: hessian_task
+  # - element_refs: NA_PF6_refs
+  # - tasks: hessian_task
   - /base
   - _self_
 
 
 teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/uma-s-1p1.pt
 # teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/esen_sm_conserving_all.pt
-label_folder: ${cluster.omol_path}/electrolytes_application/labels/NAFP6/s1p1
+label_folder: ${cluster.omol_path}/electrolytes_application/labels/TEST
+teacher_normalization:  1.423  # NOTE: this is just for UMA, need to change depending on the teacher model
 
 dataset:
   omol_train:
@@ -65,4 +66,5 @@ runner:
           activation_checkpointing: true
         pass_through_head_outputs: true
   label_folder: ${label_folder}
+  teacher_normalization: ${teacher_normalization}
 
