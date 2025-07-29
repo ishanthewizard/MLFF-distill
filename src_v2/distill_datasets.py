@@ -55,7 +55,7 @@ class CombinedDataset(AseDBDataset):
 
         if dataset_type == 'train':
             self.hessian_dataset = LmdbDataset(
-                os.path.join(config['teacher_labels_folder'], 'force_jacobians')
+                os.path.join(config['teacher_labels_folder'], 'force_jacobians'), div_2=True
             )
             self.hessian_idxs_dataset = LmdbHessianIndexDataset(
                 os.path.join(config['teacher_labels_folder'], 'force_jacobians')
@@ -108,7 +108,7 @@ class CombinedDatasetVal(CombinedDataset):
     
     
 class LmdbDataset(Dataset):
-    def __init__(self, folder_path, dtype=np.float32):
+    def __init__(self, folder_path, dtype=np.float32, div_2 = False):
         self.folder_path = folder_path
         self.dtype = dtype
         
@@ -119,13 +119,14 @@ class LmdbDataset(Dataset):
         self.envs = []
         self._keys = []
         self._keylen_cumulative = []
+        self.div_2 = div_2
 
         total_entries = 0
         for db_path in self.db_paths:
             env = lmdb.open(db_path, readonly=True, lock=False)
             self.envs.append(env)
             with env.begin() as txn:
-                num_entries = txn.stat()['entries']
+                num_entries = txn.stat()['entries'] if not self.div_2 else txn.stat()['entries'] // 2
                 total_entries += num_entries
                 self._keylen_cumulative.append(total_entries)
 
@@ -153,6 +154,7 @@ class LmdbDataset(Dataset):
 
 
 class LmdbHessianIndexDataset(LmdbDataset):
+    
     def __getitem__(self, index):
         if isinstance(index, torch.Tensor):
             index = index.item()  # Convert tensor to integer
