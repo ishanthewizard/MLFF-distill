@@ -7,7 +7,7 @@ job:
   run_name: Solvated_distill
 
 hessian_coef:       60
-num_hessian_samples: 12
+num_hessian_samples: 4
 
 dataset:
   omol_train:

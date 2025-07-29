@@ -1,5 +1,5 @@
 - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
-  name: omol_energy
+  name: energy
   level: system
   property: energy
   loss_fn:

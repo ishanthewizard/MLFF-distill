@@ -5,17 +5,17 @@ num_nodes: 1
 
 
 slurm:
-  qos: gpu # other options: scavenger and long, also need to set partition to the same thing
-  partition: gpu
+  qos: gpu
+  partition: ~
   nodelist: germain
   mem_gb: 50
-  timeout_hr: 12
+  timeout_hr: 24
   cpus_per_task: 9
   constraint: null
   exclude: null
   account: null #
 
-debug: True
+debug: False
 run_dir: runs
 nodelist: germain
 dataloader_workers: 0

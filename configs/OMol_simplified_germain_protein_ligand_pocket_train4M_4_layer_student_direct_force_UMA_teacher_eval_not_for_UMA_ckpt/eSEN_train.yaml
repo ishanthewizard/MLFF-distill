@@ -5,7 +5,7 @@ defaults:
 
 
 epochs: null
-steps: 100000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
+steps: 300000 # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 
 train_dataset:
   _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
@@ -53,8 +53,8 @@ runner:
     optimizer_fn:
       _target_: torch.optim.AdamW
       _partial_: true
-      lr: 8e-3
-      weight_decay: 1e-3 # 1e-3
+      lr: 8e-4
+      weight_decay: 1e-3
     cosine_lr_scheduler_fn:
       _target_: fairchem.core.units.mlip_unit.mlip_unit._get_consine_lr_scheduler
       _partial_: true
