@@ -23,7 +23,7 @@ import torch
 from fairchem.core.common import distutils
 from fairchem.core.components.runner import Runner
 from .distill_utils import get_teacher_jac_diverse, get_teacher_jacobian
-
+from .tests import test_hessian_generated
 if TYPE_CHECKING:
     from torch.distributed.checkpoint.stateful import Stateful
     from torchtnt.framework import EvalUnit, TrainUnit
@@ -53,12 +53,7 @@ class TeacherLabelGenerator(Runner):
         self.device = self.train_eval_unit.model.device
         self.n_diverse_samples = n_diverse_samples
         self.lazy_model_initialized = False
-        # Check if the dataloaders are using a deterministic sampler
-        if hasattr(self.train_dataloader.batch_sampler, "shuffle") and self.train_dataloader.batch_sampler.shuffle:
-            raise ValueError("TrainSampler should not shuffle for deterministic indexing.")
-        if hasattr(self.eval_dataloader.batch_sampler, "shuffle") and self.eval_dataloader.batch_sampler.shuffle:
-            raise ValueError("EvalSampler should not shuffle for deterministic indexing.")
-        
+    
         # Create the label folder if it does not exist
         self.label_folder = label_folder
         self.teacher_normalization = teacher_normalization
@@ -78,10 +73,12 @@ class TeacherLabelGenerator(Runner):
 
     def run(self) -> None:
         """Generate labels for train and val datasets and merge LMDBs on rank 0."""
+        self.record_labels_parallel(self.label_folder, 'train', is_hessian=True)
+        
         self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
         self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
         
-        self.record_labels_parallel(self.label_folder, 'train', is_hessian=True)
+        
         
         # Synchronize all workers before merging
         distutils.synchronize()
@@ -200,23 +197,24 @@ class TeacherLabelGenerator(Runner):
                     
                 if not new_idxs:
                     continue
-
+                
                 # build a tiny batch of only those samples
                 samples = [dataset[i] for i in new_idxs]
                 mini_batch = collate_fn(samples)
                 mini_batch = mini_batch.to(self.device) if hasattr(mini_batch, "to") else mini_batch
-
+                
                 # expensive forward call only on new samples
                 outs = fn(mini_batch) # in diverse mode, this is an array of 2-tuples
                 # write each result under its original key
                 with env.begin(write=True) as txn:
                     for idx, out in zip(new_idxs, outs):
                         if is_hessian:
-                            main_np = out[0] * self.teacher_normalization
                             # 1.  force-jacobian → fp32 → contiguous → 1-D
-                            main_np = out[0].detach().float().contiguous().view(-1).cpu().numpy()
-                            # 2.  diverse indices → fp32 → contiguous → 1-D
-                            idxs_np = out[1].detach().float().contiguous().view(-1).cpu().numpy()
+                            main_np = out[0] * self.teacher_normalization
+                            # test_hessian_generated(dataset, idx, out[1], main_np)
+                            main_np = main_np.detach().float().contiguous().view(-1).cpu().numpy()
+                            # 2.  diverse indices → int64 → contiguous → 1-D
+                            idxs_np = out[1].detach().long().contiguous().view(-1).cpu().numpy()
 
                             txn.put(str(idx).encode(),       main_np.tobytes())
                             txn.put(f"{idx}_idxs".encode(),  idxs_np.tobytes())

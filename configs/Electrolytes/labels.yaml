@@ -40,7 +40,7 @@ train_dataloader:
     _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
     _partial_: True
     max_atoms: ${max_atoms}
-    shuffle: False
+    shuffle: True
     seed: 0
   num_workers: 0
   collate_fn:

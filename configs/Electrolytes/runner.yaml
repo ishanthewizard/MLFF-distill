@@ -1,14 +1,14 @@
 defaults: 
   - labels # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
   - override cluster: local
-  # - override backbone: eSEN_xtra_small  #Not needed for eval
+  # - override backbone: eSEN_xtra_XTRA_small  #Not needed for eval
   - override dataset: NA_PF6 #Solvated
   - _self_
 
 # batch_size: 1
 max_atoms: 3000
 job:
-  run_name: electrolytes
+  run_name: electrolytes_labels
   # graph_parallel_group_size: 1
 
 # runner:

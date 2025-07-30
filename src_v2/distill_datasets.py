@@ -11,6 +11,7 @@ import ase
 from fairchem.core.common.registry import registry
 
 
+
 class HessianSampler:
     def sample_with_mask(self, num_samples, mask):
         assert num_samples <= len(mask), "System too small for the number of samples."
@@ -94,7 +95,6 @@ class CombinedDataset(AseDBDataset):
             # 6) If no Hessian, just fill zeros on CPU
             main_batch.forces_jac = torch.zeros((num_atoms, num_samples * 3))
             main_batch.num_samples = torch.tensor(num_samples)
-            
         # main_batch.teacher_forces = teacher_forces
         return main_batch
 
@@ -129,7 +129,6 @@ class LmdbDataset(Dataset):
                 num_entries = txn.stat()['entries'] if not self.div_2 else txn.stat()['entries'] // 2
                 total_entries += num_entries
                 self._keylen_cumulative.append(total_entries)
-
         print(f"Total entries across all LMDB files jacs: {total_entries}")
 
     def __len__(self):
@@ -154,7 +153,9 @@ class LmdbDataset(Dataset):
 
 
 class LmdbHessianIndexDataset(LmdbDataset):
-    
+    def __init__(self, folder_path, dtype=np.int64, div_2=True):
+        super().__init__(folder_path, dtype=dtype, div_2=div_2)
+        
     def __getitem__(self, index):
         if isinstance(index, torch.Tensor):
             index = index.item()  # Convert tensor to integer
@@ -164,9 +165,8 @@ class LmdbHessianIndexDataset(LmdbDataset):
         with self.envs[db_idx].begin() as txn:
             byte_data = txn.get((str(index) + "_idxs").encode())
             if byte_data:
-                # tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=self.dtype))
                 arr = np.frombuffer(byte_data, dtype=self.dtype).copy()   # now writable
-                tensor = torch.from_numpy(arr).long()
+                tensor = torch.from_numpy(arr)
                 return tensor
             else:
                 raise Exception(f"Data not found for index {index} in LMDB file.")

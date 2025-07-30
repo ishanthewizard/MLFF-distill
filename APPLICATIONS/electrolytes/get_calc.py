@@ -3,8 +3,8 @@ from fairchem.core.units.mlip_unit import load_predict_unit
 from ase.calculators.calculator import Calculator
 import numpy as np
 
-# uma_path = "/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt"
-uma_path = '/home/ishan-amin/MLFF-distill/logs/202507-2516-2532-b931/checkpoints/step_61000/inference_ckpt.pt'
+uma_path = "/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt"
+# uma_path = '/home/ishan-amin/MLFF-distill/logs/202507-2516-2532-b931/checkpoints/step_61000/inference_ckpt.pt'
 class UMACalculatorWrapper(Calculator):
     """Wrapper around FAIRChemCalculator to implement ASE Calculator interface"""
     

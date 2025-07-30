@@ -13,7 +13,7 @@ import os
 # ]
 traj_paths = [
     "/data/ishan-amin/OMOL/electrolytes_application/npt_trajs_distillation/npt_trajs_napf6_dme_uma_omol/s1p1/md_omol_re5_small_1p1_wrapped.traj", 
-    "/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/md_trajs/napf6_xxsmall.traj"
+    "/home/ishan-amin/MLFF-distill/tester_data/md_trajs/napf6_xxsmall.traj"
 ]
 
 # RDF parameters
@@ -44,7 +44,7 @@ for traj_path in traj_paths:
         pbc = atoms.get_pbc()
 
         na_idx = [i for i, s in enumerate(symbols) if s == "Na"]
-        p_idx  = [i for i, s in enumerate(symbols) if s == "P"]
+        p_idx  = [i for i, s in enumerate(symbols) if s == "O"]
 
         pos_na = pos[na_idx]
         pos_p  = pos[p_idx]
@@ -71,7 +71,7 @@ plt.figure(figsize=(6, 4))
 for i, rdf in enumerate(rdf_list):
     plt.plot(r_centers, rdf, label=labels[i], color=colors[i])
 plt.xlabel("r (Å)")
-plt.ylabel("g_Na–P(r)")
+plt.ylabel("g_Na–O(r)")
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
@@ -81,7 +81,7 @@ plots_dir = "/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/plots"
 os.makedirs(plots_dir, exist_ok=True)
 
 # Save the plot
-plot_path = os.path.join(plots_dir, "rdf_na_p.png")
+plot_path = os.path.join(plots_dir, "rdf_na_O.png")
 plt.savefig(plot_path, dpi=300, bbox_inches='tight')
 plt.close()
 
