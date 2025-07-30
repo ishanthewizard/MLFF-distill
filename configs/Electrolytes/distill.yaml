@@ -7,7 +7,7 @@ job:
   run_name: electrolyte_xxsmall_dist
 
 hessian_coef:       40
-num_hessian_samples: 3
+num_hessian_samples: 2
 
 dataset:
   train_dataset:
