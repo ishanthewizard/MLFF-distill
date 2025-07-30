@@ -18,7 +18,6 @@ def process_dataset(lmdb_pth, dst_path):
 
     # Iterate through the dataset and create Atoms objects
     for sample in tqdm(dataset, desc=f"Processing {lmdb_pth}"):
-        breakpoint()
         positions = sample.pos.numpy()
         atomic_numbers = sample.atomic_numbers.numpy()
         forces = sample.force.numpy()

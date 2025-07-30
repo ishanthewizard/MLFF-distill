@@ -14,8 +14,6 @@ def record_and_save(dataset, file_path, fn, is_idxs=False):
     with env.begin(write=True) as txn:
         i = 0
         print(len(dataset))
-        # if is_idxs:
-        #     breakpoint()
         for j, sample in tqdm(enumerate(dataset)):
             # if np.sqrt(len(sample) / 9 ) < 3 and fjacs:
             #     continue
