@@ -2,9 +2,9 @@ from fairchem.core import FAIRChemCalculator
 from fairchem.core.units.mlip_unit import load_predict_unit
 from ase.calculators.calculator import Calculator
 import numpy as np
+from fairchem.core.units.mlip_unit import InferenceSettings
 
-uma_path = "/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt"
-# uma_path = '/home/ishan-amin/MLFF-distill/logs/202507-2516-2532-b931/checkpoints/step_61000/inference_ckpt.pt'
+
 class UMACalculatorWrapper(Calculator):
     """Wrapper around FAIRChemCalculator to implement ASE Calculator interface"""
     
@@ -51,8 +51,20 @@ class UMACalculatorWrapper(Calculator):
         
         self.counter += 1
 
-def get_uma_calc():
-    predictor = load_predict_unit(uma_path, device="cuda")
+def get_uma_calc(uma_path, small_model=False):
+    if small_model:
+        inference_settings = InferenceSettings(
+            tf32=False,
+            activation_checkpointing=False,
+            merge_mole=False,
+            compile=True,
+            wigner_cuda=True,
+            external_graph_gen=False,
+            internal_graph_gen_version=2,
+        )
+        predictor = load_predict_unit(uma_path, device="cuda", inference_settings=inference_settings, overrides={'_target_': 'fairchem.core.models.base.HydraModel'})
+    else:
+        predictor = load_predict_unit(uma_path, device="cuda")
     calc = UMACalculatorWrapper(predictor, task_name="omol")
     return calc
 

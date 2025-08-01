@@ -8,7 +8,7 @@ defaults:
 # batch_size: 1
 max_atoms: 3000
 job:
-  run_name: electrolytes_labels
+  run_name: electrolytes_labels_micro
   # graph_parallel_group_size: 1
 
 # runner:

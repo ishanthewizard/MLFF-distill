@@ -61,7 +61,8 @@ if __name__ == "__main__":
     results = []
     traj_paths = [
     "/data/ishan-amin/OMOL/electrolytes_application/npt_trajs_distillation/npt_trajs_napf6_dme_uma_omol/s1p1/md_omol_re5_small_1p1_wrapped.traj", 
-    "/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/md_trajs/napf6_xxsmall.traj"
+    # "/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/md_trajs/napf6_xxsmall.traj"
+    "/home/ishan-amin/MLFF-distill/tester_data/md_trajs/napf6_xxsmall_DISTw40.traj"
     ]
 
     for fname in traj_paths:
@@ -78,5 +79,5 @@ if __name__ == "__main__":
 
     df = pd.DataFrame(results)
     plot_dir = '/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/plots'
-    df.to_csv(f"{plot_dir}/simulation_density_results.csv", index=False)
+    df.to_csv(f"{plot_dir}/simulation_density_results_DIST_51k_b858.csv", index=False)
     print("✅  Written simulation_density_results.csv with std_dev column.")

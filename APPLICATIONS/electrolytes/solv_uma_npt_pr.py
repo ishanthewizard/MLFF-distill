@@ -9,8 +9,15 @@ from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from get_calc import get_uma_calc
 
 # === Get ion type from command line ===
-identifier = 'napf6_xxsmall'
-working_dir = "/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/md_trajs"
+identifier = 'napf6_micro'
+working_dir = "/home/ishan-amin/MLFF-distill/tester_data/md_trajs"
+
+# uma_path = "/home/ishan-amin/MLFF-distill/tester_data/napf6_DIST_w40.pt"
+uma_path = "/home/ishan-amin/MLFF-distill/logs/202507-3020-1750-16f0/checkpoints/step_184000/inference_ckpt.pt"
+
+# uma_path = "/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt"
+# uma_path = '/home/ishan-amin/MLFF-distill/tester_data/napf6_DIST_w40s51k_b858.pt'
+# uma_path = '/home/ishan-amin/MLFF-distill/logs/202507-2516-2532-b931/checkpoints/step_61000/inference_ckpt.pt'
 # === Input traj and output files ===
 
 input_traj ="/data/ishan-amin/OMOL/electrolytes_application/npt_trajs_distillation/npt_trajs_napf6_dme_uma_omol/s1p1/md_omol_re5_small_1p1_wrapped.traj"
@@ -32,7 +39,7 @@ MaxwellBoltzmannDistribution(structure, temperature_K=300)
 # === Set up model ===
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_num_threads(28)
-structure.calc = get_uma_calc()
+structure.calc = get_uma_calc(uma_path= uma_path, small_model=True)
 
 
 # === Set up NPT dynamics ===

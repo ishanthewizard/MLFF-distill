@@ -7,6 +7,10 @@ train_dataset:
     train:
       src: ${cluster.omol_path}/electrolytes_application/aselmdb_data/NAPF6/s1p1/train
   format: ase_db
+  a2g_args:
+    r_energy: True
+    r_forces: True
+    # r_data_keys: ['spin', 'charge']
   no_shuffle: true
   transforms:
     common_transform:
@@ -20,6 +24,10 @@ val_dataset:
     val:
       src: ${cluster.omol_path}/electrolytes_application/aselmdb_data/NAPF6/s1p1/val
   format: ase_db
+  a2g_args:
+    r_energy: True
+    r_forces: True
+    # r_data_keys: ['spin', 'charge']
   no_shuffle: true
   transforms:
     common_transform:

@@ -3,7 +3,7 @@ defaults:
   - dataset: NA_PF6
   - element_refs: NA_PF6_refs
   - tasks: omol_stress
-  - backbone: eSEN_xtra_XTRA_small
+  - backbone: eSEN_micro
   - /base
   - _self_
 

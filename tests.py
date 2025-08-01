@@ -2,12 +2,12 @@
 from fairchem.core.units.mlip_unit import load_predict_unit
 from src_v2.distill_datasets import CombinedDataset, LmdbDataset
 import torch
-from src_v2.distill_utils import get_jacobian, get_jacobian_finite_difference
 from fairchem.core.datasets.atomic_data import AtomicData
 from functools import partial
 from fairchem.core.datasets import data_list_collater
 from APPLICATIONS.electrolytes.get_calc import get_uma_calc
 import numpy as np
+import os
 
 def test_hessian_generated(dataset, data_idx, sample_idxs, hessian_labels):
     datapoint = dataset[data_idx]
@@ -29,8 +29,29 @@ def test_hessian_generated(dataset, data_idx, sample_idxs, hessian_labels):
     breakpoint()
     
     
-    
-    
+def compare_hessian_twice(datapoint, data_atoms, calc, samp_idx):
+    print("Calculating forces...")
+    calc.calculate(data_atoms)
+    output_forces = calc.results['forces'].copy()
+    print("Calculating sampled_hessian... 1")
+    atoms_perturbed = data_atoms.copy()
+    atoms_perturbed.positions[datapoint.samples[samp_idx, 0], datapoint.samples[samp_idx, 1]] += 0.001
+    calc.calculate(atoms_perturbed)
+    perturbed_forces = calc.results['forces'].copy()
+    hessian = (perturbed_forces - output_forces) / 0.001
+    # print(hessian)
+    print("Calculating sampled hessian 2....")
+    calc.calculate(data_atoms)
+    output_forces2 = calc.results['forces'].copy()
+    calc.calculate(atoms_perturbed)
+    perturbed_forces2 = calc.results['forces'].copy()
+    hessian2 = (perturbed_forces2 - output_forces2) / 0.001
+    print(f"Hessian double forward diff: {np.abs(hessian2 - hessian).mean() / np.abs(hessian).mean()}")
+    compare = datapoint.forces_jac.reshape(-1, config['num_hessian_samples'], 3)[:, samp_idx, :]
+    # Find indices where abs(compare) > 0.01
+
+    # print(np.abs(hessian - compare.numpy()).max())
+    print(np.abs(hessian - compare.numpy()).mean() / np.abs(hessian).mean())
     
 if __name__ == "__main__":
     # get datasets
@@ -42,40 +63,23 @@ if __name__ == "__main__":
     
     print("Loading dataset...")
     train_dataset = CombinedDataset(config, dataset_type="train")
-    train_forces_dataset = LmdbDataset(config['teacher_labels_folder'], dtype=np.float32, div_2=False)
-    idx = 101
-    datapoint = train_dataset[idx]
-    data_atoms = train_dataset.get_atoms(idx) 
-    print("Loading calculator...")
-    calc = get_uma_calc()
-    print("Calculating forces...")
-    calc.calculate(data_atoms)
-    output_forces = calc.results['forces'].copy()
-    print("Calculating sampled_hessian...")
-    atoms_perturbed = data_atoms.copy()
-    print(atoms_perturbed.positions[datapoint.samples[0, 0], datapoint.samples[0, 1]])
-    print(datapoint.pos[datapoint.samples[0, 0], datapoint.samples[0, 1]])
-    breakpoint()
-    atoms_perturbed.positions[datapoint.samples[0, 0], datapoint.samples[0, 1]] += 0.001
-    calc.calculate(atoms_perturbed)
-    perturbed_forces = calc.results['forces'].copy()
-    hessian = (perturbed_forces - output_forces) / 0.001
-    # print(hessian)
-    print("Comparing hessian with datapoint.forces_jac")
-    compare = datapoint.forces_jac.reshape(-1, config['num_hessian_samples'], 3)[:, 0, :]
-    # Find indices where abs(compare) > 0.01
+    train_forces_dataset = LmdbDataset(os.path.join(config['teacher_labels_folder'], 'train_forces'), dtype=np.float32, div_2=False)
 
-    print(np.abs(hessian - compare.numpy()).max())
-    print(np.abs(hessian - compare.numpy()).mean() / np.abs(hessian).mean())
-    
-    mask = np.abs(compare.numpy()) > 0.01
-    idxs = np.argwhere(mask)
-    print("Indices and values of compare where abs(compare) > 0.01:")
-    for idx in idxs:
-        print(f"Index: {tuple(idx)}, Value: {compare.numpy()[tuple(idx)]}")
-        print(f"                   Hessian: {hessian[tuple(idx)]}")
-        
+
+    print("Loading calculator...")
+    calc = get_uma_calc("/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt")
+    for idx in range(10):
+        # datapoint = train_dataset[idx + 1]
+        data_atoms = train_dataset.get_atoms(idx) 
+        calc.calculate(data_atoms)
+        output_forces = calc.results['forces'].copy()
+        stored_forces  = train_forces_dataset[idx + 1].reshape(-1, 3).numpy()
+        breakpoint()
+        print("FORCE DIFF:", np.abs((output_forces - stored_forces )).mean())
     breakpoint()
+    idx = 1
+    samp_idx = 0
+    # compare_hessian_twice(datapoint, data_atoms, calc, samp_idx)
     
     # true_hessian = get_sampled_hessian(datapoint, output)
     # breakpoint()

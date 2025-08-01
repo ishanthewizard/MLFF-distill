@@ -23,7 +23,7 @@ import torch
 from fairchem.core.common import distutils
 from fairchem.core.components.runner import Runner
 from .distill_utils import get_teacher_jac_diverse, get_teacher_jacobian
-from .tests import test_hessian_generated
+from .test_labels import test_hessian_generated, test_forces_generated
 if TYPE_CHECKING:
     from torch.distributed.checkpoint.stateful import Stateful
     from torchtnt.framework import EvalUnit, TrainUnit
@@ -44,7 +44,7 @@ class TeacherLabelGenerator(Runner):
         eval_unit: Union[TrainUnit, EvalUnit, Stateful],
         label_folder: str,
         teacher_normalization: float,
-        n_diverse_samples: int = 20, # This is the number of atoms that will be sampled from each molecule, so the number of force jac rows is actually 3x this
+        n_diverse_samples: int = 2, # This is the number of atoms that will be sampled from each molecule, so the number of force jac rows is actually 3x this
     ):  
         # Initialize the class
         self.train_dataloader = train_dataloader
@@ -73,10 +73,12 @@ class TeacherLabelGenerator(Runner):
 
     def run(self) -> None:
         """Generate labels for train and val datasets and merge LMDBs on rank 0."""
+        
+        self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
         self.record_labels_parallel(self.label_folder, 'train', is_hessian=True)
         
         self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
-        self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
+        
         
         
         
@@ -211,7 +213,7 @@ class TeacherLabelGenerator(Runner):
                         if is_hessian:
                             # 1.  force-jacobian → fp32 → contiguous → 1-D
                             main_np = out[0] * self.teacher_normalization
-                            # test_hessian_generated(dataset, idx, out[1], main_np)
+                            test_hessian_generated(dataset, idx, out[1], main_np, self.n_diverse_samples * 3)
                             main_np = main_np.detach().float().contiguous().view(-1).cpu().numpy()
                             # 2.  diverse indices → int64 → contiguous → 1-D
                             idxs_np = out[1].detach().long().contiguous().view(-1).cpu().numpy()
@@ -220,6 +222,7 @@ class TeacherLabelGenerator(Runner):
                             txn.put(f"{idx}_idxs".encode(),  idxs_np.tobytes())
                         else:
                             out = out * self.teacher_normalization
+                            test_forces_generated(dataset, idx, out)
                             txn.put(str(idx).encode(),
                                     out.detach().float().contiguous().view(-1).cpu().numpy().tobytes())
                         
