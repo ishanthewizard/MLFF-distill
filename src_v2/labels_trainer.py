@@ -19,6 +19,7 @@ import contextlib
 from typing import TYPE_CHECKING, Optional, Union
 
 from src_v2.dataset_utils import load_existing_indices
+from .test_labels import test_hessian_generated, test_forces_generated
 import torch
 from fairchem.core.common import distutils
 from fairchem.core.components.runner import Runner
@@ -43,6 +44,7 @@ class TeacherLabelGenerator(Runner):
         eval_dataloader: torch.utils.data.dataloader,
         eval_unit: Union[TrainUnit, EvalUnit, Stateful],
         label_folder: str,
+        teacher_normalization: float,
         n_diverse_samples: int = 20, # This is the number of atoms that will be sampled from each molecule, so the number of force jac rows is actually 3x this
     ):  
         # Initialize the class
@@ -60,6 +62,7 @@ class TeacherLabelGenerator(Runner):
         
         # Create the label folder if it does not exist
         self.label_folder = label_folder
+        self.teacher_normalization = teacher_normalization
         if not os.path.exists(self.label_folder):
             os.makedirs(self.label_folder, exist_ok=True)
         
@@ -78,7 +81,6 @@ class TeacherLabelGenerator(Runner):
         """Generate labels for train and val datasets and merge LMDBs on rank 0."""
         self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
         self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
-        
         self.record_labels_parallel(self.label_folder, 'train', is_hessian=True)
         
         # Synchronize all workers before merging
@@ -211,13 +213,15 @@ class TeacherLabelGenerator(Runner):
                     for idx, out in zip(new_idxs, outs):
                         if is_hessian:
                             # 1.  force-jacobian → fp32 → contiguous → 1-D
-                            main_np = out[0].detach().float().contiguous().view(-1).cpu().numpy()
-                            # 2.  diverse indices → fp32 → contiguous → 1-D
-                            idxs_np = out[1].detach().float().contiguous().view(-1).cpu().numpy()
+                            main_np = out[0] * self.teacher_normalization
+                            main_np = main_np.detach().float().contiguous().view(-1).cpu().numpy()
+                            # 2.  diverse indices → int64 → contiguous → 1-D
+                            idxs_np = out[1].detach().long().contiguous().view(-1).cpu().numpy()
 
                             txn.put(str(idx).encode(),       main_np.tobytes())
                             txn.put(f"{idx}_idxs".encode(),  idxs_np.tobytes())
                         else:
+                            out = out * self.teacher_normalization
                             txn.put(str(idx).encode(),
                                     out.detach().float().contiguous().view(-1).cpu().numpy().tobytes())
                         

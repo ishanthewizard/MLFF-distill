@@ -53,6 +53,9 @@ class SlurmConfig:
     )
     constraint: Optional[str] = None
     exclude: Optional[str] = None
+    # Additional parameters to match run2.sh
+    gpu_bind: Optional[str] = None  # For --gpu-bind=verbose,closest
+    ntasks_per_socket: Optional[int] = None  # For --ntasks-per-socket=1
 
 
 @dataclass
@@ -157,10 +160,15 @@ def main(
             tasks_per_node=scheduler_cfg.ranks_per_node,
             nodes=scheduler_cfg.num_nodes,
             slurm_nodelist=scheduler_cfg.slurm.nodelist,
-            slurm_qos=scheduler_cfg.slurm.qos,
+            # slurm_qos=scheduler_cfg.slurm.qos,
             slurm_account=scheduler_cfg.slurm.account,
-            slurm_constraint=scheduler_cfg.slurm.constraint,
+            # slurm_constraint=scheduler_cfg.slurm.constraint,
             slurm_exclude=scheduler_cfg.slurm.exclude,
+            # Additional parameters for full delta compatibility
+            slurm_additional_parameters={
+                **({} if scheduler_cfg.slurm.gpu_bind is None else {"gpu-bind": scheduler_cfg.slurm.gpu_bind}),
+                **({} if scheduler_cfg.slurm.ntasks_per_socket is None else {"ntasks-per-socket": scheduler_cfg.slurm.ntasks_per_socket}),
+            }
         )
         if scheduler_cfg.num_array_jobs == 1:
             job = executor.submit(Submitit(), cfg)

@@ -43,7 +43,7 @@ def get_diverse_idxs(x, natoms, num_samples):
         num_to_select = min(num_samples, num_atoms_in_mol)
 
         if num_to_select < num_samples:
-            raise Exception("num_atoms_in_mol < num_samples not currently supported")
+            raise Exception("num_atoms_in_mol < num_samples not currently supported. num_atoms_in_mol: {}, num_samples: {}".format(num_atoms_in_mol, num_samples))
 
         # Farthest Point Sampling (FPS)
         # Step 1: Compute pairwise distance matrix

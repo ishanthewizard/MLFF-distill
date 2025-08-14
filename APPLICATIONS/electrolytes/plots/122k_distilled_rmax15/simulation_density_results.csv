@@ -1,3 +1,3 @@
 system,average_density_g_cm3,std_dev
 /u/czhang31/data/natfsi_s1p1/uma_traj/md_omol_1M_natfsi_s1p1,1.148448853453406,0.010430027867252542
-/u/czhang31/MLFF-distill/natfsi_s1p1_distilled_122k_steps_50th_frame_start_md,1.211632099735972,0.01445871435599665
+/u/czhang31/MLFF-distill/natfsi_s1p1_distilled_122k_steps_md,1.2312254808254448,0.008124082356515246

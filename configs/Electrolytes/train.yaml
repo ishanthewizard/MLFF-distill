@@ -1,7 +1,7 @@
 defaults:
   - cluster: local
-  - dataset: NA_PF6
-  - element_refs: NA_PF6_refs
+  - dataset: NA_TFSI
+  - element_refs: NA_TFSI_refs
   - tasks: omol_stress
   - backbone: eSEN_xtra_XTRA_small
   - /base

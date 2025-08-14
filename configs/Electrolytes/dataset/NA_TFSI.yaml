@@ -1,11 +1,12 @@
-normalizer_rmsd: 0.8195104628817489
+normalizer_rmsd: 0.831640851118698
+# normalizer_rmsd: 1.433569 # the one in base.yaml
 regress_stress: true
 dataset_name: omol
 
 train_dataset:
   splits:
     train:
-      src: ${cluster.omol_path}/napf6_s1p1/train
+      src: ${cluster.omol_path}/natfsi_s1p1/train
   format: ase_db
   a2g_args:
     r_energy: True
@@ -17,12 +18,12 @@ train_dataset:
       dataset_name: ${dataset.dataset_name}
     stress_reshape_transform:
       dataset_name: ${dataset.dataset_name}
-  teacher_labels_folder: ${cluster.omol_path}/napf6_s1p1/labels_good
+  teacher_labels_folder: ${cluster.omol_path}/natfsi_s1p1/labels_good
 
 val_dataset:
   splits:
     val:
-      src: ${cluster.omol_path}/napf6_s1p1/val
+      src: ${cluster.omol_path}/natfsi_s1p1/val
   format: ase_db
   a2g_args:
     r_energy: True
@@ -34,4 +35,4 @@ val_dataset:
       dataset_name: ${dataset.dataset_name}
     stress_reshape_transform:
       dataset_name: ${dataset.dataset_name}
-  teacher_labels_folder: ${cluster.omol_path}/napf6_s1p1/labels_good
+  teacher_labels_folder: ${cluster.omol_path}/natfsi_s1p1/labels_good

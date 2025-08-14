@@ -11,6 +11,9 @@ labels/
 runs/
 MODELPATH
 logs
+slurm_logs
+APPLICATIONS/electrolytes/md_results
+fairchem
 *.png
 *.sh
 *.ckpt

@@ -11,7 +11,6 @@ For each *.traj file in the working directory:
 Requires: ASE, NumPy, pandas
 """
 
-import os
 import numpy as np
 import pandas as pd
 from ase.io import Trajectory
@@ -60,8 +59,8 @@ def compute_density_stats(traj):
 if __name__ == "__main__":
     results = []
     traj_paths = [
-    "/data/ishan-amin/OMOL/electrolytes_application/npt_trajs_distillation/npt_trajs_napf6_dme_uma_omol/s1p1/md_omol_re5_small_1p1_wrapped.traj", 
-    "/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/md_trajs/napf6_xxsmall.traj"
+        "/u/czhang31/data/natfsi_s1p1/uma_traj/md_omol_1M_natfsi_s1p1.traj",
+        "/u/czhang31/MLFF-distill/natfsi_s1p1_distilled_122k_steps_50th_frame_start_md.traj"
     ]
 
     for fname in traj_paths:
@@ -77,6 +76,6 @@ if __name__ == "__main__":
             print(f"[WARN] {fname}: {exc}")
 
     df = pd.DataFrame(results)
-    plot_dir = '/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/plots'
+    plot_dir = '/u/czhang31/MLFF-distill/APPLICATIONS/electrolytes/plots'
     df.to_csv(f"{plot_dir}/simulation_density_results.csv", index=False)
     print("✅  Written simulation_density_results.csv with std_dev column.")

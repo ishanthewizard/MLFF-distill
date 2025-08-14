@@ -20,8 +20,8 @@ job:
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true
-    entity: ishan-amin
-    project: OMOL
+    entity: cyuzhang
+    project: electrolytes
 
 bf16: False
 

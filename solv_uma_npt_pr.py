@@ -1,27 +1,32 @@
-import sys
+import os
 from ase.io import read, Trajectory
 from ase.md.npt import NPT
 from ase import units
-from fairchem.core import pretrained_mlip, FAIRChemCalculator
-import torch, os
+import torch
 from copy import deepcopy
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
-from get_calc import get_uma_calc
+from APPLICATIONS.electrolytes.get_calc import get_distilled_calc
+import time
 
-# === Get ion type from command line ===
-identifier = 'napf6_xxsmall'
-working_dir = "/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/md_trajs"
-# === Input traj and output files ===
+identifier = 'all_napf6_distill_DMC_md_62k_50th_start'
+input_traj = '/u/czhang31/data/1mnapf6_solvents_omol_trajs/md_omol_dimethylcarbonate_pfactor_0.1_1fs_mask_t_re3_s1p1.traj'
+# input_traj = "/u/czhang31/data/natfsi_s1p1/uma_traj/md_omol_1M_natfsi_s1p1.traj"
+# distilled_path = '/u/czhang31/MLFF-distill/logs/202508-0101-1411-6197/checkpoints/step_150000/inference_ckpt.pt' # napf6
+# distilled_path = '/u/czhang31/MLFF-distill/logs/202507-3122-0139-17a9/checkpoints/step_150000/inference_ckpt.pt' # natfsi
+distilled_path = '/u/czhang31/data/all_NAPF6/distill_62000.pt'
+num_steps = 150000 # 150000 steps = 150 ps, 1000000 steps = 1 ns
+save_interval = 100
+start_index = 50
 
-input_traj ="/data/ishan-amin/OMOL/electrolytes_application/npt_trajs_distillation/npt_trajs_napf6_dme_uma_omol/s1p1/md_omol_re5_small_1p1_wrapped.traj"
-output_traj = f"{working_dir}/{identifier}.traj"
-output_log = f"{working_dir}/md_logs/{identifier}_test.log"
+output_dir = "/u/czhang31/MLFF-distill/APPLICATIONS/electrolytes/md_results"
+output_traj = os.path.join(output_dir, f"{identifier}.traj")
+output_log = os.path.join(output_dir, f"{identifier}.log")
 
 if not os.path.exists(input_traj):
     raise FileNotFoundError(f"Trajectory not found: {input_traj}")
 
-# === Load last frame ===
-base_structure = read(input_traj, index=0)
+# === Load first frame ===
+base_structure = read(input_traj, index=start_index)
 base_structure.set_pbc([True, True, True])
 #base_structure.wrap()
 structure = deepcopy(base_structure)
@@ -32,8 +37,7 @@ MaxwellBoltzmannDistribution(structure, temperature_K=300)
 # === Set up model ===
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_num_threads(28)
-structure.calc = get_uma_calc()
-
+structure.calc = get_distilled_calc(distilled_path)
 
 # === Set up NPT dynamics ===
 dyn = NPT(
@@ -48,17 +52,15 @@ dyn = NPT(
 
 # === Output files ===
 traj = Trajectory(output_traj, "w", structure)
-dyn.attach(traj.write, interval=10)
+dyn.attach(traj.write, interval=save_interval)
 
-# Create log directory if it doesn't exist
 log_fh = open(output_log, "w", buffering=1)
-
-import time
 
 # Variables to track timing for iterations per second
 _last_print_step = [None]
 _last_print_time = [None]
-
+    
+    
 def print_status(a=structure, fh=log_fh):
     # Use nonlocal to update the outer variables
     epot = a.get_potential_energy()
@@ -66,7 +68,6 @@ def print_status(a=structure, fh=log_fh):
     temp = a.get_temperature()
     vol = a.get_volume()
     step = dyn.nsteps
-
     # Compute iterations per second over the last 20 steps
     its_per_sec_str = ""
     if _last_print_step[0] is not None and _last_print_time[0] is not None:
@@ -78,16 +79,10 @@ def print_status(a=structure, fh=log_fh):
     # Update last print step/time
     _last_print_step[0] = step
     _last_print_time[0] = time.time()
-
     line = (f"Step {step:>8} | T={temp:6.1f} K | Epot={epot:10.3f} eV | "
             f"Ekin={ekin:10.3f} eV | Vol={vol:10.3f} Å³{its_per_sec_str}")
     print(line, file=fh)
 
-dyn.attach(print_status, interval=20)
-
-start_time = time.time()
-dyn.run(steps=150000)
-end_time = time.time()
-elapsed = end_time - start_time
-print(f"NPT run completed in {elapsed:.2f} seconds", file=log_fh)
+dyn.attach(print_status, interval=save_interval)
+dyn.run(steps=num_steps)
 log_fh.close()

@@ -55,7 +55,7 @@ class CombinedDataset(AseDBDataset):
 
         if dataset_type == 'train':
             self.hessian_dataset = LmdbDataset(
-                os.path.join(config['teacher_labels_folder'], 'force_jacobians')
+                os.path.join(config['teacher_labels_folder'], 'force_jacobians'), div_2=True
             )
             self.hessian_idxs_dataset = LmdbHessianIndexDataset(
                 os.path.join(config['teacher_labels_folder'], 'force_jacobians')
@@ -78,15 +78,15 @@ class CombinedDataset(AseDBDataset):
         if self.hessian_dataset is not None:
             # 4) Load the raw force_jacobian vector (CPU)
             raw_jac = self.hessian_dataset[idx]
-            
+
             idxs = self.hessian_idxs_dataset[idx]
             idxs = idxs.reshape(60, 2)
             # Randomly sample num_samples rows from idxs
             sampled_indices = torch.randperm(idxs.shape[0])[:num_samples]
             samples = idxs[sampled_indices]
-            
+
             force_jacs = self.hessian_sampler.sample_diverse_hessian(sampled_indices, num_atoms, raw_jac)
-            
+
             main_batch.forces_jac = force_jacs
             main_batch.samples = samples
             main_batch.num_samples = torch.tensor(num_samples)
@@ -105,13 +105,13 @@ class CombinedDatasetTrain(CombinedDataset):
 class CombinedDatasetVal(CombinedDataset):
     def __init__(self, config, atoms_transform=apply_one_tags):
         super().__init__(config, 'val', atoms_transform)
-    
-    
+
+
 class LmdbDataset(Dataset):
-    def __init__(self, folder_path, dtype=np.float32):
+    def __init__(self, folder_path, dtype=np.float32, div_2 = False):
         self.folder_path = folder_path
         self.dtype = dtype
-        
+
         # List all LMDB files in the folder
         self.db_paths = sorted([os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.lmdb')])
         assert len(self.db_paths) > 0, f"No LMDB files found in the specified folder: {folder_path}."
@@ -119,13 +119,14 @@ class LmdbDataset(Dataset):
         self.envs = []
         self._keys = []
         self._keylen_cumulative = []
+        self.div_2 = div_2
 
         total_entries = 0
         for db_path in self.db_paths:
             env = lmdb.open(db_path, readonly=True, lock=False)
             self.envs.append(env)
             with env.begin() as txn:
-                num_entries = txn.stat()['entries']
+                num_entries = txn.stat()['entries'] if not self.div_2 else txn.stat()['entries'] // 2
                 total_entries += num_entries
                 self._keylen_cumulative.append(total_entries)
 
@@ -153,6 +154,10 @@ class LmdbDataset(Dataset):
 
 
 class LmdbHessianIndexDataset(LmdbDataset):
+    
+    def __init__(self, folder_path, dtype=np.int64, div_2=True):
+        super().__init__(folder_path, dtype=dtype, div_2=div_2)
+        
     def __getitem__(self, index):
         if isinstance(index, torch.Tensor):
             index = index.item()  # Convert tensor to integer
@@ -164,7 +169,7 @@ class LmdbHessianIndexDataset(LmdbDataset):
             if byte_data:
                 # tensor = torch.from_numpy(np.frombuffer(byte_data, dtype=self.dtype))
                 arr = np.frombuffer(byte_data, dtype=self.dtype).copy()   # now writable
-                tensor = torch.from_numpy(arr).long()
+                tensor = torch.from_numpy(arr)
                 return tensor
             else:
                 raise Exception(f"Data not found for index {index} in LMDB file.")

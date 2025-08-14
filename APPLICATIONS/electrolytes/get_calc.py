@@ -3,15 +3,13 @@ from fairchem.core.units.mlip_unit import load_predict_unit
 from ase.calculators.calculator import Calculator
 import numpy as np
 
-# uma_path = "/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt"
-uma_path = '/home/ishan-amin/MLFF-distill/logs/202507-2516-2532-b931/checkpoints/step_61000/inference_ckpt.pt'
 class UMACalculatorWrapper(Calculator):
     """Wrapper around FAIRChemCalculator to implement ASE Calculator interface"""
     
     # Declare which properties this calculator implements
     implemented_properties = ['energy', 'forces', 'stress']
     
-    def __init__(self, predictor, task_name="oc20"):
+    def __init__(self, predictor, task_name="omol"):
         Calculator.__init__(self)
         self.fairchem_calc = FAIRChemCalculator(predictor, task_name=task_name)
         self.counter = 0
@@ -51,8 +49,13 @@ class UMACalculatorWrapper(Calculator):
         
         self.counter += 1
 
-def get_uma_calc():
+def get_uma_calc(uma_path):
     predictor = load_predict_unit(uma_path, device="cuda")
+    calc = UMACalculatorWrapper(predictor, task_name="omol")
+    return calc
+
+def get_distilled_calc(distilled_path):
+    predictor = load_predict_unit(distilled_path, device="cuda", overrides={'_target_': 'fairchem.core.models.base.HydraModel'})
     calc = UMACalculatorWrapper(predictor, task_name="omol")
     return calc
 

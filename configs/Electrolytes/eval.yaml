@@ -1,16 +1,16 @@
 defaults:
   - cluster: local
-  - dataset: NA_PF6
-  - element_refs: NA_PF6_refs
+  - dataset: NA_TFSI
+  - element_refs: NA_TFSI_refs
   - tasks: omol_stress
   - /base
   - _self_
 
-# dataset:
-#   omol_val:
-#     splits:
-#       val:
-#         sample_n: 200   # ← your new value
+dataset:
+  omol_val:
+    splits:
+      val:
+        sample_n: 200   # ← your new value
 
 runner:
   _target_: fairchem.core.components.evaluate.eval_runner.EvalRunner #fairchem.core.components.train.train_runner.TrainEvalRunner
@@ -22,7 +22,7 @@ runner:
     bf16: ${bf16}
     model:
       _target_: fairchem.core.units.mlip_unit.mlip_unit.load_inference_model
-      checkpoint_location: ${cluster.omol_path}/TOY/inference_ckpt.pt
+      checkpoint_location: ${cluster.omol_path}/esen_sm_direct_all.pt
       return_checkpoint: False
       use_ema: True
       overrides:

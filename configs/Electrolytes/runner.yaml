@@ -1,14 +1,15 @@
 defaults: 
   - distill # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
-  - override cluster: local
+  - override cluster: delta
   # - override backbone: eSEN_xtra_small  #Not needed for eval
-  - override dataset: NA_PF6 #Solvated
+  - override dataset: all_NAPF6 #Solvated
+  - override element_refs: all_NAPF6_refs
   - _self_
 
 # batch_size: 1
 max_atoms: 3000
 job:
-  run_name: electrolytes
+  run_name: all_NAPF6_distill_hessian_coef_80
   # graph_parallel_group_size: 1
 
 # runner:
@@ -18,5 +19,5 @@ job:
 
 # direct_forces_coef: 30
 # energy_coef:        30
-# hessian_coef:       60
+hessian_coef:       80
 # num_hessian_samples: 3
