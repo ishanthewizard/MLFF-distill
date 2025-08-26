@@ -1,0 +1,10 @@
+AWS OFI NCCL Plugin v1.6.0 loaded for CUDA 12.6.1
+This provides network transport ONLY - NCCL library from PyTorch
+Configured for Slingshot11/CXI interconnect
+CUDA 12.6.1 loaded with compatible AWS OFI NCCL plugin v1.6.0
+Plugin provides network transport - NCCL library from PyTorch
+Use with python/miniforge3_pytorch/2.7.0 or equivalent for best compatibility
+
+The following have been reloaded with a version change:
+  1) gcc-native/13.2 => gcc-native/12.3
+

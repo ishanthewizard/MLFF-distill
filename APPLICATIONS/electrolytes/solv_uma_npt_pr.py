@@ -9,18 +9,20 @@ from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from get_calc import get_uma_calc
 
 # === Get ion type from command line ===
-identifier = 'napf6_micro'
-working_dir = "/home/ishan-amin/MLFF-distill/tester_data/md_trajs"
-
-# uma_path = "/home/ishan-amin/MLFF-distill/tester_data/napf6_DIST_w40.pt"
-uma_path = "/home/ishan-amin/MLFF-distill/logs/202507-3020-1750-16f0/checkpoints/step_184000/inference_ckpt.pt"
-
-# uma_path = "/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt"
-# uma_path = '/home/ishan-amin/MLFF-distill/tester_data/napf6_DIST_w40s51k_b858.pt'
-# uma_path = '/home/ishan-amin/MLFF-distill/logs/202507-2516-2532-b931/checkpoints/step_61000/inference_ckpt.pt'
+identifier = 'napf6_DME_1ns'
+working_dir = "/projects/beye/iamin/trajs"
+uma_path = "/projects/beyy/shared/data/all_NAPF6/distill_131000_hessiancoef80.pt"
 # === Input traj and output files ===
 
-input_traj ="/data/ishan-amin/OMOL/electrolytes_application/npt_trajs_distillation/npt_trajs_napf6_dme_uma_omol/s1p1/md_omol_re5_small_1p1_wrapped.traj"
+# input_traj ="/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_diglyme_pfactor_0.1_1fs_mask_t_re1_s1p1.traj" # DG
+# input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_dimethylcarbonate_pfactor_0.1_1fs_mask_t_re3_s1p1.traj" # DMC
+# input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_napf6_tgdme_1m_s1p1.traj" # TGDME
+# input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_propylene_carbonate_pfactor_0.1_1fs_mask_t_re1_s1p1.traj" # PC
+# input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_tetrahydrofuran_pfactor_0.1_1fs_mask_t_re3_m1p1.traj"
+# DONT USE!!!!! input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_diethyleneglycol_pfactor_0.1_1fs_mask_t_re3_s1p1.traj"
+input_traj = "/projects/beyy/shared/data/napf6_s1p1/uma_traj/md_omol_re5_small_1p1_wrapped.traj"
+
+# diglyn, DMC, 
 output_traj = f"{working_dir}/{identifier}.traj"
 output_log = f"{working_dir}/md_logs/{identifier}_test.log"
 
@@ -55,7 +57,7 @@ dyn = NPT(
 
 # === Output files ===
 traj = Trajectory(output_traj, "w", structure)
-dyn.attach(traj.write, interval=10)
+dyn.attach(traj.write, interval=50)
 
 # Create log directory if it doesn't exist
 log_fh = open(output_log, "w", buffering=1)
@@ -93,7 +95,7 @@ def print_status(a=structure, fh=log_fh):
 dyn.attach(print_status, interval=20)
 
 start_time = time.time()
-dyn.run(steps=150000)
+dyn.run(steps=1000000)
 end_time = time.time()
 elapsed = end_time - start_time
 print(f"NPT run completed in {elapsed:.2f} seconds", file=log_fh)

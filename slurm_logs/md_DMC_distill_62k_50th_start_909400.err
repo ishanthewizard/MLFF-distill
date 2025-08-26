@@ -1,0 +1,209 @@
+AWS OFI NCCL Plugin v1.6.0 loaded for CUDA 12.6.1
+This provides network transport ONLY - NCCL library from PyTorch
+Configured for Slingshot11/CXI interconnect
+CUDA 12.6.1 loaded with compatible AWS OFI NCCL plugin v1.6.0
+Plugin provides network transport - NCCL library from PyTorch
+Use with python/miniforge3_pytorch/2.7.0 or equivalent for best compatibility
+
+The following have been reloaded with a version change:
+  1) gcc-native/13.2 => gcc-native/12.3
+
+
+Currently Loaded Modules:
+  1) craype-arm-grace
+  2) libfabric/1.20.1
+  3) craype-network-ofi
+  4) perftools-base/24.07.0
+  5) xpmem/2.9.6-1.1_20240511212657__g087dc11fc19d
+  6) craype/2.7.32
+  7) cray-dsmml/0.3.0
+  8) cray-mpich/8.1.30
+  9) cray-libsci/24.07.0
+ 10) PrgEnv-gnu/8.5.0
+ 11) default
+ 12) gcc-native/12.3
+ 13) cuda-compat/12.6
+ 14) nccl-ofi-plugin/1.6.0-cuda126
+ 15) cuda/12.6.1
+
+ 
+
+WARNING: NPT: Setting the center-of-mass momentum to zero (was -45.4605 -2.52282 -30.6937)
+WARNING:root:Model is being compiled this might take a while for the first time
+W0818 16:18:30.669000 380439 site-packages/torch/_logging/_internal.py:1089] [3/0] Profiler function <class 'torch.autograd.profiler.record_function'> will be ignored
+W0818 16:18:31.053000 380439 site-packages/torch/_dynamo/exc.py:304] [6/0_1] Backend compiler failed with a fake tensor exception at 
+W0818 16:18:31.053000 380439 site-packages/torch/_dynamo/exc.py:304] [6/0_1]   File "/u/iamin/fairchem/src/fairchem/core/models/uma/nn/embedding_dev.py", line 224, in forward
+W0818 16:18:31.053000 380439 site-packages/torch/_dynamo/exc.py:304] [6/0_1]     [self.target_dict[str(i)] for i in x.tolist()],
+W0818 16:18:31.053000 380439 site-packages/torch/_dynamo/exc.py:304] [6/0_1] Adding a graph break.
+/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/compile_fx.py:194: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/u/iamin/MLFF-distill/APPLICATIONS/electrolytes/solv_uma_npt_pr.py", line 90, in <module>
+    dyn.run(steps=1000000)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/ase/md/npt.py", line 315, in run
+    for complete in self.irun(steps):
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/ase/md/npt.py", line 293, in irun
+    self.initialize()
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/ase/md/npt.py", line 421, in initialize
+    self._initialize_eta_h()
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/ase/md/npt.py", line 648, in _initialize_eta_h
+    * (self.stresscalculator() - self.externalstress))
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/ase/md/npt.py", line 396, in stresscalculator
+    return self.atoms.get_stress(include_ideal_gas=True)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/ase/atoms.py", line 861, in get_stress
+    stress = self._calc.get_stress(self)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/ase/calculators/abc.py", line 35, in get_stress
+    return self.get_property('stress', atoms)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/ase/calculators/calculator.py", line 515, in get_property
+    self.calculate(atoms, [name], system_changes)
+  File "/u/iamin/MLFF-distill/APPLICATIONS/electrolytes/get_calc.py", line 30, in calculate
+    self.fairchem_calc.calculate(atoms, properties, system_changes)
+  File "/u/iamin/fairchem/src/fairchem/core/calculate/ase_calculator.py", line 218, in calculate
+    pred = self.predictor.predict(batch)
+  File "/u/iamin/fairchem/src/fairchem/core/units/mlip_unit/predict.py", line 44, in collated_predict
+    preds = predict_fn(predict_unit, data, undo_element_references)
+  File "/u/iamin/fairchem/src/fairchem/core/units/mlip_unit/predict.py", line 233, in predict
+    output = self.model(data_device)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 574, in _fn
+    return fn(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/optim/swa_utils.py", line 242, in forward
+    return self.module(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/u/iamin/fairchem/src/fairchem/core/models/base.py", line 178, in forward
+    emb = self.backbone(data)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/u/iamin/fairchem/src/fairchem/core/common/utils.py", line 70, in cls_method
+    f = dec(func)
+  File "/u/iamin/fairchem/src/fairchem/core/common/utils.py", line 71, in torch_dynamo_resume_in_cls_method_at_70
+    return f(self, *args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/u/iamin/fairchem/src/fairchem/core/models/uma/escn_md.py", line 427, in forward
+    csd_mixed_emb = self.csd_embedding(
+  File "/u/iamin/fairchem/src/fairchem/core/models/uma/escn_md.py", line 341, in csd_embedding
+    chg_emb = self.charge_embedding(charge)
+  File "/u/iamin/fairchem/src/fairchem/core/models/uma/escn_md.py", line 342, in torch_dynamo_resume_in_csd_embedding_at_341
+    spin_emb = self.spin_embedding(spin)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 1380, in __call__
+    return self._torchdynamo_orig_callable(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 1164, in __call__
+    result = self._inner_convert(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 547, in __call__
+    return _compile(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 986, in _compile
+    guarded_code = compile_inner(code, one_graph, hooks, transform)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 715, in compile_inner
+    return _compile_inner(code, one_graph, hooks, transform)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_utils_internal.py", line 95, in wrapper_function
+    return function(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 750, in _compile_inner
+    out_code = transform_code_object(code, transform)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/bytecode_transformation.py", line 1361, in transform_code_object
+    transformations(instructions, code_options)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 231, in _fn
+    return fn(*args, **kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 662, in transform
+    tracer.run()
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2868, in run
+    super().run()
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 1052, in run
+    while self.step():
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 962, in step
+    self.dispatch_table[inst.opcode](self, inst)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 3048, in RETURN_VALUE
+    self._return(inst)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 3033, in _return
+    self.output.compile_subgraph(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/output_graph.py", line 1101, in compile_subgraph
+    self.compile_and_call_fx_graph(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/output_graph.py", line 1382, in compile_and_call_fx_graph
+    compiled_fn = self.call_user_compiler(gm)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/output_graph.py", line 1432, in call_user_compiler
+    return self._call_user_compiler(gm)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/output_graph.py", line 1483, in _call_user_compiler
+    raise BackendCompilerFailed(self.compiler_fn, e).with_traceback(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/output_graph.py", line 1462, in _call_user_compiler
+    compiled_fn = compiler_fn(gm, self.example_inputs())
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/repro/after_dynamo.py", line 130, in __call__
+    compiled_gm = compiler_fn(gm, example_inputs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/__init__.py", line 2340, in __call__
+    return compile_fx(model_, inputs_, config_patches=self.config)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/compile_fx.py", line 1863, in compile_fx
+    return aot_autograd(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/backends/common.py", line 83, in __call__
+    cg = aot_module_simplified(gm, example_inputs, **self.kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_functorch/aot_autograd.py", line 1155, in aot_module_simplified
+    compiled_fn = dispatch_and_compile()
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_functorch/aot_autograd.py", line 1131, in dispatch_and_compile
+    compiled_fn, _ = create_aot_dispatcher_function(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_functorch/aot_autograd.py", line 580, in create_aot_dispatcher_function
+    return _create_aot_dispatcher_function(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_functorch/aot_autograd.py", line 830, in _create_aot_dispatcher_function
+    compiled_fn, fw_metadata = compiler_fn(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_functorch/_aot_autograd/jit_compile_runtime_wrappers.py", line 678, in aot_dispatch_autograd
+    compiled_fw_func = aot_config.fw_compiler(fw_module, adjusted_flat_args)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_functorch/aot_autograd.py", line 489, in __call__
+    return self.compiler_fn(gm, example_inputs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/compile_fx.py", line 1741, in fw_compiler_base
+    return inner_compile(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/compile_fx.py", line 569, in compile_fx_inner
+    return wrap_compiler_debug(_compile_fx_inner, compiler_name="inductor")(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_dynamo/repro/after_aot.py", line 102, in debug_wrapper
+    inner_compiled_fn = compiler_fn(gm, example_inputs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/compile_fx.py", line 685, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/compile_fx.py", line 1129, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/compile_fx.py", line 1044, in codegen_and_compile
+    compiled_fn = graph.compile_to_module().call
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/graph.py", line 2027, in compile_to_module
+    return self._compile_to_module()
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/graph.py", line 2033, in _compile_to_module
+    self.codegen_with_cpp_wrapper() if self.cpp_wrapper else self.codegen()
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/graph.py", line 1964, in codegen
+    self.scheduler = Scheduler(self.operations)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/scheduler.py", line 1798, in __init__
+    self._init(nodes)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/scheduler.py", line 1816, in _init
+    self.nodes = [self.create_scheduler_node(n) for n in nodes]
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/scheduler.py", line 1816, in <listcomp>
+    self.nodes = [self.create_scheduler_node(n) for n in nodes]
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/scheduler.py", line 1947, in create_scheduler_node
+    return SchedulerNode(self, node)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/scheduler.py", line 893, in __init__
+    self._compute_attrs()
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/scheduler.py", line 907, in _compute_attrs
+    group_fn = self.scheduler.get_backend(device).group_fn
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/scheduler.py", line 3441, in get_backend
+    self.backends[device] = self.create_backend(device)
+  File "/u/iamin/miniconda3/envs/fairchemV2/lib/python3.10/site-packages/torch/_inductor/scheduler.py", line 3432, in create_backend
+    raise RuntimeError(
+torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
+RuntimeError: Cannot find a working triton installation. Either the package is not installed or it is too old. More information on installing Triton can be found at https://github.com/openai/triton
+
+Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
+
+
+You can suppress this exception and fall back to eager by setting:
+    import torch._dynamo
+    torch._dynamo.config.suppress_errors = True
+
+srun: error: gh103: task 0: Exited with exit code 1
+
+real	0m24.899s
+user	0m0.005s
+sys	0m0.015s

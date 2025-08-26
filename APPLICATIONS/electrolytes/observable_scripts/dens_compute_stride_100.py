@@ -15,7 +15,7 @@ import os
 import numpy as np
 import pandas as pd
 from ase.io import Trajectory
-
+from tqdm import tqdm
 # ------------------------------------------------------------------
 # Physical constants
 AMU_TO_KG       = 1.66053906660e-27   # kg per atomic mass unit
@@ -47,7 +47,7 @@ def compute_density_stats(traj):
     frames    = last_snapshots(traj)
     densities = []
 
-    for atoms in frames:
+    for atoms in tqdm(frames):
         mass_kg   = atoms.get_masses().sum() * AMU_TO_KG
         volume_m3 = atoms.get_volume()       * ANGSTROM3_TO_M3
         densities.append((mass_kg / volume_m3) / 1000.0)  # convert kg/m³ → g/cm³
@@ -59,11 +59,9 @@ def compute_density_stats(traj):
 # ------------------------------------------------------------------
 if __name__ == "__main__":
     results = []
-    traj_paths = [
-    "/data/ishan-amin/OMOL/electrolytes_application/npt_trajs_distillation/npt_trajs_napf6_dme_uma_omol/s1p1/md_omol_re5_small_1p1_wrapped.traj", 
-    # "/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/md_trajs/napf6_xxsmall.traj"
-    "/home/ishan-amin/MLFF-distill/tester_data/md_trajs/napf6_xxsmall_DISTw40.traj"
-    ]
+    root_path = "/projects/beye/iamin/trajs"
+    solvents = ["DME", "DG", "DMC", "TGDME", "PC", "THF"]
+    traj_paths = [os.path.join(root_path, f"napf6_{solvent}_1ns.traj") for solvent in solvents ]
 
     for fname in traj_paths:
         try:
@@ -71,13 +69,13 @@ if __name__ == "__main__":
             mean_rho, sd_rho = compute_density_stats(traj)
             results.append({
                 "system": fname[:-5],                 # strip ".traj"
-                "average_density_g_cm3": mean_rho,
-                "std_dev": sd_rho
+                "average_density_g_cm3": float(f"{mean_rho:.4g}"),
+                "std_dev": float(f"{sd_rho:.4g}")
             })
         except Exception as exc:
             print(f"[WARN] {fname}: {exc}")
 
     df = pd.DataFrame(results)
-    plot_dir = '/home/ishan-amin/MLFF-distill/APPLICATIONS/electrolytes/plots'
-    df.to_csv(f"{plot_dir}/simulation_density_results_DIST_51k_b858.csv", index=False)
+    plot_dir = '/projects/beye/iamin/observables/distilled_densities'
+    df.to_csv(f"{plot_dir}/simulation_density_results_napf6_hessianw80", index=False)
     print("✅  Written simulation_density_results.csv with std_dev column.")
