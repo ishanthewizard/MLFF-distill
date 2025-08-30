@@ -1,16 +1,16 @@
-normalizer_rmsd: 0.8195104628817489
+normalizer_rmsd: 0.841585959691914
 regress_stress: true
 dataset_name: omol
 
 train_dataset:
   splits:
     train:
-      src: ${cluster.omol_path}/electrolytes_application/aselmdb_data/NAPF6/s1p1/train
+      src: ${cluster.omol_path}/naotf/train
   format: ase_db
   a2g_args:
     r_energy: True
     r_forces: True
-    # r_data_keys: ['spin', 'charge']
+    r_data_keys: ['spin', 'charge']
   no_shuffle: true
   transforms:
     common_transform:
@@ -22,12 +22,12 @@ train_dataset:
 val_dataset:
   splits:
     val:
-      src: ${cluster.omol_path}/electrolytes_application/aselmdb_data/NAPF6/s1p1/val
+      src: ${cluster.omol_path}/naotf/val
   format: ase_db
   a2g_args:
     r_energy: True
     r_forces: True
-    # r_data_keys: ['spin', 'charge']
+    r_data_keys: ['spin', 'charge']
   no_shuffle: true
   transforms:
     common_transform:
