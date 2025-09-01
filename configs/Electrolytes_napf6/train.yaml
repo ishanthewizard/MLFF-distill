@@ -1,10 +1,10 @@
 defaults:
   - cluster: local
   - dataset: NA_PF6
-  - element_refs: NA_PF6_refs
+  - element_refs: NAPF6_refs
   - tasks: omol_stress
   - backbone: eSEN_micro
-  - /base
+  # - /base
   - _self_
 
 
