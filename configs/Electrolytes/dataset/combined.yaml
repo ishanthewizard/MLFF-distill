@@ -1,11 +1,11 @@
-normalizer_rmsd: 0.8500995709251169
+normalizer_rmsd: 0.8246393024137875
 regress_stress: true
 dataset_name: omol
 
 train_dataset:
   splits:
     train:
-      src: ${cluster.omol_path}/napf6/train
+      src: ${cluster.omol_path}/combined/train
   format: ase_db
   a2g_args:
     r_energy: True
@@ -22,7 +22,7 @@ train_dataset:
 val_dataset:
   splits:
     val:
-      src: ${cluster.omol_path}/napf6/val
+      src: ${cluster.omol_path}/combined/val
   format: ase_db
   a2g_args:
     r_energy: True
@@ -35,3 +35,4 @@ val_dataset:
     stress_reshape_transform:
       dataset_name: ${dataset.dataset_name}
   teacher_labels_folder: ${cluster.omol_path}/electrolytes_application/labels/NAPF6/s1p1
+

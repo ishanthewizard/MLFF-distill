@@ -8,7 +8,7 @@ slurm:
   partition: ~
   nodelist: ~
   mem_gb: 80
-  timeout_hr: 16
+  timeout_hr: 2
   cpus_per_task: 5
   constraint: gpu
   account: m5024_g #
@@ -17,4 +17,4 @@ debug: False
 run_dir: logs
 dataloader_workers: 0
 
-omol_path: /global/cfs/cdirs/m4558/aug_29_first_100ps
+omol_path: /global/cfs/cdirs/m4558/distillation_project/all_lmdbs/

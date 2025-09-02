@@ -1,18 +1,19 @@
 defaults: 
   - train # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
-  - override cluster: local
+  - override cluster: Nersc
   - override backbone: eSEN_xtra_XTRA_small  #Not needed for eval
-  - override dataset: ALL_20 #Solvated
-  - override element_refs: ALL_20
+  - override dataset: napf6_dme #Solvated
+  - override element_refs: napf6_dme
   - _self_
 
 # batch_size: 1
 max_atoms: 3000
 job:
-  run_name: napf6
+  run_name: napf6_dme
   # graph_parallel_group_size: 1
 
-# runner:
+runner:
+  evaluate_every_n_steps: 225
 #   train_eval_unit:
 #     cosine_lr_scheduler_fn:
 #       warmup_epochs: 0.1 # usually 0.01 but solvated and protein_ligand are so small if you use 0.01 you get div by 0 error

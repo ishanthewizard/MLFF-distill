@@ -19,4 +19,4 @@ run_dir: runs
 nodelist: germain
 dataloader_workers: 0
 
-omol_path: /global/cfs/cdirs/m4558/aug_29_first_100ps
+omol_path: /global/cfs/cdirs/m4558/distillation_project/all_lmdbs/
