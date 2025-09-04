@@ -5,7 +5,7 @@ dataset_name: omol
 train_dataset:
   splits:
     train:
-      src: ${cluster.omol_path}/per_system/napf6_dme/train
+      src: ${cluster.omol_path}/all_lmdbs/per_system/napf6_dme/train
   format: ase_db
   a2g_args:
     r_energy: True
@@ -22,7 +22,7 @@ train_dataset:
 val_dataset:
   splits:
     val:
-      src: ${cluster.omol_path}/per_system/napf6_dme/val
+      src: ${cluster.omol_path}/all_lmdbs/per_system/napf6_dme/val
   format: ase_db
   a2g_args:
     r_energy: True

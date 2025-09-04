@@ -94,22 +94,39 @@ class JobConfig:
 
     def __post_init__(self) -> None:
         self.run_dir = os.path.abspath(self.run_dir)
+
+        # Try to resolve cluster name safely
+        def safe_cluster_name():
+            try:
+                # Prefer a user-writable cache if none set
+                if "CLUSTERSCOPE_CACHE_DIR" not in os.environ:
+                    os.environ["CLUSTERSCOPE_CACHE_DIR"] = os.path.join(
+                        os.path.expanduser("~"), ".cache", "clusterscope"
+                    )
+                    os.makedirs(os.environ["CLUSTERSCOPE_CACHE_DIR"], exist_ok=True)
+                import clusterscope
+                return clusterscope.cluster()
+            except Exception:
+                # common env fallbacks
+                return (
+                    os.environ.get("SLURM_CLUSTER_NAME")
+                    or os.environ.get("SLURM_CLUSTER")
+                    or os.environ.get("CLUSTER")
+                    or "unknown"
+                )
+
         self.metadata = Metadata(
             commit=get_commit_hash(),
             log_dir=os.path.join(self.run_dir, self.timestamp_id, LOG_DIR_NAME),
-            checkpoint_dir=os.path.join(
-                self.run_dir, self.timestamp_id, CHECKPOINT_DIR_NAME
-            ),
+            checkpoint_dir=os.path.join(self.run_dir, self.timestamp_id, CHECKPOINT_DIR_NAME),
             results_dir=os.path.join(self.run_dir, self.timestamp_id, RESULTS_DIR),
             config_path=os.path.join(self.run_dir, self.timestamp_id, CONFIG_FILE_NAME),
             preemption_checkpoint_dir=os.path.join(
-                self.run_dir,
-                self.timestamp_id,
-                CHECKPOINT_DIR_NAME,
-                PREEMPTION_STATE_DIR_NAME,
+                self.run_dir, self.timestamp_id, CHECKPOINT_DIR_NAME, PREEMPTION_STATE_DIR_NAME
             ),
-            cluster_name=clusterscope.cluster(),
+            cluster_name=safe_cluster_name(),
         )
+
 
 
 def get_hydra_config_from_yaml(

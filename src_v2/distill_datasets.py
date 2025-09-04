@@ -12,32 +12,12 @@ from fairchem.core.common.registry import registry
 
 
 
-class HessianSampler:
-    def sample_with_mask(self, num_samples, mask):
-        assert num_samples <= len(mask), "System too small for the number of samples."
-        valid_rows = torch.where(mask)[0]
-        if valid_rows.numel() == 0:
-            raise ValueError("No valid rows available according to the mask")
-
-        # Each valid row contributes 3 indices
-        valid_indices = valid_rows.repeat_interleave(3) * 3 + torch.tensor([0, 1, 2]).repeat(valid_rows.size(0)).to(mask.device)
-        chosen_indices = valid_indices[torch.randperm(valid_indices.size(0))[:num_samples]]
-        row_indices = chosen_indices // 3
-        col_indices = chosen_indices % 3
-        return torch.stack((row_indices, col_indices), dim=1)  # (num_samples, 2)
-
-    # def sample_hessian(self, samples, num_atoms, force_jacs):
-    #     # force_jacs: flat 1D tensor of length num_atoms*3*num_atoms*3
-    #     force_jacs = force_jacs.reshape(num_atoms, 3, num_atoms, 3)
-    #     force_jacs = force_jacs[samples[:, 0], samples[:, 1], :, :]  # (num_samples, num_atoms, 3)
-    #     force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1)  # (num_atoms, num_samples*3)
-    #     return force_jacs
-
-    def sample_diverse_hessian(self, sampled_indices, num_atoms, force_jacs):
-        force_jacs = force_jacs.reshape(60, num_atoms, 3)
-        force_jacs = force_jacs[sampled_indices, :, :]
-        force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1) # (n_samples, natoms, 3) ->(natoms, nsamples, 3) -> (natoms, nsamples*3)
-        return force_jacs
+# class HessianSampler(n_dense_samples: int):
+#     def sample_diverse_hessian(self, sampled_indices, num_atoms, force_jacs):
+#         force_jacs = force_jacs.reshape(60, num_atoms, 3)
+#         force_jacs = force_jacs[sampled_indices, :, :]
+#         force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1) # (n_samples, natoms, 3) ->(natoms, nsamples, 3) -> (natoms, nsamples*3)
+#         return force_jacs
     
 
 class CombinedDataset(AseDBDataset):
