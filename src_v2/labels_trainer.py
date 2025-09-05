@@ -74,9 +74,8 @@ class TeacherLabelGenerator(Runner):
     def run(self) -> None:
         """Generate labels for train and val datasets and merge LMDBs on rank 0."""
         
-        # self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
+        self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
         self.record_labels_parallel(self.label_folder, 'train', is_hessian=True)
-        
         self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
         
         
@@ -207,6 +206,7 @@ class TeacherLabelGenerator(Runner):
                 
                 # expensive forward call only on new samples
                 outs = fn(mini_batch) # in diverse mode, this is an array of 2-tuples
+                
                 # write each result under its original key
                 with env.begin(write=True) as txn:
                     for idx, out in zip(new_idxs, outs):
@@ -223,6 +223,7 @@ class TeacherLabelGenerator(Runner):
                             txn.put(f"{idx}_grad_outputs".encode(),  grad_outputs.tobytes())
                         else:
                             out = out * self.teacher_normalization
+                            # torch.save(out, "saved1.pt")
                             # test_forces_generated(dataset, idx, out)
                             txn.put(str(idx).encode(),
                                     out.detach().float().contiguous().view(-1).cpu().numpy().tobytes())

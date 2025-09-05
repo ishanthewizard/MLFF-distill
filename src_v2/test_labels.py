@@ -31,24 +31,22 @@ def test_hessian_generated(dataset, data_idx, sample_idxs, hessian_labels, total
 
 def test_forces_generated(dataset, idx, out):
     datapoint = dataset[idx]
-    print("ENTERING CALCUALTURE")
+    print("ENTERING CALCULATURE")
     data_atoms = dataset.datasets[0].dataset.get_atoms(idx)
-    breakpoint()
     calc = get_uma_calc("/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt")
     calc.calculate(data_atoms)
     calc_forces = calc.results['forces'].copy()
     
-    atoms_perturbed = data_atoms.copy()
-    atoms_perturbed.positions[10, 1] += 0.00001
-    calc.calculate(atoms_perturbed)
+    true_forces = datapoint.forces
     
-    calc_forces2 = calc.results['forces'].copy()
-    err1 = np.abs((calc_forces - calc_forces2)).mean()
-    err = np.abs((calc_forces - out.reshape(-1, 3).cpu().numpy())).mean()
-    print(f"MULTI FWD FORCE ERR CALC {err1}")
-    print(f"LABEL FORCE ERRR: {err}")
-    
-    breakpoint()
+    label_vs_calc_err = np.abs((calc_forces - out.cpu().numpy())).mean()
+    true_vs_calc_err = np.abs((calc_forces - true_forces.cpu().numpy())).mean()
+    true_vs_label_err = (out.cpu() - true_forces.cpu()).abs().mean().item()  # convert tensor to float
+
+    print(f"label_vs_calc_err: {label_vs_calc_err:.8f}")
+    print(f"true_vs_calc_err: {true_vs_calc_err:.8f}")
+    print(f"true_vs_label_err: {true_vs_label_err:.8f}")
+
     
     
 def compare_hessian_twice(datapoint, data_atoms, calc, samp_idx):
@@ -84,8 +82,9 @@ if __name__ == "__main__":
     }
     
     print("Loading dataset...")
-    train_dataset = CombinedDataset(config, dataset_type="train")
-    # train_forces_dataset = LmdbDataset(config['teacher_labels_folder'], dtype=np.float32, div_2=False)
+    # train_dataset = CombinedDataset(config, dataset_type="train")
+    train_dataset = AseDBDataset(config)
+    train_forces_dataset = LmdbDataset(config['teacher_labels_folder'], dtype=np.float32, div_2=False)
     idx = 1
     samp_idx = 0
     for i in range(10):
