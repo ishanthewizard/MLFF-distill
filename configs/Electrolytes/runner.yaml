@@ -1,6 +1,6 @@
 defaults: 
-  - labels # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
-  - override cluster: delta
+  - distill # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
+  - override cluster: local
   # - override backbone: eSEN_xtra_XTRA_small  #Not needed for eval
   - override dataset: napf6_dme #Solvated
   - override element_refs: napf6_dme
@@ -9,7 +9,7 @@ defaults:
 # batch_size: 1
 max_atoms: 3000
 job:
-  run_name: napf6_dme
+  run_name: napf6_dme_DIST
   # graph_parallel_group_size: 1
 
 # runner:
@@ -18,7 +18,7 @@ job:
 #     cosine_lr_scheduler_fn:
 #       warmup_epochs: 0.1 # usually 0.01 but solvated and protein_ligand are so small if you use 0.01 you get div by 0 error
 
-# direct_forces_coef: 30
-# energy_coef:        30
-# hessian_coef:       60
-# num_hessian_samples: 3
+# direct_forces_coef: 20
+# energy_coef:        20
+hessian_coef:       60
+num_hessian_samples: 3

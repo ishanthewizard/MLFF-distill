@@ -11,15 +11,6 @@ import ase
 from fairchem.core.common.registry import registry
 
 
-
-# class HessianSampler(n_dense_samples: int):
-#     def sample_diverse_hessian(self, sampled_indices, num_atoms, force_jacs):
-#         force_jacs = force_jacs.reshape(60, num_atoms, 3)
-#         force_jacs = force_jacs[sampled_indices, :, :]
-#         force_jacs = force_jacs.permute(1, 0, 2).reshape(num_atoms, -1) # (n_samples, natoms, 3) ->(natoms, nsamples, 3) -> (natoms, nsamples*3)
-#         return force_jacs
-    
-
 class CombinedDataset(AseDBDataset):
     def __init__(
         self,
@@ -33,15 +24,14 @@ class CombinedDataset(AseDBDataset):
         # self.teacher_force_dataset = LmdbDataset(
         #     os.path.join(config['teacher_labels_folder'], f'{dataset_type}_forces')
         # )
-
+        self.num_lmdb_rows = int(config['num_lmdb_rows'])
         if dataset_type == 'train':
             self.hessian_dataset = LmdbDataset(
                 os.path.join(config['teacher_labels_folder'], 'force_jacobians'), div_2=True
             )
-            self.hessian_idxs_dataset = LmdbHessianIndexDataset(
+            self.grad_outputs_dataset = LmdbGradOutputsDataset(
                 os.path.join(config['teacher_labels_folder'], 'force_jacobians')
             )
-            self.hessian_sampler = HessianSampler()
         else:
             self.hessian_dataset = None
 
@@ -49,32 +39,28 @@ class CombinedDataset(AseDBDataset):
         # pid = os.getpid()
         # 1) Get the main AtomicData (always on CPU at this point)
         main_batch = super().__getitem__(idx)
-
-        # 2) Pull out natoms from the CPU‐side data
         num_atoms = main_batch.natoms
-
+        num_samples = self.num_hessian_samples
         # 3) Load teacher_forces (CPU)
         # teacher_forces = self.teacher_force_dataset[idx].reshape(num_atoms, 3)
-        num_samples = self.num_hessian_samples
+        
         if self.hessian_dataset is not None:
+            sampled_rows = torch.randperm(self.num_lmdb_rows)[:num_samples]
+            
             # 4) Load the raw force_jacobian vector (CPU)
-            raw_jac = self.hessian_dataset[idx]
+            grad_outputs = self.grad_outputs_dataset[idx].reshape(self.num_lmdb_rows, num_atoms, 3)
+            force_jacs = self.hessian_dataset[idx].reshape(self.num_lmdb_rows, num_atoms, 3)
             
-            idxs = self.hessian_idxs_dataset[idx]
-            idxs = idxs.reshape(60, 2)
-            # Randomly sample num_samples rows from idxs
-            sampled_indices = torch.randperm(idxs.shape[0])[:num_samples]
-            samples = idxs[sampled_indices]
-            
-            force_jacs = self.hessian_sampler.sample_diverse_hessian(sampled_indices, num_atoms, raw_jac)
+            force_jacs =  force_jacs[sampled_rows].permute(1, 0, 2).reshape(num_atoms, -1) # (n_samples, natoms, 3) ->(natoms, nsamples, 3) -> (natoms, nsamples*3)
+            grad_outputs = grad_outputs[sampled_rows].permute(1, 0, 2).reshape(num_atoms, -1) # (n_samples, natoms, 3) ->(natoms, nsamples, 3) -> (natoms, nsamples*3)
             
             main_batch.forces_jac = force_jacs
-            main_batch.samples = samples
+            main_batch.grad_outputs = grad_outputs
             main_batch.num_samples = torch.tensor(num_samples)
         else:
             # 6) If no Hessian, just fill zeros on CPU
             main_batch.forces_jac = torch.zeros((num_atoms, num_samples * 3))
-            main_batch.num_samples = torch.tensor(num_samples)
+            main_batch.grad_outputs = torch.tensor((num_atoms, num_samples * 3))
         # main_batch.teacher_forces = teacher_forces
         return main_batch
 
@@ -132,8 +118,8 @@ class LmdbDataset(Dataset):
 
 
 
-class LmdbHessianIndexDataset(LmdbDataset):
-    def __init__(self, folder_path, dtype=np.int64, div_2=True):
+class LmdbGradOutputsDataset(LmdbDataset):
+    def __init__(self, folder_path, dtype=np.float32, div_2=True):
         super().__init__(folder_path, dtype=dtype, div_2=div_2)
         
     def __getitem__(self, index):
@@ -143,7 +129,7 @@ class LmdbHessianIndexDataset(LmdbDataset):
         # Find which database to access
         db_idx = bisect.bisect_right(self._keylen_cumulative, index)
         with self.envs[db_idx].begin() as txn:
-            byte_data = txn.get((str(index) + "_idxs").encode())
+            byte_data = txn.get((str(index) + "_grad_outputs").encode())
             if byte_data:
                 arr = np.frombuffer(byte_data, dtype=self.dtype).copy()   # now writable
                 tensor = torch.from_numpy(arr)

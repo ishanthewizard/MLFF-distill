@@ -74,7 +74,7 @@ class TeacherLabelGenerator(Runner):
     def run(self) -> None:
         """Generate labels for train and val datasets and merge LMDBs on rank 0."""
         
-        self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
+        # self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
         self.record_labels_parallel(self.label_folder, 'train', is_hessian=True)
         
         self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
@@ -217,7 +217,7 @@ class TeacherLabelGenerator(Runner):
                             main_np = main_np.detach().float().contiguous().view(-1).cpu().numpy()
                             # 2.  diverse indices → int64 → contiguous → 1-D
                             # idxs_np = out[1].detach().long().contiguous().view(-1).cpu().numpy()
-                            grad_outputs = out[1].detach().float().contiguous().view(-1).cpu().numpy()
+                            grad_outputs = out[1].detach().float().contiguous().view(-1).cpu().numpy() # go
 
                             txn.put(str(idx).encode(),       main_np.tobytes())
                             txn.put(f"{idx}_grad_outputs".encode(),  grad_outputs.tobytes())

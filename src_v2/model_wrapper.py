@@ -16,16 +16,9 @@ class HessianModelWrapper(HydraModel):
         natoms = data.natoms 
         total_num_atoms = forces.shape[0]
         num_samples = data.num_samples[0] 
+        
         cumulative_sums = torch.cat([torch.tensor([0], device=natoms.device), torch.cumsum(natoms, 0)]) # 0... sum(natoms)
-        
-        offset_samples = data.samples.clone() #(num_systems x num_samples, 2)
-        offsets = cumulative_sums[:-1].repeat_interleave(data.num_samples)   # offset the samples so that they correspond to the correct start position of molecule in the batch
-        offset_samples[:, 0] += offsets 
-        
-        grad_outputs = torch.zeros((num_samples, total_num_atoms, 3)).to(forces.device) # (num_samples, total_num_atoms, 3)
-        for i in range(len(natoms)):
-            curr_samples = offset_samples[num_samples * i : num_samples * (i + 1)]
-            grad_outputs[torch.arange(num_samples, device=forces.device), curr_samples[:, 0], curr_samples[:, 1]] = 1
+        grad_outputs = data.grad_outputs.reshape(total_num_atoms, -1, 3).permute(1,0,2) # (num_samples, total_num_atoms, 3)
 
         
         # jac = get_jacobian(forces, data.pos, grad_outputs, create_graph=True, looped=looped) # num_samples, num_atoms, 
