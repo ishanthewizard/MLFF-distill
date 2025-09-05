@@ -7,7 +7,6 @@ def make_probe_matrix(
     p_active: float = 0.5,      # Bernoulli prob that an atom is active in a column
     remove_rotations: bool = False,  # set True only for molecules / no PBC
     eps: float = 1e-12,
-    max_resample: int = 8,      # if a column ends up too small after centering
 ) -> torch.Tensor:
     """
     Returns V of shape (3N, m) with V^T V = I (thin-QR applied).
@@ -72,41 +71,45 @@ def make_probe_matrix(
         return w_out
 
     for j in range(num_probes):
-        tries = 0
-        while True:
-            tries += 1
-            # Mask per atom ~ Bernoulli(p_active)
-            mask = (torch.rand((N, 1), generator=rng, device=device) < p_active).to(dtype)
 
-            # Random unit directions on S^2 for active atoms
-            dirs = torch.randn((N, 3), generator=rng, device=device, dtype=dtype)
-            dirs = dirs / (dirs.norm(dim=1, keepdim=True).clamp_min(eps))  # unit
-            w = dirs * mask  # (N,3)
+        # Mask per atom ~ Bernoulli(p_active)
+        mask = (torch.rand((N, 1), generator=rng, device=device) < p_active).to(dtype)
 
-            # Remove per-structure translations
-            w = _project_translations(w)
+        # Random unit directions on S^2 for active atoms
+        dirs = torch.randn((N, 3), generator=rng, device=device, dtype=dtype)
+        dirs = dirs / (dirs.norm(dim=1, keepdim=True).clamp_min(eps))  # unit
+        w = dirs * mask  # (N,3)
 
-            # Optional: remove rotations for molecules/non-PBC
-            if remove_rotations:
-                w = _project_rotations(w)
+        # Remove per-structure translations
+        w = _project_translations(w)
 
-            # Normalize to unit norm
-            v = w.reshape(-1)  # (3N,)
-            nrm = torch.linalg.norm(v)
-            if nrm > 1e-8:
-                # v = v / nrm # NOTE: for now we WON'T do this, and we'll see what happens hahaha
-                cols.append(v)
-                break
-            if tries >= max_resample:
-                raise Exception("couldn't find non small norm vector for some reason??")
+        # Optional: remove rotations for molecules/non-PBC
+        if remove_rotations:
+            w = _project_rotations(w)
+
+        # Normalize to unit norm
+        v = w.reshape(-1)  # (3N,)
+        
+        # nrm = torch.linalg.norm(v)
+        # v = v / nrm # NOTE: for now we WON'T do this, and we'll see what happens hahaha
+        
+        v = v / 10
+        cols.append(v)
+
 
     V0 = torch.stack(cols, dim=1)  # (3N, m)
+    
+    col_norms = torch.linalg.norm(V0, dim=0)  # (m,)
 
-    # Thin QR for orthonormal columns
-    # Note: torch.linalg.qr expects float types; works on CPU/GPU.
-    Q, R = torch.linalg.qr(V0, mode='reduced')  # Q: (3N, m), R: (m, m)
-    # Ensure deterministic sign convention (optional):
-    # Make diagonal of R positive
-    diag_sign = torch.sign(torch.diag(R)).clamp_min(0) * 2 - 1  # ±1 with + for zeros
-    Q = Q * diag_sign
-    return Q  # (3N, m), with Q^T Q = I
+    # Thin QR:
+    Q, R = torch.linalg.qr(V0, mode='reduced')  # Q: (3N, m)
+
+    # Optional deterministic sign convention (not required if you rescale by col_norms):
+    # Make diagonal of R positive so Q’s column signs are stable
+    diag = torch.diag(R)
+    sign = torch.where(diag >= 0, torch.ones_like(diag), -torch.ones_like(diag))
+    Q = Q * sign  # broadcast columnwise
+
+    # Option A: keep your original per-column magnitudes in the probe matrix
+    V = Q * col_norms  # scales each column j by col_norms[j]
+    return V.reshape(N, 3, -1).permute(2, 0, 1)  # (m, N, 3)

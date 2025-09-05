@@ -16,7 +16,6 @@ def get_teacher_jac_dense(data, forward, n_diverse_samples,  force_keyword='forc
     cumulative_sums = torch.cumsum(natoms, 0) - natoms # 0... sum(natoms) - natoms
 
     grad_outputs = make_probe_matrix(data.pos, natoms, num_probes=n_diverse_samples) # (num_samples, 3*len(num_atoms))
-
     jac = get_jacobian_finite_difference(forces, data, grad_outputs, forward=forward, detach=True, force_keyword=force_keyword, collater=None, looped=True, h= 0.001)
     jacs_per_mol = [jac[:, cum_sum:cum_sum + nat, :].cpu() for cum_sum,  nat in zip(cumulative_sums, natoms)]
     grad_outputs_per_mol = [grad_outputs[:, 3 * cum_sum: 3 * cum_sum + nat] for cum_sum,  nat in zip(cumulative_sums, natoms)]
@@ -174,7 +173,6 @@ def get_jacobian(forces, pos, grad_outputs, create_graph=False, looped=False):
 
 
 def get_jacobian_finite_difference(forces, batch, grad_outputs, forward, detach, collater, looped=False, force_keyword='forces', h=0.001):
-
     original_pos = batch.pos.clone()
     perturbed_batches = []
 

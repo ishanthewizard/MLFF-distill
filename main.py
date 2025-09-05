@@ -35,7 +35,7 @@ from fairchem.core._cli import (
 from omegaconf import OmegaConf
 from fairchem.core.common import distutils
 import clusterscope
-
+clusterscope.cluster = lambda: "local"
 @dataclass
 class SlurmConfig:
     mem_gb: int = 80
