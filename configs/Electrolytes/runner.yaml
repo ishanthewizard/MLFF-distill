@@ -1,6 +1,6 @@
 defaults: 
   - distill # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
-  - override cluster: local
+  - override cluster: delta
   # - override backbone: eSEN_xtra_XTRA_small  #Not needed for eval
   - override dataset: napf6_dme #Solvated
   - override element_refs: napf6_dme
@@ -20,5 +20,5 @@ job:
 
 # direct_forces_coef: 20
 # energy_coef:        20
-hessian_coef:       60
+hessian_coef:       20
 num_hessian_samples: 3
