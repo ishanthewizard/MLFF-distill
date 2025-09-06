@@ -61,6 +61,7 @@ class CombinedDataset(AseDBDataset):
             # 6) If no Hessian, just fill zeros on CPU
             main_batch.forces_jac = torch.zeros((num_atoms, num_samples * 3))
             main_batch.grad_outputs = torch.tensor((num_atoms, num_samples * 3))
+            main_batch.num_samples = torch.tensor(num_samples)
         # main_batch.teacher_forces = teacher_forces
         return main_batch
 

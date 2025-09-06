@@ -8,7 +8,7 @@ slurm:
   partition: ghx4
   nodelist: ~
   mem_gb: 64
-  timeout_hr: 48
+  timeout_hr: 2
   cpus_per_task: 16
   constraint: gpu  # Commented out since run2.sh doesn't use this
   account: beyy-dtai-gh
