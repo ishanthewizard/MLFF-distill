@@ -8,26 +8,53 @@ from fairchem.core.datasets import data_list_collater
 from APPLICATIONS.electrolytes.get_calc import get_uma_calc
 import numpy as np
 
-def test_hessian_generated(dataset, data_idx, sample_idxs, hessian_labels, total_num_samples):
+def test_hessian_generated(dataset, data_idx, grad_outputs, hessian_labels, total_num_samples, eps=1e-3):
     sel_idx = 2
     datapoint = dataset[data_idx]
     data_atoms = dataset.datasets[0].dataset.get_atoms(data_idx)
+
     calc = get_uma_calc("/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt")
+
+    # Base forces
     calc.calculate(data_atoms)
-    output_forces = calc.results['forces'].copy()
-    atoms_perturbed = data_atoms.copy()
-    atoms_perturbed.positions[sample_idxs[sel_idx, 0], sample_idxs[sel_idx, 1]] += 0.001
-    calc.calculate(atoms_perturbed)
-    perturbed_forces = calc.results['forces'].copy()
-    true_hessian = (perturbed_forces - output_forces) / 0.001
-    # print(hessian)
-    print("Comparing hessian with datapoint.forces_jac")
-    
-    compare = hessian_labels.reshape(total_num_samples, datapoint.natoms, 3)[sel_idx, :, :]
-    # Find indices where abs(compare) > 0.01
-    print(np.abs(true_hessian - compare.numpy()).max())
-    print(np.abs(true_hessian - compare.numpy()).mean() / np.abs(true_hessian).mean())
-    breakpoint()
+    F0 = calc.results['forces'].copy()
+
+    # Perturb along the selected probe
+    v = grad_outputs[sel_idx].cpu().numpy()  # (N,3)
+    atoms_p = data_atoms.copy()
+    atoms_p.positions += eps * v
+
+    calc.calculate(atoms_p)
+    Fp = calc.results['forces'].copy()
+
+    true_hessian = (Fp - F0) / eps
+
+    # Compare to stored label
+    compare = hessian_labels.reshape(total_num_samples, datapoint.natoms, 3)[sel_idx]
+    diff = np.abs(true_hessian - compare.numpy())
+    print("scale ratio ~", np.abs(compare).mean() / (np.abs(true_hessian).mean() + 1e-12))
+    print("Comparison vs stored label:")
+    print("  max abs diff:", diff.max())
+    print("  mean rel diff:", diff.mean() / (np.abs(true_hessian).mean() + 1e-12))
+
+    # ---------------------------------------------------------
+    # Repeatability check: rerun calculator on same points
+    # ---------------------------------------------------------
+    calc.calculate(data_atoms)
+    F0b = calc.results['forces'].copy()
+
+    atoms_p2 = data_atoms.copy()
+    atoms_p2.positions += eps * v
+    calc.calculate(atoms_p2)
+    Fp2 = calc.results['forces'].copy()
+
+    true_hessian2 = (Fp2 - F0b) / eps
+
+    repeat_diff = np.abs(true_hessian2 - true_hessian)
+    print("Repeatability check (same perturbation twice):")
+    print("  max abs diff:", repeat_diff.max())
+    print("  mean rel diff:", repeat_diff.mean() / (np.abs(true_hessian).mean() + 1e-12))
+
 
 def test_forces_generated(dataset, idx, out):
     datapoint = dataset[idx]
