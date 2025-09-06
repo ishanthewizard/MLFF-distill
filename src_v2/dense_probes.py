@@ -1,5 +1,145 @@
 import torch
 
+import torch
+
+def get_dense_grad_outputs(
+    data,
+    num_rows: int,
+    density: int = 5,
+    random_sign: bool = True,
+    remove_translations: bool = False,  # per-structure, per-axis mean removal
+    normalize_rows: bool = False,       # unit-norm per row (for HVP-style use)
+):
+    """
+    Build grad_outputs of shape (num_rows, total_atoms, 3).
+    For each row and each molecule, select `density` atoms via FPS (on positions) and
+    set one random coordinate per selected atom to ±1 (or +1 if random_sign=False).
+
+    Args
+    ----
+    data.pos : (total_atoms, 3) tensor
+    data.natoms : (B,) tensor of atom counts per structure
+
+    Returns
+    -------
+    grad_outputs : (num_rows, total_atoms, 3) tensor (same device/dtype as data.pos)
+    """
+    device = data.pos.device
+    dtype = data.pos.dtype
+
+    natoms = data.natoms
+    total_atoms = int(natoms.sum().item())
+
+    # start indices per molecule
+    starts = torch.cumsum(natoms, dim=0) - natoms  # (B,)
+    # slices of positions per molecule
+    pos_by_mol = [data.pos[s:s+n] for s, n in zip(starts, natoms.tolist())]
+
+    grad_outputs = torch.zeros((num_rows, total_atoms, 3), device=device, dtype=dtype)
+
+    for row in range(num_rows):
+        for (start, pos_m) in zip(starts.tolist(), pos_by_mol):
+            n = pos_m.shape[0]
+
+            # FPS on positions within this molecule
+            # Pairwise distances (n x n)
+            dists = torch.cdist(pos_m, pos_m)  # (n, n)
+
+            # pick first index randomly
+            current = torch.randint(low=0, high=n, size=(1,), device=device).item()
+            selected = [current]
+            min_d = dists[:, current]  # (n,)
+
+            # pick remaining k-1 farthest points
+            for _ in range(1, density):
+                current = int(torch.argmax(min_d).item())
+                selected.append(current)
+                min_d = torch.minimum(min_d, dists[:, current])
+
+            # set entries in grad_outputs for this row & molecule
+            for idx in selected:
+                axis = int(torch.randint(0, 3, (1,), device=device).item())
+                val = 1.0
+                if random_sign:
+                    val = 1.0 if torch.randint(0, 2, (1,), device=device).item() == 1 else -1.0
+                grad_outputs[row, start + idx, axis] = val
+
+    return grad_outputs
+
+        
+    
+
+def get_diverse_idxs(x, natoms, num_samples):
+    """
+    Selects a diverse subset of atoms from each molecule using farthest point sampling.
+    Args:
+        x (torch.Tensor): Node embeddings for all atoms in the batch.
+                          Expected shape: (total_num_atoms, num_channels, ...),
+                          where the scalar features are in x[:, 0, :].
+        natoms (torch.Tensor): A tensor where each element is the number of atoms
+                               in a molecule. Shape: (num_molecules,).
+        num_samples (int): The number of diverse samples to select from each molecule.
+    Returns:
+        torch.Tensor: A 1D tensor containing the global indices of the selected
+                      diverse atoms for the entire batch.
+    """
+    # Assuming scalar features are at index 0 of the second dimension.
+    # Shape of scalar_x: (total_num_atoms, num_sphere_channels)
+    scalar_x = x[:, 0, :]
+
+    # Split embeddings by molecule
+    cumulative_sums = torch.cumsum(natoms, 0) - natoms
+    x_by_mol = [scalar_x[start:start + nat, :]for start, nat in zip(cumulative_sums, natoms)]
+
+    all_diverse_indices = []
+
+    for mol_embeddings in x_by_mol:
+        num_atoms_in_mol = mol_embeddings.shape[0]
+
+        if num_atoms_in_mol == 0:
+            continue
+
+        # Determine number of points to select for this molecule
+        num_to_select = min(num_samples, num_atoms_in_mol)
+
+        if num_to_select < num_samples:
+            raise Exception("num_atoms_in_mol < num_samples not currently supported")
+
+        # Farthest Point Sampling (FPS)
+        # Step 1: Compute pairwise distance matrix
+        dists = torch.cdist(mol_embeddings, mol_embeddings)
+
+        # Step 2: Iteratively select farthest points
+        selected_indices = torch.zeros(
+            num_to_select, dtype=torch.long, device=x.device
+        )
+
+        # Start with a random point
+        current_idx = torch.randint(0, num_atoms_in_mol, (1,), device=x.device).item()
+        selected_indices[0] = current_idx
+
+        # Initialize distances from all points to the selected set
+        min_dists = dists[:, current_idx]
+
+        for j in range(1, num_to_select):
+            # Find the point that is farthest from the current set of selected points
+            current_idx = torch.argmax(min_dists)
+            selected_indices[j] = current_idx
+
+            # Update min_dists with the distances to the new point
+            min_dists = torch.minimum(min_dists, dists[:, current_idx])
+
+        # Convert local indices to global indices
+        repeated_indices = selected_indices.repeat_interleave(3)
+        col = torch.arange(3, device=selected_indices.device).repeat(selected_indices.shape[0])
+        final_indices = torch.stack([repeated_indices, col], dim=1)
+        
+        
+        all_diverse_indices.append(final_indices)
+
+
+    return all_diverse_indices
+
 def make_probe_matrix(
     pos: torch.Tensor,          # (N, 3) positions (for device/dtype & natoms layout)
     natoms: torch.Tensor,       # (B,) number of atoms per structure (sum = N)

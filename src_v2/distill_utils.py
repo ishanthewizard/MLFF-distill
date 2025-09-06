@@ -7,7 +7,7 @@ import logging
 # from fairchem.core.common.data_parallel import  OCPCollater
 from fairchem.core.common import distutils
 from tqdm import tqdm
-from .dense_probes import make_probe_matrix
+from .dense_probes import make_probe_matrix, get_dense_grad_outputs
 
 def get_teacher_jac_dense(data, forward, n_diverse_samples,  force_keyword='forces', vectorize=True,  approximation="disabled", collater=None):
     out = forward(data)
@@ -15,7 +15,8 @@ def get_teacher_jac_dense(data, forward, n_diverse_samples,  force_keyword='forc
     natoms = data.natoms
     cumulative_sums = torch.cumsum(natoms, 0) - natoms # 0... sum(natoms) - natoms
 
-    grad_outputs = make_probe_matrix(data.pos, natoms, num_probes=n_diverse_samples) # (num_samples, natoms, 3)
+    # grad_outputs = make_probe_matrix(data.pos, natoms, num_probes=n_diverse_samples) # (num_samples, natoms, 3)
+    grad_outputs = get_dense_grad_outputs(data, n_diverse_samples)
     jac = get_jacobian_finite_difference(forces, data, grad_outputs, forward=forward, detach=True, force_keyword=force_keyword, collater=None, looped=True, h= 0.001)
     jacs_per_mol = [jac[:, cum_sum:cum_sum + nat, :].cpu() for cum_sum,  nat in zip(cumulative_sums, natoms)]
     grad_outputs_per_mol = [grad_outputs[:, cum_sum:cum_sum + nat, :] for cum_sum,  nat in zip(cumulative_sums, natoms)]
