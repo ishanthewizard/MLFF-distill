@@ -9,9 +9,9 @@ from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from get_calc import get_uma_calc
 
 # === Get ion type from command line ===
-identifier = 'napf6_DME_1ns'
-working_dir = "/projects/beye/iamin/trajs"
-uma_path = "/projects/beyy/shared/data/all_NAPF6/distill_131000_hessiancoef80.pt"
+identifier = 'test_traj_naotf'
+working_dir = "yuejian/electrolytes/trajs"
+uma_path = "logs/202509-0220-1938-d9be/checkpoints/final/inference_ckpt.pt"
 # === Input traj and output files ===
 
 # input_traj ="/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_diglyme_pfactor_0.1_1fs_mask_t_re1_s1p1.traj" # DG
@@ -20,7 +20,7 @@ uma_path = "/projects/beyy/shared/data/all_NAPF6/distill_131000_hessiancoef80.pt
 # input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_propylene_carbonate_pfactor_0.1_1fs_mask_t_re1_s1p1.traj" # PC
 # input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_tetrahydrofuran_pfactor_0.1_1fs_mask_t_re3_m1p1.traj"
 # DONT USE!!!!! input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_diethyleneglycol_pfactor_0.1_1fs_mask_t_re3_s1p1.traj"
-input_traj = "/projects/beyy/shared/data/napf6_s1p1/uma_traj/md_omol_re5_small_1p1_wrapped.traj"
+input_traj = "m4558/distillation_project/all_trajs_min50ps/md_omol_naotf_pc_1m_s1p1.traj"
 
 # diglyn, DMC, 
 output_traj = f"{working_dir}/{identifier}.traj"
@@ -29,19 +29,27 @@ output_log = f"{working_dir}/md_logs/{identifier}_test.log"
 if not os.path.exists(input_traj):
     raise FileNotFoundError(f"Trajectory not found: {input_traj}")
 
+if not os.path.exists(uma_path):
+    raise FileNotFoundError(f"UMA model not found: {uma_path}")
+
 # === Load last frame ===
+print(f"Loading trajectory from: {input_traj}")
 base_structure = read(input_traj, index=0)
 base_structure.set_pbc([True, True, True])
 #base_structure.wrap()
 structure = deepcopy(base_structure)
+print(f"Loaded structure with {len(structure)} atoms")
 
 # === Initial velocity ===
 MaxwellBoltzmannDistribution(structure, temperature_K=300)
 
 # === Set up model ===
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 torch.set_num_threads(28)
+print(f"Loading UMA model from: {uma_path}")
 structure.calc = get_uma_calc(uma_path= uma_path, small_model=True)
+print("UMA model loaded successfully")
 
 
 # === Set up NPT dynamics ===
@@ -56,10 +64,16 @@ dyn = NPT(
 )
 
 # === Output files ===
+# Create output directories if they don't exist
+os.makedirs(os.path.dirname(output_traj), exist_ok=True)
+os.makedirs(os.path.dirname(output_log), exist_ok=True)
+
+print(f"Output trajectory: {output_traj}")
+print(f"Output log: {output_log}")
+
 traj = Trajectory(output_traj, "w", structure)
 dyn.attach(traj.write, interval=50)
 
-# Create log directory if it doesn't exist
 log_fh = open(output_log, "w", buffering=1)
 
 import time
@@ -94,6 +108,9 @@ def print_status(a=structure, fh=log_fh):
 
 dyn.attach(print_status, interval=20)
 
+print("Starting NPT molecular dynamics simulation...")
+print(f"Target: 1,000,000 steps at 1 fs timestep")
+print(f"Temperature: 323 K, Pressure: 1.0 bar")
 start_time = time.time()
 dyn.run(steps=1000000)
 end_time = time.time()
