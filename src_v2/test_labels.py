@@ -12,7 +12,7 @@ def test_hessian_generated(dataset, data_idx, sample_idxs, hessian_labels, total
     sel_idx = 2
     datapoint = dataset[data_idx]
     data_atoms = dataset.datasets[0].dataset.get_atoms(data_idx)
-    calc = get_uma_calc("/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt")
+    calc = get_uma_calc("/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/models/uma-s-1p1.pt")
     calc.calculate(data_atoms)
     output_forces = calc.results['forces'].copy()
     atoms_perturbed = data_atoms.copy()
@@ -27,14 +27,12 @@ def test_hessian_generated(dataset, data_idx, sample_idxs, hessian_labels, total
     # Find indices where abs(compare) > 0.01
     print(np.abs(true_hessian - compare.numpy()).max())
     print(np.abs(true_hessian - compare.numpy()).mean() / np.abs(true_hessian).mean())
-    breakpoint()
 
 def test_forces_generated(dataset, idx, out):
     datapoint = dataset[idx]
     print("ENTERING CALCUALTURE")
     data_atoms = dataset.datasets[0].dataset.get_atoms(idx)
-    breakpoint()
-    calc = get_uma_calc("/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt")
+    calc = get_uma_calc("/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/models/uma-s-1p1.pt")
     calc.calculate(data_atoms)
     calc_forces = calc.results['forces'].copy()
     
@@ -47,8 +45,6 @@ def test_forces_generated(dataset, idx, out):
     err = np.abs((calc_forces - out.reshape(-1, 3).cpu().numpy())).mean()
     print(f"MULTI FWD FORCE ERR CALC {err1}")
     print(f"LABEL FORCE ERRR: {err}")
-    
-    breakpoint()
     
     
 def compare_hessian_twice(datapoint, data_atoms, calc, samp_idx):
@@ -98,7 +94,6 @@ if __name__ == "__main__":
     compare_hessian_twice(datapoint, data_atoms, calc, samp_idx)
     
     # true_hessian = get_sampled_hessian(datapoint, output)
-    # breakpoint()
     # print(true_hessian)
 
 # true_hessian = get_sampled_hessian(datapoint, predicted_forces)

@@ -18,23 +18,25 @@ from pathlib import Path
 from tqdm import tqdm
 
 # ─────────────── user: solvents & trajectories ───────────────────────────────
-solvents = ["DME", "DG", "DMC", "TGDME", "PC", "THF"]
-distilled_trajs = [f"/projects/beye/iamin/trajs/napf6_{s}_1ns.traj" for s in solvents]
+solvents = ["diglyme", "dme", "PC", "TGDME"]
+distilled_trajs = ["/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/md_omol_naotf_diglyme_1m_s1p1/md_omol_naotf_diglyme_1m_s1p1.traj",
+         "/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/md_omol_naotf_dme_s1p1_omol/md_omol_naotf_dme_s1p1_omol.traj",
+         "/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/md_omol_naotf_pc_1m_s1p1/md_omol_naotf_pc_1m_s1p1.traj",
+         "/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/md_omol_naotf_tgdme_1m_s1p1/md_omol_naotf_tgdme_1m_s1p1.traj"]
 traj_info = list(zip(distilled_trajs, solvents))  # (path, label)
 
 # Equilibration trim and frame timing
 EQ_TIME_PS   = 100.0   # discard first 100 ps
-dt_fallback  = 0.05    # ps (50 fs) if frame.info['time'] is absent
+dt_fallback  = 0.01    # ps (10 fs) if frame.info['time'] is absent
 
 # Output root
-out_dir = Path("/projects/beye/iamin/observables/distilled_diffusion")
+out_dir = Path("/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/msd")
 out_dir.mkdir(parents=True, exist_ok=True)
 
 # ───────────────────── helper functions ──────────────────────────────────────
 def build_time_array(frames, dt_fallback=0.05):
     """Use frame.info['time'] if available; else uniform spacing (ps)."""
     have_time = all(('time' in f.info) for f in frames)
-    breakpoint()
     if have_time:
         t = np.array([float(f.info['time']) for f in frames], dtype=float)
         t -= t[0]

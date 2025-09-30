@@ -126,6 +126,7 @@ class LmdbDataset(Dataset):
             env = lmdb.open(db_path, readonly=True, lock=False)
             self.envs.append(env)
             with env.begin() as txn:
+                print(txn.stat())
                 num_entries = txn.stat()['entries'] if not self.div_2 else txn.stat()['entries'] // 2
                 total_entries += num_entries
                 self._keylen_cumulative.append(total_entries)

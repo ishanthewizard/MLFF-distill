@@ -76,15 +76,16 @@ from pathlib import Path
 # ]
 
 input_trajs = [
-    '/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolytes/first_100ps_traj_to_send/md_omol_cspf6_pfactor_0.1_1fs_mask_t.traj',
-    '/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolytes/first_100ps_traj_to_send/md_omol_lipf6_pfactor_0.1_1fs_mask_t.traj',
-    '/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolytes/first_100ps_traj_to_send/md_omol_natfsi_dme_s1p1.traj',
+    '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_diglyme_1m_s1p1/md_omol_naotf_diglyme_1m_s1p1.traj',
+    '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_dme_s1p1_omol/md_omol_naotf_dme_s1p1_omol.traj',
+    '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_pc_1m_s1p1/md_omol_naotf_pc_1m_s1p1.traj',
+    '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_tgdme_1m_s1p1/md_omol_naotf_tgdme_1m_s1p1.traj'
 ]
 
 # input_trajs = input_trajs_3 + input_trajs_2 + input_trajs_1
 
-output_train_folder = '/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolytes/aug_29_first_100ps/remain/train'
-output_val_folder  = '/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolytes/aug_29_first_100ps/remain/val'
+output_train_folder = '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/toy_test/Sep_18_naotf_per_salt_data/train'
+output_val_folder  = '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/toy_test/Sep_18_naotf_per_salt_data/val'
 
 # Subsample every N steps (adjust as needed)
 SUBSAMPLE_STEP = 5

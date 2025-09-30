@@ -22,15 +22,18 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 # ----------------------------- config -----------------------------
-OUT_DIR = Path("/projects/beye/iamin/observables/distilled_vacf")
+OUT_DIR = Path("/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/vacf")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-SOLVENTS = ["DME", "DG", "DMC", "TGDME", "PC", "THF"]
-TRAJS = [f"/projects/beye/iamin/trajs/napf6_{s}_1ns.traj" for s in SOLVENTS]
+SOLVENTS = ["diglyme", "dme", "PC", "TGDME"]
+TRAJS = ["/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/md_omol_naotf_diglyme_1m_s1p1/md_omol_naotf_diglyme_1m_s1p1.traj",
+         "/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/md_omol_naotf_dme_s1p1_omol/md_omol_naotf_dme_s1p1_omol.traj",
+         "/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/md_omol_naotf_pc_1m_s1p1/md_omol_naotf_pc_1m_s1p1.traj",
+         "/global/homes/y/yuejian/project/MLFF-distill/yuejian/MD_naotf/md_omol_naotf_tgdme_1m_s1p1/md_omol_naotf_tgdme_1m_s1p1.traj"]
 SPECIES = "Na"
 
 # Trajectories sampled every 50 fs
-DT_FS_FALLBACK = 50  # fs
+DT_FS_FALLBACK = 10  # fs
 
 # Optional cropping (None = use full run)
 TMAX_PS = None
@@ -148,7 +151,6 @@ def process_one(solvent, traj_path):
         if np.isnan(V_all).any():
             raise ValueError
         V = V_all  # Å/fs if your trajectory stores Å/fs
-        breakpoint()
     except Exception:
         V = estimate_velocities_from_positions(R, dt_fs)
 

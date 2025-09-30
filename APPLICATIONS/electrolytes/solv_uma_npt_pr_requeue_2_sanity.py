@@ -206,7 +206,7 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     dyn = NPT(
         atoms=structure,
         timestep = 1 * units.fs,
-        temperature_K=323,
+        temperature_K=300,
         externalstress=1.0 * units.bar,
         ttime=100 * units.fs,
         pfactor=0.1, ### larger value mean it will relax slower, typical 10^-3 
