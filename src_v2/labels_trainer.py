@@ -74,9 +74,9 @@ class TeacherLabelGenerator(Runner):
     def run(self) -> None:
         """Generate labels for train and val datasets and merge LMDBs on rank 0."""
         
-        self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
+        # self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
         self.record_labels_parallel(self.label_folder, 'train', is_hessian=True)
-        self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
+        # self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
         
         
         
@@ -186,7 +186,8 @@ class TeacherLabelGenerator(Runner):
         dataset = dataloader.dataset
 
         with sync_ctx:
-            for _ in tqdm(range(len(dataloader)), desc=f"shard {file_path}"):
+            # for _ in tqdm(range(len(dataloader)), desc=f"shard {file_path}"):
+            for _ in tqdm(range(len(dataloader)), desc=f""):
                 # full_batch = next(dataloader)            # you can drop this if you rebuild from samples
                 indices = next(batch_iter)               # list of ints
 
