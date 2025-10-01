@@ -1,0 +1,7 @@
+defaults:
+  - ../model/uma@_here_
+
+method: UMA
+maxIters: 1000
+fmax: 0.55
+fexit: 250 

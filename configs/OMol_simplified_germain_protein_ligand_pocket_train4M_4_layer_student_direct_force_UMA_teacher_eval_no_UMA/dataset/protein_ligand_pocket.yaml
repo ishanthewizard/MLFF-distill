@@ -1,0 +1,16 @@
+defaults: 
+ - base_dataset
+ - _self_
+ 
+omol_train:
+  splits:
+    train:
+      src: /home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/aselmdb_data/sodium_elytes_train_4M
+  # teacher_labels_folder: ${cluster.omol_path}/4M/subsets/OMol_subset_label_torch_autograd_UMA/protein_ligand_pockets_train_4M/labels
+
+omol_val:
+  splits:
+    val:
+      sample_n: 100
+      src: /home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/aselmdb_data/sodium_elytes_train_4M
+  # teacher_labels_folder: ${cluster.omol_path}/4M/subsets/OMol_subset_label_torch_autograd_UMA/protein_ligand_pockets_train_4M/labels
