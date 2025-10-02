@@ -8,7 +8,7 @@ defaults:
   - _self_
 
 
-epochs: 100
+epochs: 300
 steps: null # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 
 train_dataset:

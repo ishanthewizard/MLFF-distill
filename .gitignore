@@ -8,6 +8,7 @@ tester_data/
 lightning_logs/
 results
 labels/
+slurm_logs/
 runs/
 MODELPATH
 logs

@@ -59,9 +59,9 @@ def compute_density_stats(traj):
 # ------------------------------------------------------------------
 if __name__ == "__main__":
     results = []
-    root_path = "/projects/beye/iamin/trajs"
-    solvents = ["DME", "DG", "DMC", "TGDME", "PC", "THF"]
-    traj_paths = [os.path.join(root_path, f"napf6_{solvent}_1ns.traj") for solvent in solvents ]
+    root_path = "/projects/beye/iamin/distillation_project/escaip_trajs"
+    solvents = ["dme"]
+    traj_paths = [os.path.join(root_path, f"naotf_{solvent}.traj") for solvent in solvents ]
 
     for fname in traj_paths:
         try:
@@ -76,6 +76,6 @@ if __name__ == "__main__":
             print(f"[WARN] {fname}: {exc}")
 
     df = pd.DataFrame(results)
-    plot_dir = '/projects/beye/iamin/observables/distilled_densities'
-    df.to_csv(f"{plot_dir}/simulation_density_results_napf6_hessianw80", index=False)
+    plot_dir = '/projects/beye/iamin/distillation_project/escaip_trajs/observables/'
+    df.to_csv(f"{plot_dir}/simulation_density_results_naotf", index=False)
     print("✅  Written simulation_density_results.csv with std_dev column.")

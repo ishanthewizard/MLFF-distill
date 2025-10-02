@@ -9,7 +9,7 @@ defaults:
 
 teacher_checkpoint: ${cluster.omol_path}/models/uma-s-1p1.pt
 # teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/esen_sm_conserving_all.pt
-label_folder: ${cluster.omol_path}/all_lmdbs/per_system/naotf_dme/labels_test
+label_folder: ${cluster.omol_path}/all_lmdbs/per_system/naotf_dme/labels_dens20
 teacher_normalization:  1.423  # NOTE: this is just for UMA, need to change depending on the teacher model
 
 dataset:

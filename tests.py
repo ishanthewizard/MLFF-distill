@@ -27,7 +27,6 @@ def test_hessian_generated(dataset, data_idx, sample_idxs, hessian_labels):
     # Find indices where abs(compare) > 0.01
     print(np.abs(true_hessian - compare.numpy()).max())
     print(np.abs(true_hessian - compare.numpy()).mean() / np.abs(true_hessian).mean())
-    breakpoint()
     
     
 def compare_hessian_twice(dataset, data_idx, sample_idx, calc):
@@ -61,31 +60,34 @@ def compare_hessian_twice(dataset, data_idx, sample_idx, calc):
 if __name__ == "__main__":
     # get datasets
     config = {
-        "src": "/data/ishan-amin/OMOL/electrolytes_application/all_lmdbs/per_system/naotf_dme/train",
-        "teacher_labels_folder": "/data/ishan-amin/OMOL/electrolytes_application/all_lmdbs/per_system/naotf_dme/labels_test",
-        # "num_hessian_samples": 3,
-        # "num_lmdb_rows": 20,
+        # "src": "/data/ishan-amin/OMOL/electrolytes_application/all_lmdbs/per_system/naotf_dme/train",
+        "src": "/projects/beye/iamin/distillation_project/all_lmdbs/per_system/naotf_dme/train",
+        # "teacher_labels_folder": "/data/ishan-amin/OMOL/electrolytes_application/all_lmdbs/per_system/naotf_dme/labels_test",
+        "teacher_labels_folder": "/projects/beye/iamin/distillation_project/all_lmdbs/per_system/naotf_dme/labels",
+        "num_hessian_samples": 3,
+        "num_lmdb_rows": 20,
     }
     
     print("Loading dataset...")
-    # train_dataset = CombinedDataset(config, dataset_type="train")
-    train_dataset = AseDBDataset(config)
+    train_dataset = CombinedDataset(config, dataset_type="train")
+    # train_dataset = AseDBDataset(config)
     train_forces_dataset = LmdbDataset(os.path.join(config['teacher_labels_folder'], 'train_forces'), dtype=np.float32, div_2=False)
-    for idx in range(10):
-        print((train_forces_dataset[idx].reshape(-1,3) - train_dataset[idx].forces).abs().mean())
-    breakpoint()
+    # for idx in range(10):
+    #     print((train_forces_dataset[idx].reshape(-1,3) - train_dataset[idx].forces).abs().mean())
+    # breakpoint()
 
     print("Loading calculator...")
     # calc = get_uma_calc("/data/ishan-amin/OMOL/ESEN_OMol_ckpts/uma-s-1p1.pt")
-    for idx in range(10):
-        # datapoint = train_dataset[idx + 1]
-        data_atoms = train_dataset.get_atoms(idx) 
-        calc.calculate(data_atoms)
-        output_forces = calc.results['forces'].copy()
-        stored_forces  = train_forces_dataset[idx + 1].reshape(-1, 3).numpy()
-        breakpoint()
-        print("CALC FORCE DIFF:", np.abs((output_forces - stored_forces )).mean())
-        print("TRUE FORCE DIFF:", np.abs((train_dataset[idx].forces.numpy() - stored_forces )).mean() )
+    calc = get_uma_calc("/projects/beye/iamin/distillation_project/models/uma-s-1p1.pt")
+    # for idx in range(10):
+    #     # datapoint = train_dataset[idx + 1]
+    #     data_atoms = train_dataset.get_atoms(idx) 
+    #     calc.calculate(data_atoms)
+    #     output_forces = calc.results['forces'].copy()
+    #     stored_forces  = train_forces_dataset[idx + 1].reshape(-1, 3).numpy()
+    #     breakpoint()
+    #     print("CALC FORCE DIFF:", np.abs((output_forces - stored_forces )).mean())
+    #     print("TRUE FORCE DIFF:", np.abs((train_dataset[idx].forces.numpy() - stored_forces )).mean() )
     
     for idx in (10, 5, 200, 321):
         compare_hessian_twice(train_dataset, idx, 0, calc)

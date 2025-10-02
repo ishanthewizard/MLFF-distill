@@ -17,7 +17,7 @@ train_dataset:
       dataset_name: ${dataset.dataset_name}
     stress_reshape_transform:
       dataset_name: ${dataset.dataset_name}
-  teacher_labels_folder: ${cluster.omol_path}/all_lmdbs/per_system/naotf_dme/labels
+  teacher_labels_folder: ${cluster.omol_path}/all_lmdbs/per_system/naotf_dme/labels_dens20
 
 val_dataset:
   splits:

@@ -1,3 +1,4 @@
+import logging
 import sys
 from ase.io import read, Trajectory
 from ase.md.npt import NPT
@@ -9,19 +10,16 @@ from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from get_calc import get_uma_calc
 
 # === Get ion type from command line ===
-identifier = 'napf6_DME_1ns'
-working_dir = "/projects/beye/iamin/trajs"
-uma_path = "/projects/beyy/shared/data/all_NAPF6/distill_131000_hessiancoef80.pt"
+identifier = 'naotf_dme_Allscaip'
+working_dir = "/projects/beye/iamin/distillation_project/test_trajs"
+# uma_path = "/projects/beye/iamin/distillation_project/models/uma-s-1p1.pt"
+# uma_path = "/projects/beye/iamin/distillation_project/models/naotf_equil_ablation/unequilibrated/final/inference_ckpt.pt"
 # === Input traj and output files ===
 
-# input_traj ="/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_diglyme_pfactor_0.1_1fs_mask_t_re1_s1p1.traj" # DG
-# input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_dimethylcarbonate_pfactor_0.1_1fs_mask_t_re3_s1p1.traj" # DMC
-# input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_napf6_tgdme_1m_s1p1.traj" # TGDME
-# input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_propylene_carbonate_pfactor_0.1_1fs_mask_t_re1_s1p1.traj" # PC
-# input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_tetrahydrofuran_pfactor_0.1_1fs_mask_t_re3_m1p1.traj"
-# DONT USE!!!!! input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_diethyleneglycol_pfactor_0.1_1fs_mask_t_re3_s1p1.traj"
-input_traj = "/projects/beyy/shared/data/napf6_s1p1/uma_traj/md_omol_re5_small_1p1_wrapped.traj"
-
+input_traj = "/projects/beye/iamin/distillation_project/all_trajs_min_50ps/md_omol_naotf_dme_s1p1_omol.traj"
+START_FS = 0
+IS_SMALL_MODEL = True
+start_step = START_FS // 10
 # diglyn, DMC, 
 output_traj = f"{working_dir}/{identifier}.traj"
 output_log = f"{working_dir}/md_logs/{identifier}_test.log"
@@ -30,7 +28,7 @@ if not os.path.exists(input_traj):
     raise FileNotFoundError(f"Trajectory not found: {input_traj}")
 
 # === Load last frame ===
-base_structure = read(input_traj, index=0)
+base_structure = read(input_traj, index=start_step)
 base_structure.set_pbc([True, True, True])
 #base_structure.wrap()
 structure = deepcopy(base_structure)
@@ -40,15 +38,15 @@ MaxwellBoltzmannDistribution(structure, temperature_K=300)
 
 # === Set up model ===
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.set_num_threads(28)
-structure.calc = get_uma_calc(uma_path= uma_path, small_model=True)
-
+torch.set_num_threads(8)
+# structure.calc = get_uma_calc(uma_path= uma_path, small_model=IS_SMALL_MODEL)
+structure.calc = FAIRChemCalculator.from_model_checkpoint("/projects/beye/iamin/distillation_project/models/omol_all_sm_NeAnNoSi_ft_40E20F_fixed.pt", task_name="omol")
 
 # === Set up NPT dynamics ===
 dyn = NPT(
     atoms=structure,
     timestep = 1 * units.fs,
-    temperature_K=323,
+    temperature_K=293,
     externalstress=1.0 * units.bar,
     ttime=100 * units.fs,
     pfactor=0.1, ### larger value mean it will relax slower, typical 10^-3 
@@ -57,7 +55,7 @@ dyn = NPT(
 
 # === Output files ===
 traj = Trajectory(output_traj, "w", structure)
-dyn.attach(traj.write, interval=50)
+dyn.attach(traj.write, interval=10)
 
 # Create log directory if it doesn't exist
 log_fh = open(output_log, "w", buffering=1)
@@ -91,6 +89,7 @@ def print_status(a=structure, fh=log_fh):
     line = (f"Step {step:>8} | T={temp:6.1f} K | Epot={epot:10.3f} eV | "
             f"Ekin={ekin:10.3f} eV | Vol={vol:10.3f} Å³{its_per_sec_str}")
     print(line, file=fh)
+    logging.info(line)
 
 dyn.attach(print_status, interval=20)
 
