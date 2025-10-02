@@ -1,0 +1,71 @@
+defaults:
+  - cluster: local
+  - dataset: NA_PF6
+  - element_refs: NA_PF6_refs
+  - tasks: omol_stress
+  - /base
+  - _self_
+
+
+teacher_checkpoint: /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/uma-s-1p1.pt
+# teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/esen_sm_conserving_all.pt
+label_folder: /home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_dense_sample/sample_20
+teacher_normalization:  1.423  # NOTE: this is just for UMA, need to change depending on the teacher model
+
+dataset:
+  omol_train:
+    splits:
+      train:
+        no_shuffle: True 
+
+train_dataset:
+  _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+  dataset_configs:
+    omol: ${dataset.train_dataset}
+  combined_dataset_config:
+    sampling:
+      type: temperature
+      temperature: 1.0
+
+train_dataloader:
+  _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
+  dataset: ${train_dataset}
+  # batch_sampler_fn:
+  #   _target_: fairchem.core.common.data_parallel.BalancedBatchSampler
+  #   _partial_: true
+  #   batch_size: ${batch_size}
+  #   shuffle: true
+  #   seed: 0
+  batch_sampler_fn:
+    _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
+    _partial_: True
+    max_atoms: ${max_atoms}
+    shuffle: True
+    seed: 0
+  num_workers: 0
+  collate_fn:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
+    tasks: ${tasks}
+
+runner:
+  _target_: src_v2.labels_trainer.TeacherLabelGenerator
+  train_dataloader: ${train_dataloader}
+  eval_dataloader: ${eval_dataloader}
+  eval_unit:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.MLIPEvalUnit
+    job_config: ${job}
+    tasks: ${tasks}
+    bf16: ${bf16}
+    model:
+      _target_: src_v2.dataset_utils.initialize_finetuning_model
+      checkpoint_location: ${teacher_checkpoint}
+      use_ema: True
+      overrides:
+        backbone:
+          otf_graph: true
+          activation_checkpointing: true
+        pass_through_head_outputs: true
+  label_folder: ${label_folder}
+  teacher_normalization: ${teacher_normalization}
+  # n_diverse_samples: 20 # {5, 10, 20, 40, 80, 160}
+

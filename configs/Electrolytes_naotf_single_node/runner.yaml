@@ -1,6 +1,6 @@
 defaults: 
   - train # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
-  - override cluster: Nersc
+  - override cluster: local
   - override backbone: eSEN_xtra_XTRA_small  #Not needed for eval
   - override dataset: NAOTF #Solvated
   - override element_refs: NAOTF
