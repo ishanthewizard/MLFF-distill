@@ -8,7 +8,7 @@ slurm:
   partition: ~
   nodelist: ~
   mem_gb: 80
-  timeout_hr: 24
+  timeout_hr: 14
   cpus_per_task: 5
   constraint: gpu
   exclude: null
