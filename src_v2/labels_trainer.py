@@ -87,18 +87,18 @@ class TeacherLabelGenerator(Runner):
         # Merge LMDBs on rank 0
         if distutils.get_rank() == 0:
             # Merge validation forces
-            val_forces_dir = os.path.join(self.label_folder, "unmerged_val_forces")
-            merged_val_forces_path = os.path.join(self.label_folder, "val_forces")
-            self.merge_lmdb_shards(val_forces_dir, merged_val_forces_path)
+            # val_forces_dir = os.path.join(self.label_folder, "unmerged_val_forces")
+            # merged_val_forces_path = os.path.join(self.label_folder, "val_forces")
+            # self.merge_lmdb_shards(val_forces_dir, merged_val_forces_path)
             
             # Merge training force Jacobians
             train_jacobians_dir = os.path.join(self.label_folder, "unmerged_force_jacobians")
             merged_train_jacobians_path = os.path.join(self.label_folder, "force_jacobians")
             self.merge_lmdb_shards(train_jacobians_dir, merged_train_jacobians_path)
             
-            train_forces_dir = os.path.join(self.label_folder, "unmerged_train_forces")
-            merged_train_forces_path = os.path.join(self.label_folder, "train_forces")
-            self.merge_lmdb_shards(train_forces_dir, merged_train_forces_path)
+            # train_forces_dir = os.path.join(self.label_folder, "unmerged_train_forces")
+            # merged_train_forces_path = os.path.join(self.label_folder, "train_forces")
+            # self.merge_lmdb_shards(train_forces_dir, merged_train_forces_path)
 
     def _get_label_fn(self, is_hessian):
         if is_hessian:
