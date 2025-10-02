@@ -9,6 +9,7 @@ lightning_logs/
 results
 labels/
 runs/
+slurm_logs/
 MODELPATH
 logs
 *.png
