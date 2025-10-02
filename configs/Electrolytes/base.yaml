@@ -17,7 +17,7 @@ job:
       account: ${cluster.slurm.account}
   debug: ${cluster.debug}
   run_dir: ${cluster.run_dir}
-  run_name: fabrice
+  run_name: naotf_DIST
   logger:
     _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
     _partial_: true

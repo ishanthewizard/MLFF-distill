@@ -1,14 +1,14 @@
 defaults:
-  - cluster: Nersc
-  - dataset: naotf
-  - element_refs: naotf
+  - cluster: local
+  - dataset: NAPF6
+  - element_refs: NAPF6
   - tasks: omol_stress
   - backbone: eSEN_micro
   - /base
   - _self_
 
 
-epochs: 80
+epochs: 100
 steps: null # 80B atoms, 128 ranks, max atoms 350 (mean atoms 300)
 
 train_dataset:
@@ -75,7 +75,7 @@ runner:
     bf16: ${bf16}
   max_epochs: ${epochs}
   max_steps: ${steps}
-  evaluate_every_n_steps: 2500
+  evaluate_every_n_steps: 250
   callbacks:
     - _target_: fairchem.core.common.profiler_utils.ProfilerCallback
       job_config: ${job}

@@ -2,9 +2,7 @@ normalizer_rmsd: 0.8779600192172669
 regress_stress: true
 dataset_name: omol
 
-
 dummy_dataset: ${cluster.omol_path}/electrolytes_application/ablate_dense_sample/sample_5
-
 
 train_dataset:
   splits:

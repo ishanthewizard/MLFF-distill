@@ -13,11 +13,11 @@ dataset:
   train_dataset:
     format:                 src_v2.distill_datasets.CombinedDatasetTrain
     num_hessian_samples: ${num_hessian_samples}
-    num_lmdb_rows: 20
+    num_lmdb_rows: 5
   val_dataset:
     format:                 src_v2.distill_datasets.CombinedDatasetVal
     num_hessian_samples: ${num_hessian_samples}
-    num_lmdb_rows: 10
+    num_lmdb_rows: 5
 
 runner:
   train_eval_unit:

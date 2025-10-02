@@ -12,7 +12,6 @@ slurm:
   timeout_hr: 12
   cpus_per_task: 9
   constraint: ~
-  exclude: null
   account: ~
 
 debug: False
@@ -20,4 +19,4 @@ run_dir: logs
 nodelist: germain
 dataloader_workers: 0
 
-omol_path: /data/ishan-amin/OMOL
+omol_path: /data/ishan-amin/OMOL/electrolytes_application
