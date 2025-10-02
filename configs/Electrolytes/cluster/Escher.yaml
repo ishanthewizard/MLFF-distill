@@ -12,6 +12,7 @@ slurm:
   timeout_hr: 24
   cpus_per_task: 9
   constraint: gpu
+  exclude: null
   account: m4558_g #
 
 debug: False

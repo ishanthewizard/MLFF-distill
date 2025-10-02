@@ -1,15 +1,11 @@
-normalizer_rmsd: 0.8779600192172669
+normalizer_rmsd: 0.8290896948547554
 regress_stress: true
 dataset_name: omol
-
-
-dummy_dataset: ${cluster.omol_path}/electrolytes_application/ablate_dense_sample/sample_5
-
 
 train_dataset:
   splits:
     train:
-      src: /home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_dense_sample/naotf_lmdbs_323K/unequilibrated/train
+      src: m4558/distillation_project/all_lmdbs/napf6/train
   format: ase_db
   a2g_args:
     r_energy: True
@@ -21,12 +17,12 @@ train_dataset:
       dataset_name: ${dataset.dataset_name}
     stress_reshape_transform:
       dataset_name: ${dataset.dataset_name}
-  teacher_labels_folder: /home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_dense_sample/sample_5
+  teacher_labels_folder: ${cluster.omol_path}/electrolytes_application/labels/NAPF6/s1p1
 
 val_dataset:
   splits:
     val:
-      src: /home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_dense_sample/naotf_lmdbs_323K/unequilibrated/val
+      src: m4558/distillation_project/all_lmdbs/napf6/val
   format: ase_db
   a2g_args:
     r_energy: True
@@ -38,4 +34,4 @@ val_dataset:
       dataset_name: ${dataset.dataset_name}
     stress_reshape_transform:
       dataset_name: ${dataset.dataset_name}
-  teacher_labels_folder: /home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_dense_sample/sample_5
+  teacher_labels_folder: ${cluster.omol_path}/electrolytes_application/labels/NAPF6/s1p1

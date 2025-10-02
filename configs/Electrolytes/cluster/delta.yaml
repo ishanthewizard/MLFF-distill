@@ -8,7 +8,7 @@ slurm:
   partition: ghx4
   nodelist: ~
   mem_gb: 64
-  timeout_hr: 2
+  timeout_hr: 48
   cpus_per_task: 16
   constraint: gpu  # Commented out since run2.sh doesn't use this
   account: beyy-dtai-gh
@@ -19,4 +19,4 @@ debug: False
 run_dir: logs
 dataloader_workers: 0
 
-omol_path: /projects/beye/iamin/distillation_project/
+omol_path: /u/czhang31/data

@@ -12,11 +12,12 @@ slurm:
   timeout_hr: 24
   cpus_per_task: 9
   constraint: gpu
+  exclude: null
   account: ~
 
-debug: True
+debug: False
 run_dir: runs
 nodelist: germain
 dataloader_workers: 0
 
-omol_path: /data/ishan-amin/OMOL/electrolytes_application
+omol_path: /global/cfs/cdirs/m4558/aug_29_first_100ps
