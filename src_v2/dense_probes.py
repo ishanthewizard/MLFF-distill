@@ -7,8 +7,6 @@ def get_dense_grad_outputs(
     num_rows: int,
     density: int = 5,
     random_sign: bool = True,
-    remove_translations: bool = False,  # per-structure, per-axis mean removal
-    normalize_rows: bool = False,       # unit-norm per row (for HVP-style use)
 ):
     """
     Build grad_outputs of shape (num_rows, total_atoms, 3).

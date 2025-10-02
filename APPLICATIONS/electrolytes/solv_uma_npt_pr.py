@@ -7,11 +7,12 @@ import torch, os
 from copy import deepcopy
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from get_calc import get_uma_calc
+from fairchem.core import FAIRChemCalculator
 
 # === Get ion type from command line ===
-identifier = 'napf6_DME_1ns'
-working_dir = "/projects/beye/iamin/trajs"
-uma_path = "/projects/beyy/shared/data/all_NAPF6/distill_131000_hessiancoef80.pt"
+identifier = 'napf6_DME_1ns_allscaip'
+working_dir = "/data/ishan-amin/OMOL/electrolytes_application/escaip_trajs"
+uma_path = "/data/ishan-amin/OMOL/electrolytes_application/models/uma-s-1p1.pt"
 # === Input traj and output files ===
 
 # input_traj ="/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_diglyme_pfactor_0.1_1fs_mask_t_re1_s1p1.traj" # DG
@@ -20,7 +21,7 @@ uma_path = "/projects/beyy/shared/data/all_NAPF6/distill_131000_hessiancoef80.pt
 # input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_propylene_carbonate_pfactor_0.1_1fs_mask_t_re1_s1p1.traj" # PC
 # input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_tetrahydrofuran_pfactor_0.1_1fs_mask_t_re3_m1p1.traj"
 # DONT USE!!!!! input_traj = "/projects/beyy/shared/data/1mnapf6_solvents_omol_trajs/md_omol_diethyleneglycol_pfactor_0.1_1fs_mask_t_re3_s1p1.traj"
-input_traj = "/projects/beyy/shared/data/napf6_s1p1/uma_traj/md_omol_re5_small_1p1_wrapped.traj"
+input_traj = "/data/ishan-amin/OMOL/electrolytes_application/all_trajs_min50ps/md_omol_naotf_dme_s1p1_omol.traj"
 
 # diglyn, DMC, 
 output_traj = f"{working_dir}/{identifier}.traj"
@@ -41,7 +42,13 @@ MaxwellBoltzmannDistribution(structure, temperature_K=300)
 # === Set up model ===
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_num_threads(28)
-structure.calc = get_uma_calc(uma_path= uma_path, small_model=True)
+calc = FAIRChemCalculator.from_model_checkpoint("/data/ericqu/AllScAIP_ckpts/omol_all_sm_NeAnNoSi_ft_40E20F_fixed.pt", task_name="omol")
+
+##TOGGLE
+# structure.calc = get_uma_calc(uma_path= uma_path, small_model=True)
+structure.calc = calc
+
+
 
 
 # === Set up NPT dynamics ===

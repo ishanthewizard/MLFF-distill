@@ -44,14 +44,16 @@ class TeacherLabelGenerator(Runner):
         eval_unit: Union[TrainUnit, EvalUnit, Stateful],
         label_folder: str,
         teacher_normalization: float,
-        n_diverse_samples: int, # This is the number of atoms that will be sampled from each molecule, so the number of force jac rows is actually 3x this
+        num_perts_per_row: int, # This is the number of atoms that will be sampled from each molecule, so the number of force jac rows is actually 3x this
+        num_hessian_rows: int
     ):  
         # Initialize the class
         self.train_dataloader = train_dataloader
         self.eval_dataloader = eval_dataloader
         self.train_eval_unit = eval_unit
         self.device = self.train_eval_unit.model.device
-        self.n_diverse_samples = n_diverse_samples
+        self.num_perts_per_row = num_perts_per_row
+        self.num_hessian_rows = num_hessian_rows
         self.lazy_model_initialized = False
     
         # Create the label folder if it does not exist
@@ -107,7 +109,8 @@ class TeacherLabelGenerator(Runner):
                 jacs = get_teacher_jac_dense(
                     batch, 
                     forward=self.train_eval_unit.model,
-                    n_diverse_samples=self.n_diverse_samples,
+                    num_perts_per_row  = self.num_perts_per_row,
+                    num_hessian_rows = self.num_hessian_rows,
                     force_keyword='omol_forces',
                     vectorize=False,
                     approximation="forward",

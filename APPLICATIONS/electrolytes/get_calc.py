@@ -47,7 +47,7 @@ class UMACalculatorWrapper(Calculator):
             except (AttributeError, NotImplementedError):
                 # If stress calculation is not supported, use zero stress tensor
                 print("Warning: Stress calculation not supported by underlying calculator, using zero stress tensor")
-                self.results['stress'] = np.zeros((3, 3))
+                raise Exception("NO STRESS FOUND")
         
         self.counter += 1
 
