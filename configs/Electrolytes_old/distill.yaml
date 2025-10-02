@@ -1,0 +1,26 @@
+defaults:
+  - train
+  - override tasks: hessian_task
+  - _self_
+
+job:
+  run_name: electrolyte_xxsmall_dist
+
+hessian_coef:       40
+num_hessian_samples: 2
+
+dataset:
+  train_dataset:
+    format:                 src_v2.distill_datasets.CombinedDatasetTrain
+    num_hessian_samples: ${num_hessian_samples}
+    num_lmdb_rows: 5
+  val_dataset:
+    format:                 src_v2.distill_datasets.CombinedDatasetVal
+    num_hessian_samples: ${num_hessian_samples}
+    num_lmdb_rows: 5
+
+runner:
+  train_eval_unit:
+    model:
+      _target_: src_v2.model_wrapper.HessianModelWrapper
+    
