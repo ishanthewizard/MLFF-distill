@@ -67,5 +67,6 @@ runner:
         pass_through_head_outputs: true
   label_folder: ${label_folder}
   teacher_normalization: ${teacher_normalization}
-  n_diverse_samples: 20
+  num_perts_per_row: 20 # This is the number of atoms that will be sampled from each molecule, so the number of force jac rows is actually 3x this
+  num_hessian_rows: 30
 
