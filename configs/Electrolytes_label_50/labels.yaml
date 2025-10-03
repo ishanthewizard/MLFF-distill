@@ -7,9 +7,9 @@ defaults:
   - _self_
 
 
-teacher_checkpoint: ${cluster.omol_path}/models/uma-s-1p1.pt
+teacher_checkpoint: /global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/models/uma-s-1p1.pt
 # teacher_checkpoint: ${cluster.omol_path}/ESEN_OMol_ckpts/esen_sm_conserving_all.pt
-label_folder: ${cluster.omol_path}/all_lmdbs/per_system/naotf_dme/labels_test
+label_folder: /global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/electrolyte_application/ablate_dense_sample/sample_50
 teacher_normalization:  1.423  # NOTE: this is just for UMA, need to change depending on the teacher model
 
 dataset:
@@ -67,5 +67,7 @@ runner:
         pass_through_head_outputs: true
   label_folder: ${label_folder}
   teacher_normalization: ${teacher_normalization}
-  n_diverse_samples: 5
+  num_hessian_rows: 30
+  num_perts_per_row: 50 # ablation {10, 50,  500, 900}
+  # n_diverse_samples: 20
 
