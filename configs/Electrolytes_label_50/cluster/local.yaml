@@ -1,6 +1,6 @@
 device: CUDA
 mode: LOCAL
-ranks_per_node: 4
+ranks_per_node: 1
 num_nodes: 1
 
 

@@ -76,9 +76,9 @@ class TeacherLabelGenerator(Runner):
     def run(self) -> None:
         """Generate labels for train and val datasets and merge LMDBs on rank 0."""
         
-        self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
+        # self.record_labels_parallel(self.label_folder, 'train', is_hessian=False)
         self.record_labels_parallel(self.label_folder, 'train', is_hessian=True)
-        self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
+        # self.record_labels_parallel(self.label_folder, 'val', is_hessian=False)
         
         
         
@@ -89,18 +89,18 @@ class TeacherLabelGenerator(Runner):
         # Merge LMDBs on rank 0
         if distutils.get_rank() == 0:
             # Merge validation forces
-            val_forces_dir = os.path.join(self.label_folder, "unmerged_val_forces")
-            merged_val_forces_path = os.path.join(self.label_folder, "val_forces")
-            self.merge_lmdb_shards(val_forces_dir, merged_val_forces_path)
+            # val_forces_dir = os.path.join(self.label_folder, "unmerged_val_forces")
+            # merged_val_forces_path = os.path.join(self.label_folder, "val_forces")
+            # self.merge_lmdb_shards(val_forces_dir, merged_val_forces_path)
             
             # Merge training force Jacobians
             train_jacobians_dir = os.path.join(self.label_folder, "unmerged_force_jacobians")
             merged_train_jacobians_path = os.path.join(self.label_folder, "force_jacobians")
             self.merge_lmdb_shards(train_jacobians_dir, merged_train_jacobians_path)
             
-            train_forces_dir = os.path.join(self.label_folder, "unmerged_train_forces")
-            merged_train_forces_path = os.path.join(self.label_folder, "train_forces")
-            self.merge_lmdb_shards(train_forces_dir, merged_train_forces_path)
+            # train_forces_dir = os.path.join(self.label_folder, "unmerged_train_forces")
+            # merged_train_forces_path = os.path.join(self.label_folder, "train_forces")
+            # self.merge_lmdb_shards(train_forces_dir, merged_train_forces_path)
 
     def _get_label_fn(self, is_hessian):
         if is_hessian:
@@ -189,7 +189,7 @@ class TeacherLabelGenerator(Runner):
         dataset = dataloader.dataset
 
         with sync_ctx:
-            for _ in tqdm(range(len(dataloader)), desc=f"shard {file_path}"):
+            for _ in tqdm(range(len(dataloader)), desc=f""):
                 # full_batch = next(dataloader)            # you can drop this if you rebuild from samples
                 indices = next(batch_iter)               # list of ints
 
