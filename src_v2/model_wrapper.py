@@ -2,6 +2,7 @@ from fairchem.core.models.base import HydraModel
 import torch
 from src_v2.distill_utils import get_jacobian, get_jacobian_finite_difference
 from fairchem.core.models.base import HeadInterface
+from fairchem.core.datasets import data_list_collater
 import torch.nn as nn
 
 class HessianModelWrapper(HydraModel):
