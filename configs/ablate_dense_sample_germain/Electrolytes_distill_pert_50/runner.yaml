@@ -1,0 +1,24 @@
+defaults: 
+  - distill # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
+  - override cluster: Germain   
+  # - override backbone: eSEN_xtra_XTRA_small  #Not needed for eval
+  - override dataset: naotf #Solvated
+  - override element_refs: naotf
+  - _self_
+
+# batch_size: 2
+max_atoms: 6000
+job:
+  run_name: naotf_distill_pert_50
+  # graph_parallel_group_size: 1
+
+# runner:
+#   evaluate_every_n_steps: 225
+#   train_eval_unit: # ONLY FOR SMALL DATASETS
+#     cosine_lr_scheduler_fn:
+#       warmup_epochs: 0.1 # usually 0.01 but solvated and protein_ligand are so small if you use 0.01 you get div by 0 error
+
+# direct_forces_coef: 20
+# energy_coef:        20
+# hessian_coef:       60
+# num_hessian_samples: 3

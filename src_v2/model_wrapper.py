@@ -36,11 +36,11 @@ class HessianModelWrapper(HydraModel):
         return torch.cat(jacs_per_mol)
         
     def forward(self, data):
-        data.pos = data.pos.detach().requires_grad_(True)
+        # data.pos = data.pos.detach().requires_grad_(True)
         out = super().forward(data)
-        is_validating = torch.all(data['forces_jac'] == 0)
-        force_jacs = torch.zeros((sum(data.natoms), data.num_samples[0] * 3), device=data.pos.device)  if is_validating else  self.get_sampled_hessian(data, out)#self.get_sampled_hessian(data, out) # torch.zeros((sum(data.natoms), data.num_samples[0] * 3))
-        out['forces_jac'] = {'forces_jac': force_jacs}
+        # is_validating = torch.all(data['forces_jac'] == 0)
+        # force_jacs = torch.zeros((sum(data.natoms), data.num_samples[0] * 3), device=data.pos.device)  if is_validating else  self.get_sampled_hessian(data, out)#self.get_sampled_hessian(data, out) # torch.zeros((sum(data.natoms), data.num_samples[0] * 3))
+        # out['forces_jac'] = {'forces_jac': force_jacs}
         return out
 
 

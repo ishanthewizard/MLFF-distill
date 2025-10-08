@@ -1,0 +1,56 @@
+
+job:
+  device_type: ${cluster.device}
+  scheduler:
+    mode: ${cluster.mode}
+    ranks_per_node: ${cluster.ranks_per_node}
+    num_nodes: ${cluster.num_nodes}
+    slurm:
+      qos: ${cluster.slurm.qos}
+      partition: ${cluster.slurm.partition}
+      nodelist: ${cluster.slurm.nodelist}
+      mem_gb: ${cluster.slurm.mem_gb}
+      timeout_hr: ${cluster.slurm.timeout_hr}
+      cpus_per_task: ${cluster.slurm.cpus_per_task}
+      constraint: ${cluster.slurm.constraint}
+      exclude: ${cluster.slurm.exclude}
+      account: ${cluster.slurm.account}
+  debug: ${cluster.debug}
+  run_dir: ${cluster.run_dir}
+  run_name: naotf_DIST_PERT_500
+  logger:
+    _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
+    _partial_: true
+    entity: jianyuelalala
+    project: OMOL_ABLATE_pert
+
+bf16: False
+
+val_dataset:
+  _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+  dataset_configs:
+    omol: ${dataset.val_dataset}
+  combined_dataset_config:
+    sampling:
+      type: temperature
+      temperature: 1.0
+
+eval_dataloader:
+  _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
+  dataset: ${val_dataset}
+  # batch_sampler_fn:
+  #   _target_: fairchem.core.common.data_parallel.BalancedBatchSampler
+  #   _partial_: true
+  #   batch_size: ${batch_size}
+  #   shuffle: false
+  #   seed: 0
+  batch_sampler_fn:
+    _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
+    _partial_: True
+    max_atoms: ${max_atoms}
+    shuffle: true
+    seed: 0
+  num_workers: 0
+  collate_fn:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
+    tasks: ${tasks}
