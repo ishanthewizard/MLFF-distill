@@ -5,7 +5,7 @@ dataset_name: omol
 train_dataset:
   splits:
     train:
-      src: ${cluster.omol_path}/naotf_lmdbs/equilibrated/train
+      src: ${cluster.omol_path}/ablation_lmdbs_323K/naotf_unequilibrated/train
   format: ase_db
   a2g_args:
     r_energy: True
@@ -22,7 +22,7 @@ train_dataset:
 val_dataset:
   splits:
     val:
-      src: ${cluster.omol_path}/naotf_lmdbs/equilibrated/val
+      src: ${cluster.omol_path}/ablation_lmdbs_323K/naotf_unequilibrated/val
   format: ase_db
   a2g_args:
     r_energy: True

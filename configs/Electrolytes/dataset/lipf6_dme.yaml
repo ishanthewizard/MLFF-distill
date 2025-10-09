@@ -1,11 +1,11 @@
-normalizer_rmsd: 0.8246393024137875
+normalizer_rmsd: 0.8472192747475494
 regress_stress: true
 dataset_name: omol
 
 train_dataset:
   splits:
     train:
-      src: ${cluster.omol_path}/all_lmdbs/combined/train
+      src: ${cluster.omol_path}/ablation_lmdbs_323K/lipf6_sample_20fs_unequil/train
   format: ase_db
   a2g_args:
     r_energy: True
@@ -17,12 +17,12 @@ train_dataset:
       dataset_name: ${dataset.dataset_name}
     stress_reshape_transform:
       dataset_name: ${dataset.dataset_name}
-  teacher_labels_folder: ${cluster.omol_path}/electrolytes_application/labels/NAPF6/s1p1
+  teacher_labels_folder: ${cluster.omol_path}/all_lmdbs/per_system/napf6_dme/labels
 
 val_dataset:
   splits:
     val:
-      src: ${cluster.omol_path}/all_lmdbs/combined/val
+      src: ${cluster.omol_path}/ablation_lmdbs_323K/lipf6_sample_20fs_unequil/val
   format: ase_db
   a2g_args:
     r_energy: True
@@ -34,5 +34,4 @@ val_dataset:
       dataset_name: ${dataset.dataset_name}
     stress_reshape_transform:
       dataset_name: ${dataset.dataset_name}
-  teacher_labels_folder: ${cluster.omol_path}/electrolytes_application/labels/NAPF6/s1p1
-
+  teacher_labels_folder: ${cluster.omol_path}/all_lmdbs/per_system/napf6_dme/labels

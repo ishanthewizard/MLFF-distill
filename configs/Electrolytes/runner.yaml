@@ -2,14 +2,14 @@ defaults:
   - train # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
   - override cluster: delta
   - override backbone: eSEN_xtra_XTRA_small  #Not needed for eval
-  - override dataset: naotf_dme #Solvated
-  - override element_refs: naotf_dme
+  - override dataset: naotf #Solvated
+  - override element_refs: naotf
   - _self_
 
-# batch_size: 1
-max_atoms: 3000
+batch_size: 1
+# max_atoms: 3000
 job:
-  run_name: naotf_equilibrated
+  run_name: naotf_uneq
   # graph_parallel_group_size: 1
 
 # runner:
