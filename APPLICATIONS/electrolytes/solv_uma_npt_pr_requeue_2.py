@@ -128,7 +128,7 @@ def run_parallel_simulations(trajectory_list, world_size, interval=50, total_tar
 
 
 
-def simulate(root_path, rank=None, world_size=None, interval=50, total_target_steps=1000000, model_checkpoint=None):
+def simulate(root_path, rank=None, world_size=None, interval=50, total_target_steps=1000000, model_checkpoint=None, temperature=323, initial_temperature=300):
     """
     Run MD simulation on a specific GPU rank.
 
@@ -192,7 +192,8 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     print(f"Structure validation passed: {len(structure)} atoms, positions are finite")
 
     # === Initial velocity ===
-    MaxwellBoltzmannDistribution(structure, temperature_K=300)
+    # note this is the initial temperature, not the target temperature, as long as it's close to the target temperature, it's fine for system around 300K
+    MaxwellBoltzmannDistribution(structure, temperature_K=initial_temperature)
 
     # === Set up model ===
     if rank is not None:
@@ -211,7 +212,7 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     dyn = NPT(
         atoms=structure,
         timestep = 1 * units.fs,
-        temperature_K=323,
+        temperature_K= temperature, # 298.2,
         externalstress=1.0 * units.bar,
         ttime=100 * units.fs,
         pfactor=0.1, ### larger value mean it will relax slower, typical 10^-3 
@@ -266,8 +267,8 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     dyn.attach(print_status, interval=interval)
 
     print("Starting NPT molecular dynamics simulation...")
-    print(f"Target: 1,000,000 steps at 1 fs timestep")
-    print(f"Temperature: 323 K, Pressure: 1.0 bar")
+    print(f"Target: {total_target_steps} steps at 1 fs timestep")
+    print(f"Simulation temperature: {temperature} K, Initial temperature: {initial_temperature} K, Pressure: 1.0 bar")
     start_time = time.time()
     dyn.run(steps=total_target_steps - existing_simulated_steps)
     end_time = time.time()
@@ -280,12 +281,6 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
         cleanup_distributed()
         print(f"Rank {rank}: Cleaned up distributed setup")
 
-
-# def signal_handler(signum, frame):
-#     """Handle SIGTERM gracefully for requeue scenarios"""
-#     print(f"\n🛑 Received signal {signum} - shutting down gracefully...")
-#     print("💾 MD simulation will save current state and exit for requeue")
-#     sys.exit(0)
 
 
 def main():
@@ -305,7 +300,10 @@ def main():
                        help='Total target steps for simulation (default: 1000000)')
     parser.add_argument('--interval', type=int, default=10,
                        help='Interval for trajectory writing and status printing (default: 10)')
-    
+    parser.add_argument('--temperature', type=float, default=323,
+                       help='Temperature for simulation (default: 323 K)')
+    parser.add_argument('--initial_temperature', type=float, default=300,
+                       help='Initial temperature for simulation (default: 300 K)')
     args = parser.parse_args()
     
     # === Configuration ===
@@ -313,6 +311,8 @@ def main():
     interval = args.interval
     model_checkpoint = args.model
     trajectory_paths = args.trajectories
+    temperature = args.temperature
+    initial_temperature = args.initial_temperature
     world_size = torch.cuda.device_count()  # Number of available GPUs
 
     if world_size == 0:
@@ -323,7 +323,8 @@ def main():
     print(f"Target steps: {total_target_steps}")
     print(f"Interval: {interval}")
     print(f"Trajectory paths: {trajectory_paths}")
-
+    print(f"Temperature: {temperature}")
+    print(f"Initial temperature: {initial_temperature}")
     # === Validation ===
     if len(trajectory_paths) > world_size:
         raise ValueError(f"Number of trajectories ({len(trajectory_paths)}) is greater than the number of GPUs ({world_size})")
@@ -347,7 +348,9 @@ def main():
             world_size=None,
             interval=interval,
             total_target_steps=total_target_steps,
-            model_checkpoint=model_checkpoint
+            model_checkpoint=model_checkpoint,
+            temperature=temperature,
+            initial_temperature=initial_temperature
         )
     else:
         # Multiple trajectories - distribute across GPUs
@@ -357,7 +360,9 @@ def main():
             world_size=min(world_size, len(trajectory_paths)),  # Don't use more GPUs than trajectories
             interval=interval,
             total_target_steps=total_target_steps,
-            model_checkpoint=model_checkpoint
+            model_checkpoint=model_checkpoint,
+            temperature=temperature,
+            initial_temperature=initial_temperature
         )
 
 
