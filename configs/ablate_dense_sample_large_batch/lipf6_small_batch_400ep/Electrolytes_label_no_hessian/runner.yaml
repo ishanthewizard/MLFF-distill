@@ -1,15 +1,15 @@
 defaults: 
-  - labels # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
+  - train # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
   - override cluster: Nersc 
   # - override backbone: eSEN_xtra_XTRA_small  #Not needed for eval
   - override dataset: lipf6 #Solvated
   - override element_refs: lipf6
   - _self_
 
-# batch_size: 1
+batch_size: 1
 max_atoms: 3000
 job:
-  run_name: lipf6_labels
+  run_name: lipf6_train_small_batch_400ep_label_no_hessian
   # graph_parallel_group_size: 1
 
 # runner:

@@ -12,7 +12,7 @@ slurm:
   cpus_per_task: 5
   constraint: gpu
   exclude: null
-  account: m5024_g #
+  account: m4319_g #
 
 debug: False
 run_dir: logs

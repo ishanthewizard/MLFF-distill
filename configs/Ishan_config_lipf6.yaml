@@ -1,0 +1,808 @@
+job:
+  run_name: lipf6_equil
+  timestamp_id: 202510-0314-5918-18a9
+  run_dir: /u/iamin/MLFF-distill/logs
+  device_type: CUDA
+  debug: false
+  scheduler:
+    mode: SLURM
+    distributed_init_method: TCP
+    ranks_per_node: 4
+    num_nodes: 1
+    num_array_jobs: 1
+    slurm:
+      mem_gb: 64
+      timeout_hr: 12
+      cpus_per_task: 16
+      partition: ghx4
+      qos: gpu
+      account: beye-dtai-gh
+      nodelist: null
+      constraint: gpu
+      exclude: null
+      gpu_bind: null
+      ntasks_per_socket: null
+  logger:
+    _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
+    _partial_: true
+    entity: ishan-amin
+    project: electrolytes
+  seed: 0
+  deterministic: false
+  runner_state_path: null
+  metadata:
+    commit: core:26c55cb7,experimental:NA
+    log_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/logs
+    checkpoint_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/checkpoints
+    results_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/results
+    config_path: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/canonical_config.yaml
+    preemption_checkpoint_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/checkpoints/preemption_state
+    cluster_name: unknown
+    array_job_num: 0
+    slurm_env:
+      job_id: null
+      raw_job_id: null
+      array_job_id: null
+      array_task_id: null
+      restart_count: null
+  graph_parallel_group_size: null
+runner:
+  _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
+  train_dataloader:
+    _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
+    dataset:
+      _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+      dataset_configs:
+        omol:
+          splits:
+            train:
+              src: /projects/beye/iamin/distillation_project//ablation_lmdbs_323K/lipf6_equilibrated/train
+          format: ase_db
+          a2g_args:
+            r_energy: true
+            r_forces: true
+            r_data_keys:
+            - spin
+            - charge
+          no_shuffle: true
+          transforms:
+            common_transform:
+              dataset_name: omol
+            stress_reshape_transform:
+              dataset_name: omol
+          teacher_labels_folder: /projects/beye/iamin/distillation_project//all_lmdbs/per_system/napf6_dme/labels
+      combined_dataset_config:
+        sampling:
+          type: temperature
+          temperature: 1.0
+    batch_sampler_fn:
+      _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
+      _partial_: true
+      max_atoms: 3000
+      shuffle: true
+      seed: 0
+    num_workers: 0
+    collate_fn:
+      _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
+      tasks:
+      - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+        name: energy
+        level: system
+        property: energy
+        loss_fn:
+          _target_: fairchem.core.modules.loss.DDPMTLoss
+          loss_fn:
+            _target_: fairchem.core.modules.loss.PerAtomMAELoss
+          coefficient: 20
+        out_spec:
+          dim:
+          - 1
+          dtype: float32
+        normalizer:
+          _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+          mean: 0.0
+          rmsd: 0.8472192747475494
+        element_references:
+          _target_: fairchem.core.modules.normalization.element_references.ElementReferences
+          element_references:
+            _target_: torch.DoubleTensor
+            _args_:
+            - - -4.0108472640922355e-15
+              - -987.0287413264009
+              - 0.0
+              - -13.423590882039088
+              - 0.0
+              - 0.0
+              - -394.81149653055854
+              - 0.0
+              - -197.40574826527927
+              - -80.54154529223405
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - -13.423590882039083
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+        datasets:
+        - omol
+        metrics:
+        - mae
+        - per_atom_mae
+      - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+        name: forces
+        level: atom
+        property: forces
+        train_on_free_atoms: true
+        eval_on_free_atoms: true
+        loss_fn:
+          _target_: fairchem.core.modules.loss.DDPMTLoss
+          loss_fn:
+            _target_: fairchem.core.modules.loss.L2NormLoss
+          reduction: mean
+          coefficient: 20
+        out_spec:
+          dim:
+          - 3
+          dtype: float32
+        normalizer:
+          _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+          mean: 0.0
+          rmsd: 0.8472192747475494
+        datasets:
+        - omol
+        metrics:
+        - mae
+        - cosine_similarity
+        - magnitude_error
+      - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+        name: stress
+        level: system
+        property: stress
+        loss_fn:
+          _target_: fairchem.core.modules.loss.DDPMTLoss
+          loss_fn:
+            _target_: fairchem.core.modules.loss.MAELoss
+          reduction: mean
+          coefficient: 20
+        out_spec:
+          dim:
+          - 1
+          - 9
+          dtype: float32
+        normalizer:
+          _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+          mean: 0.0
+          rmsd: 0.8472192747475494
+        datasets:
+        - omol
+        metrics:
+        - mae
+  eval_dataloader:
+    _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
+    dataset:
+      _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+      dataset_configs:
+        omol:
+          splits:
+            val:
+              src: /projects/beye/iamin/distillation_project//ablation_lmdbs_323K/lipf6_equilibrated/val
+          format: ase_db
+          a2g_args:
+            r_energy: true
+            r_forces: true
+            r_data_keys:
+            - spin
+            - charge
+          no_shuffle: true
+          transforms:
+            common_transform:
+              dataset_name: omol
+            stress_reshape_transform:
+              dataset_name: omol
+          teacher_labels_folder: /projects/beye/iamin/distillation_project//all_lmdbs/per_system/napf6_dme/labels
+      combined_dataset_config:
+        sampling:
+          type: temperature
+          temperature: 1.0
+    batch_sampler_fn:
+      _target_: fairchem.core.datasets.samplers.max_atom_distributed_sampler.MaxAtomDistributedBatchSampler
+      _partial_: true
+      max_atoms: 3000
+      shuffle: true
+      seed: 0
+    num_workers: 0
+    collate_fn:
+      _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
+      tasks:
+      - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+        name: energy
+        level: system
+        property: energy
+        loss_fn:
+          _target_: fairchem.core.modules.loss.DDPMTLoss
+          loss_fn:
+            _target_: fairchem.core.modules.loss.PerAtomMAELoss
+          coefficient: 20
+        out_spec:
+          dim:
+          - 1
+          dtype: float32
+        normalizer:
+          _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+          mean: 0.0
+          rmsd: 0.8472192747475494
+        element_references:
+          _target_: fairchem.core.modules.normalization.element_references.ElementReferences
+          element_references:
+            _target_: torch.DoubleTensor
+            _args_:
+            - - -4.0108472640922355e-15
+              - -987.0287413264009
+              - 0.0
+              - -13.423590882039088
+              - 0.0
+              - 0.0
+              - -394.81149653055854
+              - 0.0
+              - -197.40574826527927
+              - -80.54154529223405
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - -13.423590882039083
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+              - 0.0
+        datasets:
+        - omol
+        metrics:
+        - mae
+        - per_atom_mae
+      - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+        name: forces
+        level: atom
+        property: forces
+        train_on_free_atoms: true
+        eval_on_free_atoms: true
+        loss_fn:
+          _target_: fairchem.core.modules.loss.DDPMTLoss
+          loss_fn:
+            _target_: fairchem.core.modules.loss.L2NormLoss
+          reduction: mean
+          coefficient: 20
+        out_spec:
+          dim:
+          - 3
+          dtype: float32
+        normalizer:
+          _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+          mean: 0.0
+          rmsd: 0.8472192747475494
+        datasets:
+        - omol
+        metrics:
+        - mae
+        - cosine_similarity
+        - magnitude_error
+      - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+        name: stress
+        level: system
+        property: stress
+        loss_fn:
+          _target_: fairchem.core.modules.loss.DDPMTLoss
+          loss_fn:
+            _target_: fairchem.core.modules.loss.MAELoss
+          reduction: mean
+          coefficient: 20
+        out_spec:
+          dim:
+          - 1
+          - 9
+          dtype: float32
+        normalizer:
+          _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+          mean: 0.0
+          rmsd: 0.8472192747475494
+        datasets:
+        - omol
+        metrics:
+        - mae
+  train_eval_unit:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.MLIPTrainEvalUnit
+    job_config:
+      run_name: lipf6_equil
+      timestamp_id: 202510-0314-5918-18a9
+      run_dir: /u/iamin/MLFF-distill/logs
+      device_type: CUDA
+      debug: false
+      scheduler:
+        mode: SLURM
+        distributed_init_method: TCP
+        ranks_per_node: 4
+        num_nodes: 1
+        num_array_jobs: 1
+        slurm:
+          mem_gb: 64
+          timeout_hr: 12
+          cpus_per_task: 16
+          partition: ghx4
+          qos: gpu
+          account: beye-dtai-gh
+          nodelist: null
+          constraint: gpu
+          exclude: null
+          gpu_bind: null
+          ntasks_per_socket: null
+      logger:
+        _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
+        _partial_: true
+        entity: ishan-amin
+        project: electrolytes
+      seed: 0
+      deterministic: false
+      runner_state_path: null
+      metadata:
+        commit: core:26c55cb7,experimental:NA
+        log_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/logs
+        checkpoint_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/checkpoints
+        results_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/results
+        config_path: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/canonical_config.yaml
+        preemption_checkpoint_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/checkpoints/preemption_state
+        cluster_name: unknown
+        array_job_num: 0
+        slurm_env:
+          job_id: null
+          raw_job_id: null
+          array_job_id: null
+          array_task_id: null
+          restart_count: null
+      graph_parallel_group_size: null
+    tasks:
+    - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+      name: energy
+      level: system
+      property: energy
+      loss_fn:
+        _target_: fairchem.core.modules.loss.DDPMTLoss
+        loss_fn:
+          _target_: fairchem.core.modules.loss.PerAtomMAELoss
+        coefficient: 20
+      out_spec:
+        dim:
+        - 1
+        dtype: float32
+      normalizer:
+        _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+        mean: 0.0
+        rmsd: 0.8472192747475494
+      element_references:
+        _target_: fairchem.core.modules.normalization.element_references.ElementReferences
+        element_references:
+          _target_: torch.DoubleTensor
+          _args_:
+          - - -4.0108472640922355e-15
+            - -987.0287413264009
+            - 0.0
+            - -13.423590882039088
+            - 0.0
+            - 0.0
+            - -394.81149653055854
+            - 0.0
+            - -197.40574826527927
+            - -80.54154529223405
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - -13.423590882039083
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+      datasets:
+      - omol
+      metrics:
+      - mae
+      - per_atom_mae
+    - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+      name: forces
+      level: atom
+      property: forces
+      train_on_free_atoms: true
+      eval_on_free_atoms: true
+      loss_fn:
+        _target_: fairchem.core.modules.loss.DDPMTLoss
+        loss_fn:
+          _target_: fairchem.core.modules.loss.L2NormLoss
+        reduction: mean
+        coefficient: 20
+      out_spec:
+        dim:
+        - 3
+        dtype: float32
+      normalizer:
+        _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+        mean: 0.0
+        rmsd: 0.8472192747475494
+      datasets:
+      - omol
+      metrics:
+      - mae
+      - cosine_similarity
+      - magnitude_error
+    - _target_: fairchem.core.units.mlip_unit.mlip_unit.Task
+      name: stress
+      level: system
+      property: stress
+      loss_fn:
+        _target_: fairchem.core.modules.loss.DDPMTLoss
+        loss_fn:
+          _target_: fairchem.core.modules.loss.MAELoss
+        reduction: mean
+        coefficient: 20
+      out_spec:
+        dim:
+        - 1
+        - 9
+        dtype: float32
+      normalizer:
+        _target_: fairchem.core.modules.normalization.normalizer.Normalizer
+        mean: 0.0
+        rmsd: 0.8472192747475494
+      datasets:
+      - omol
+      metrics:
+      - mae
+    model:
+      _target_: fairchem.core.models.base.HydraModel
+      backbone:
+        model: fairchem.core.models.uma.escn_md.eSCNMDBackbone
+        max_num_elements: 100
+        sphere_channels: 32
+        lmax: 2
+        mmax: 2
+        otf_graph: true
+        max_neighbors: 30
+        use_pbc: true
+        use_pbc_single: true
+        cutoff: 6
+        edge_channels: 32
+        distance_function: gaussian
+        num_distance_basis: 128
+        regress_forces: true
+        regress_stress: true
+        direct_forces: true
+        num_layers: 4
+        hidden_channels: 32
+        norm_type: rms_norm_sh
+        act_type: gate
+        ff_type: spectral
+        chg_spin_emb_type: rand_emb
+        cs_emb_grad: true
+        dataset_list:
+        - omol
+        use_dataset_embedding: false
+      heads:
+        efs:
+          module: fairchem.core.models.uma.escn_md.MLP_EFS_Head
+      pass_through_head_outputs: true
+    optimizer_fn:
+      _target_: torch.optim.AdamW
+      _partial_: true
+      lr: 0.0008
+      weight_decay: 0.001
+    cosine_lr_scheduler_fn:
+      _target_: fairchem.core.units.mlip_unit.mlip_unit._get_consine_lr_scheduler
+      _partial_: true
+      warmup_factor: 0.2
+      warmup_epochs: 0.01
+      lr_min_factor: 0.01
+      epochs: 300
+      steps: null
+    print_every: 10
+    clip_grad_norm: 100
+    bf16: false
+  max_epochs: 300
+  max_steps: null
+  evaluate_every_n_steps: 250
+  callbacks:
+  - _target_: fairchem.core.common.profiler_utils.ProfilerCallback
+    job_config:
+      run_name: lipf6_equil
+      timestamp_id: 202510-0314-5918-18a9
+      run_dir: /u/iamin/MLFF-distill/logs
+      device_type: CUDA
+      debug: false
+      scheduler:
+        mode: SLURM
+        distributed_init_method: TCP
+        ranks_per_node: 4
+        num_nodes: 1
+        num_array_jobs: 1
+        slurm:
+          mem_gb: 64
+          timeout_hr: 12
+          cpus_per_task: 16
+          partition: ghx4
+          qos: gpu
+          account: beye-dtai-gh
+          nodelist: null
+          constraint: gpu
+          exclude: null
+          gpu_bind: null
+          ntasks_per_socket: null
+      logger:
+        _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
+        _partial_: true
+        entity: ishan-amin
+        project: electrolytes
+      seed: 0
+      deterministic: false
+      runner_state_path: null
+      metadata:
+        commit: core:26c55cb7,experimental:NA
+        log_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/logs
+        checkpoint_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/checkpoints
+        results_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/results
+        config_path: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/canonical_config.yaml
+        preemption_checkpoint_dir: /u/iamin/MLFF-distill/logs/202510-0314-5918-18a9/checkpoints/preemption_state
+        cluster_name: unknown
+        array_job_num: 0
+        slurm_env:
+          job_id: null
+          raw_job_id: null
+          array_job_id: null
+          array_task_id: null
+          restart_count: null
+      graph_parallel_group_size: null
+  - _target_: fairchem.core.components.train.train_runner.TrainCheckpointCallback
+    checkpoint_every_n_steps: 1000
+    max_saved_checkpoints: 5
