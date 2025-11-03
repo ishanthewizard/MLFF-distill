@@ -203,16 +203,17 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     print(f"Loading trajectory from: {output_traj}")
     # TODO: This is cpu memory intensive, we should load the last frame only, right now on nersc, when using 80G cpu memory, it's still fine, but we need to modify the code to make it take less memory
     try:
-        # Check if trajectory has any frames
-        all_frames = read(output_traj, index=':')
-        if len(all_frames) == 0:
-            raise ValueError(f"Trajectory file {output_traj} is empty")
+        # Check if trajectory has any frames and get frame count efficiently
+        with Trajectory(output_traj, 'r') as traj_reader:
+            frame_count = len(traj_reader)
+            if frame_count == 0:
+                raise ValueError(f"Trajectory file {output_traj} is empty")
 
-        print(f"Trajectory contains {len(all_frames)} frames")
+            print(f"Trajectory contains {frame_count} frames")
 
-        # Load the last frame
-        base_structure = all_frames[-1]
-        existing_simulated_steps = (len(all_frames) - 1)*interval
+            # Load only the last frame
+            base_structure = traj_reader[-1]
+            existing_simulated_steps = (frame_count - 1) * interval
     except Exception as e:
         print(f"Error loading trajectory {output_traj}: {e}")
         raise
