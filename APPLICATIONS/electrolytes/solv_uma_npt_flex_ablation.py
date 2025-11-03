@@ -1,3 +1,54 @@
+"""
+Molecular Dynamics Simulation Script with UMA Potential
+
+This script runs NPT (constant pressure and temperature) molecular dynamics simulations
+using UMA (Universal Machine-learned Atomic) potentials. It supports both single GPU
+and multi-GPU parallel execution.
+
+USAGE:
+    # Single trajectory with single model (single GPU)
+    python solv_uma_npt_flex_ablation.py /path/to/trajectory --models /path/to/model.ckpt
+
+    # Multiple trajectories with multiple models (multi-GPU)
+    python solv_uma_npt_flex_ablation.py /path/to/traj1 /path/to/traj2 /path/to/traj3 /path/to/traj4 \
+        --models /path/to/model1.ckpt /path/to/model2.ckpt /path/to/model3.ckpt /path/to/model4.ckpt
+
+    # With custom parameters
+    python solv_uma_npt_flex_ablation.py /path/to/trajectory --models /path/to/model.ckpt \
+        --steps 2000000 --interval 50 --temperature 350 --initial_temperature 300
+
+REQUIRED ARGUMENTS:
+    trajectories: Path(s) to trajectory directories containing .traj files
+    --models: Path(s) to UMA model checkpoint files (.ckpt)
+
+OPTIONAL ARGUMENTS:
+    --steps: Total target steps for simulation (default: 1000000)
+    --interval: Interval for trajectory writing and status printing (default: 10)
+    --temperature: Simulation temperature in Kelvin (default: 323)
+    --initial_temperature: Initial temperature in Kelvin (default: 300)
+
+REQUIREMENTS:
+    - CUDA-capable GPU(s)
+    - Trajectory files (.traj) in specified directories
+    - UMA model checkpoint files (.ckpt)
+    - Number of trajectory-model pairs cannot exceed 4
+    - Number of trajectory-model pairs cannot exceed number of available GPUs
+
+OUTPUT:
+    - Appends to existing .traj files in trajectory directories
+    - Creates/updates .log files with simulation status
+    - Supports resuming interrupted simulations
+
+EXAMPLES:
+    # Basic usage with single trajectory
+    python solv_uma_npt_flex_ablation.py ./my_simulation --models ./uma_model.ckpt
+
+    # Multi-GPU simulation with 4 trajectories
+    python solv_uma_npt_flex_ablation.py ./sim1 ./sim2 ./sim3 ./sim4 \
+        --models ./model1.ckpt ./model2.ckpt ./model3.ckpt ./model4.ckpt \
+        --steps 500000 --interval 20 --temperature 300
+"""
+
 import sys
 import os
 import time

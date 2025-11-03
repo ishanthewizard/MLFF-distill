@@ -18,18 +18,18 @@ from pathlib import Path
 from tqdm import tqdm
 import pickle
 # ─────────────── user: solvents & trajectories ───────────────────────────────
-solvents = ["dme_distill","dme_undistill"] 
-distilled_trajs = ["ablate_distillation/10ns_intermediate/md_omol_naotf_dme_s1p1_omol_10/md_omol_naotf_dme_s1p1_omol_10.traj",
+solvents = ["dme_w_hessian","dme_wo_hessian"] 
+distilled_trajs = ["/home/yuejian/project/MLFF-distill/ablate_distillation/ablation_md_simulation_10ns/md_omol_naotf_dme_s1p1_omol_10/md_omol_naotf_dme_s1p1_omol_10.traj",
                    "/home/yuejian/project/MLFF-distill/ablate_distillation/ablation_md_simulation_10ns/md_omol_naotf_dme_s1p1_omol_undistill/md_omol_naotf_dme_s1p1_omol_undistill.traj"]
 traj_info = list(zip(distilled_trajs, solvents))  # (path, label)
-analyze_first_n_frames = 600000
+analyze_first_n_frames = 800000 # [500000,600000,700000,800000,900000,1000000]
 
 # Equilibration trim and frame timing
 EQ_TIME_PS   = 100.0   # discard first 100 ps
 dt_fallback  = 0.05    # ps (50 fs) if frame.info['time'] is absent
 
 # Output root
-out_dir = Path("ablate_distillation/10ns_intermediate/6ns_out/"+f"{analyze_first_n_frames}")
+out_dir = Path("/home/yuejian/project/MLFF-distill/ablate_distillation/msd/10ns_intermediate/10ns_out/"+f"{analyze_first_n_frames}")
 out_dir.mkdir(parents=True, exist_ok=True)
 print(f"Output directory: {out_dir}")
 # ───────────────────── helper functions ──────────────────────────────────────
@@ -100,7 +100,7 @@ for idx, (traj_path, solv) in enumerate(traj_info):
 
     # Read FULL trajectory (1 ns expected)
     frames = read(traj_path, index=f":{analyze_first_n_frames}")
-    # subsample frames for every 10 steps
+    # subsample frames for every 5 steps
     frames = frames[::5]
     print(f"Subsampled frames for every 5 steps")
     print(f"Read and subsampled {len(frames)} frames")

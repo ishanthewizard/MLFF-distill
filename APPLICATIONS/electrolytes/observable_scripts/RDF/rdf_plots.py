@@ -25,7 +25,16 @@ rcParams['figure.titlesize'] = 18
 
 # ───────────────────────────── Configuration ─────────────────────────────
 # Base directory containing RDF CSV files
-BASE_DIR = Path("/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/rdf_output/ablate_wwo_hessian_500ps")
+# BASE_DIR = Path("/home/yuejian/project/MLFF-distill/ablate_distillation/rdf_output/wwo_hessian_v1/lipf6")
+# cation = "Li"
+
+
+# BASE_DIR = Path("/home/yuejian/project/MLFF-distill/ablate_distillation/rdf_output/wwo_hessian_v1/naotf_pc")
+# cation = "Na"
+BASE_DIR = Path("/home/yuejian/project/MLFF-distill/ablate_distillation/rdf_output/section_3_ablation/ablate_with_vs_without_hessian/uma_napf6_deg_400ps")
+cation = "Na"
+# BASE_DIR = Path("/home/yuejian/project/MLFF-distill/ablate_distillation/rdf_output/wwo_hessian_v2/lipf6")
+# cation = "Li"
 
 # Color palette for trajectory types (will cycle through if more types than colors)
 COLOR_PALETTE = [
@@ -323,14 +332,14 @@ def plot_combined_comparison(atom_pairs: list, metric: str, save_dir: Path = Non
         ax.set_ylabel(ylabel_map[metric], fontweight='bold')
         ax.set_xlim(0, r_max)
         ax.grid(True, alpha=0.3)
-        ax.set_title(f"Na–{atom_pair}", fontweight='bold')
+        ax.set_title(f"{cation}–{atom_pair}", fontweight='bold')
         
         # Add legend only to first subplot
         if i == 0:
             ax.legend(frameon=True, fancybox=True, shadow=True)
     
     # Overall title
-    fig.suptitle(f"{metric.upper()} Comparison", fontsize=18, fontweight='bold')
+    # fig.suptitle(f"{metric.upper()} Comparison", fontsize=18, fontweight='bold')
     plt.tight_layout()
     
     if save_dir:

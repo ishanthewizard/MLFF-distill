@@ -21,18 +21,14 @@ from ase.geometry import find_mic
 # ───────────────────────────── Config ─────────────────────────────
 # Configuration section: Define file paths, physical parameters, and analysis settings
 
-# Dictionary mapping trajectory labels to their file paths
-# Contains equilibrated, unequilibrated, and UMA (reference) trajectories
-traj_paths = {
-    "pert_10": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_10/md_omol_naotf_pc_1m_s1p1_10.traj",
-    "pert_50": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_50/md_omol_naotf_pc_1m_s1p1_50.traj",
-    "pert_80": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_80/md_omol_naotf_pc_1m_s1p1_80.traj",
-    "pert_500": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_500/md_omol_naotf_pc_1m_s1p1_500.traj",
-    "w_o hessian": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_undistill/md_omol_naotf_pc_1m_s1p1_undistill.traj",
-    "uma": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/uma_naotf_pc_1m_s1p1/uma_naotf_pc_1m_s1p1.traj"
-}
-# Output directory for all RDF results (CSVs and plots)
-out_root = Path("/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/rdf_output/ablate_hessian_cols")
+# # Dictionary mapping trajectory labels to their file paths
+# # Contains equilibrated, unequilibrated, and UMA (reference) trajectories
+# traj_paths = {
+#     "pert_10": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_10/md_omol_naotf_pc_1m_s1p1_10.traj",
+#     "w_o hessian": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_undistill/md_omol_naotf_pc_1m_s1p1_undistill.traj",
+# }
+# # Output directory for all RDF results (CSVs and plots)
+# out_root = Path("/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/rdf_output/ablate_hessian_cols")
 
 # traj_paths = {
 #     "pc": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_10/md_omol_naotf_pc_1m_s1p1_10.traj",
@@ -59,7 +55,7 @@ skip_ps = 50.0  # Skip first 50 ps of trajectory (equilibration period)
 start_frame = int(skip_ps / frame_dt_ps)  # Frame index to start analysis (5000 frames)
 
 # ───────────────────────────── Helpers ─────────────────────────────
-def compute_rdf(traj_file: str, cation: str, partner: str, stride: int = 10) -> pd.DataFrame:
+def compute_rdf(traj_file: str, cation: str, partner: str, stride: int = 10, first_n_frames: int = None) -> pd.DataFrame:
     """
     Compute radial distribution function (RDF) for cation-partner pairs from trajectory.
     
@@ -74,6 +70,10 @@ def compute_rdf(traj_file: str, cation: str, partner: str, stride: int = 10) -> 
     """
     # Load trajectory and validate
     traj = Trajectory(traj_file, mode="r")
+
+    if first_n_frames is not None:
+        traj = traj[:first_n_frames]
+
     if len(traj) == 0:
         raise ValueError(f"Empty trajectory: {traj_file}")
 
@@ -85,7 +85,8 @@ def compute_rdf(traj_file: str, cation: str, partner: str, stride: int = 10) -> 
     n_frames = 0  # Number of processed frames
 
     # Process trajectory frames: skip first 50 ps, then sample with stride
-    for at in traj[start_frame::stride]:
+    for at in tqdm(traj[start_frame::stride], desc=f"Computing RDF for {cation}-{partner}"):
+        
         # Get atomic symbols and find indices of cation and partner atoms
         syms = at.get_chemical_symbols()
         idx_cat = [i for i, s in enumerate(syms) if s == cation]
@@ -110,6 +111,7 @@ def compute_rdf(traj_file: str, cation: str, partner: str, stride: int = 10) -> 
         n_part_total += len(idx_part)
         vol_sum += at.get_volume()
         n_frames += 1
+
 
     # Validate that we processed some frames
     if n_frames == 0:
@@ -137,7 +139,7 @@ def compute_rdf(traj_file: str, cation: str, partner: str, stride: int = 10) -> 
     return pd.DataFrame({"r_A": r_mid, "g_r": g_r, "n_r": n_r, "w_r_kJmol": w_r})
 
 
-def save_and_plot(pair: str, results: dict):
+def save_and_plot(pair: str, results: dict, out_root: Path):
     """
     Save RDF data as CSV files and create comparison plots.
     
@@ -184,7 +186,7 @@ def save_and_plot(pair: str, results: dict):
     # plt.close(fig)  # Free memory
 
 
-def worker(label: str, traj: str, partner: str) -> tuple:
+def worker(label: str, traj: str, partner: str, cation: str = "Na", first_n_frames: int = None) -> tuple:
     """
     Worker function for parallel RDF computation.
     Called by ProcessPoolExecutor to compute RDF for one trajectory-partner combination.
@@ -197,12 +199,15 @@ def worker(label: str, traj: str, partner: str) -> tuple:
     Returns:
         Tuple of (label, partner, DataFrame) for result collection
     """
-    df = compute_rdf(traj, cation="Na", partner=partner)
+    df = compute_rdf(traj, cation=cation, partner=partner, first_n_frames=first_n_frames)
     return label, partner, df
 
 
-# ───────────────────────────── Main ─────────────────────────────
-if __name__ == "__main__":
+def main(cation: str = "Na",traj_paths: dict = None, out_root: Path = None, first_n_frames: int = None):
+    """
+    Main function to compute RDFs for multiple trajectories and atom pairs.
+    Uses parallel processing to compute RDFs efficiently.
+    """
     # Parallel processing setup
     max_workers = 16  # Number of parallel processes
     tasks = []  # List to store submitted tasks
@@ -213,7 +218,7 @@ if __name__ == "__main__":
         # Create tasks for all combinations of partner atoms and trajectories
         for partner in ["O", "F"]:  # Oxygen and Fluorine partners
             for label, traj in traj_paths.items():  # All trajectory types
-                tasks.append(ex.submit(worker, label, traj, partner))
+                tasks.append(ex.submit(worker, label, traj, partner, cation=cation, first_n_frames=first_n_frames))
     
         # Collect results as they complete, with progress bar
         for fut in tqdm(as_completed(tasks), total=len(tasks), desc="Computing RDFs"):
@@ -229,6 +234,16 @@ if __name__ == "__main__":
     # Generate output files and plots for each partner atom
     for partner in ["O", "F"]:
         print(f"Saving and plotting {partner} RDFs")
-        save_and_plot(partner, results[partner])
+        save_and_plot(partner, results[partner], out_root)
 
     print(f"Done. Outputs under: {out_root}")
+
+
+# ───────────────────────────── Main ─────────────────────────────
+if __name__ == "__main__":
+    traj_paths = {
+        "pert_10": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_10/md_omol_naotf_pc_1m_s1p1_10.traj",
+        "w_o hessian": "/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/ablation_md_simulation/md_omol_naotf_pc_1m_s1p1_undistill/md_omol_naotf_pc_1m_s1p1_undistill.traj",
+    }
+    out_root = Path("/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_distillation/rdf_output/ablate_hessian_cols")
+    main(cation="Na",traj_paths=traj_paths, out_root=out_root)

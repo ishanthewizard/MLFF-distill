@@ -31,7 +31,7 @@ from tqdm import tqdm                    # For progress bars
 # ----------------------------- CONFIGURATION SECTION -----------------------------
 # This section defines all the parameters and file paths used in the analysis
 # Output directory where results will be saved
-OUT_DIR = Path("/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/vacf/10ns")
+OUT_DIR = Path("/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/vacf/10ns_dt50fs")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # List of solvent names and corresponding trajectory file paths
@@ -44,7 +44,7 @@ TRAJS = ["/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablat
 SPECIES = "Na"
 
 # Time step parameters
-# Trajectories sampled every 50 fs, but we use 10 fs as fallback for velocity estimation
+# Trajectories sampled every 10 fs
 DT_FS_FALLBACK = 10  # fs
 
 # Optional cropping parameters
