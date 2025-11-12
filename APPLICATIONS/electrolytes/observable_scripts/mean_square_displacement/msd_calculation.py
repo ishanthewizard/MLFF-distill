@@ -7,6 +7,10 @@ MSD & diffusion (Na and P as PF6 tracer) across multiple systems.
 - Save ONE combined PNG (2×3 subplots) and ONE CSV.
 
 Assumes 50 fs between saved frames if frame.info['time'] missing.
+
+TODO:
+1. How to calculate diffusivity for otf and solvent? how to select the atom to unwrap?
+2. add choices for more anions and cations.
 """
 
 import numpy as np
@@ -16,22 +20,11 @@ from ase.io import read
 from ase.geometry import find_mic
 from pathlib import Path
 from tqdm import tqdm
+from ase.io import Trajectory
 import pickle
-# ─────────────── user: solvents & trajectories ───────────────────────────────
-solvents = ["dme_w_hessian","dme_wo_hessian"] 
-distilled_trajs = ["/home/yuejian/project/MLFF-distill/ablate_distillation/ablation_md_simulation_10ns/md_omol_naotf_dme_s1p1_omol_10/md_omol_naotf_dme_s1p1_omol_10.traj",
-                   "/home/yuejian/project/MLFF-distill/ablate_distillation/ablation_md_simulation_10ns/md_omol_naotf_dme_s1p1_omol_undistill/md_omol_naotf_dme_s1p1_omol_undistill.traj"]
-traj_info = list(zip(distilled_trajs, solvents))  # (path, label)
-analyze_first_n_frames = 800000 # [500000,600000,700000,800000,900000,1000000]
-
-# Equilibration trim and frame timing
-EQ_TIME_PS   = 100.0   # discard first 100 ps
-dt_fallback  = 0.05    # ps (50 fs) if frame.info['time'] is absent
-
-# Output root
-out_dir = Path("/home/yuejian/project/MLFF-distill/ablate_distillation/msd/10ns_intermediate/10ns_out/"+f"{analyze_first_n_frames}")
-out_dir.mkdir(parents=True, exist_ok=True)
-print(f"Output directory: {out_dir}")
+import time
+import os
+import argparse
 # ───────────────────── helper functions ──────────────────────────────────────
 def build_time_array(frames, dt_fallback=0.05):
     """Use frame.info['time'] if available; else uniform spacing (ps)."""
@@ -52,7 +45,7 @@ def unwrap_positions(frames, sel_idx):
     M = len(sel_idx)
     pos_unwrap = np.zeros((T, M, 3), dtype=float)
     pos_unwrap[0] = frames[0].get_positions()[sel_idx]
-    print("Unwrapping positions...")
+    print("Unwrapping positions...", flush=True)
     for t in tqdm(range(1, T)):
         curr = frames[t].get_positions()[sel_idx]
         prev = frames[t-1].get_positions()[sel_idx]
@@ -71,7 +64,7 @@ def msd_time_origin(unwrapped):
     max_lag = T - 1
     msd = np.zeros(max_lag + 1, dtype=float)
     var = np.zeros_like(msd)
-    print("Computing MSD...")
+    print("Computing MSD...", flush=True)
     for lag in tqdm(range(max_lag + 1)):
         d = unwrapped[lag:] - unwrapped[:T-lag]      # (T-lag, M, 3)
         dr2 = np.sum(d**2, axis=2).reshape(-1)       # flatten
@@ -86,141 +79,212 @@ def round_sig(x, n=4):
         return float(x)
     return float(f"{x:.{n}g}")
 
-# ───────────────────── aggregate plotting setup ──────────────────────────────
-n_sys = len(traj_info)
-ncols = 3
-nrows = (n_sys + ncols - 1) // ncols
-fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(14, 7), squeeze=False)
 
-rows = []  # CSV rows
 
-# ───────────────────── main loop ─────────────────────────────────────────────
-for idx, (traj_path, solv) in enumerate(traj_info):
-    ax = axes[idx // ncols, idx % ncols]
+if __name__ == "__main__":
+    # ─────────────── Parse command-line arguments ───────────────────────────────
+    parser = argparse.ArgumentParser(description="Calculate MSD and diffusion coefficients")
+    parser.add_argument(
+        "--solvents",
+        type=str,
+        required=True,
+        help="Solvent name(s). Single value (e.g., 'dme') or comma-separated list (e.g., 'li_w_hessian,li_wo_hessian')"
+    )
+    parser.add_argument(
+        "--trajectories",
+        type=str,
+        required=True,
+        help="Trajectory file path(s). Single path or comma-separated list of paths"
+    )
+    parser.add_argument(
+        "--root-dir",
+        type=str,
+        default="/global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/electrolyte_application/ablate_distillation/msd/0_1M/",
+        help="Root directory for MSD outputs"
+    )
+    parser.add_argument(
+        "--analyze_first_n_frames",
+        type=int,
+        required=True,
+        help="Number of frames to analyze from the beginning of each trajectory"
+    )
+    args = parser.parse_args()
+    
+    # Parse solvents and trajectories from comma-separated strings
+    solvents = [s.strip() for s in args.solvents.split(",")]
+    distilled_trajs = [t.strip() for t in args.trajectories.split(",")]
+    
+    # Validate that solvents and trajectories have the same length
+    if len(solvents) != len(distilled_trajs):
+        raise ValueError(
+            f"Number of solvents ({len(solvents)}) must match number of trajectories ({len(distilled_trajs)})"
+        )
+    
+    traj_info = list(zip(distilled_trajs, solvents))  # (path, label)
+    analyze_first_n_frames = args.analyze_first_n_frames
+    subsample_step = 5  # subsample every Nth frame
 
-    # Read FULL trajectory (1 ns expected)
-    frames = read(traj_path, index=f":{analyze_first_n_frames}")
-    # subsample frames for every 5 steps
-    frames = frames[::5]
-    print(f"Subsampled frames for every 5 steps")
-    print(f"Read and subsampled {len(frames)} frames")
-    print(f"Analyzing first {analyze_first_n_frames} frames")
-    if len(frames) < 5:
-        print(f"[WARN] {solv}: too few frames, skipping.")
-        ax.set_visible(False)
-        continue
+    # Equilibration trim and frame timing
+    EQ_TIME_PS   = 100.0   # discard first 100 ps
+    dt_fallback  = 0.05    # ps (50 fs) if frame.info['time'] is absent
 
-    # Build time array and locate 100 ps cut
-    times_ps = build_time_array(frames, dt_fallback=dt_fallback)
-    dt_ps = float(np.median(np.diff(times_ps)))
-    if not (dt_ps > 0):
-        print(f"[WARN] {solv}: non-increasing time stamps; skipping.")
-        ax.set_visible(False)
-        continue
+    # Output root
+    root_dir = Path(args.root_dir).expanduser()
+    out_root = root_dir / f"{analyze_first_n_frames}"
+    out_root.mkdir(parents=True, exist_ok=True)
+    print(f"Output directory: {out_root}", flush=True)
+    # ───────────────────── aggregate plotting setup ──────────────────────────────
+    n_sys = len(traj_info)
+    ncols = 3
+    nrows = (n_sys + ncols - 1) // ncols
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(14, 7), squeeze=False)
 
-    # Index at which time >= 100 ps
-    i_eq = int(np.searchsorted(times_ps, EQ_TIME_PS, side="left"))
-    if i_eq >= len(frames) - 5:
-        print(f"[WARN] {solv}: not enough frames after 100 ps; skipping.")
-        ax.set_visible(False)
-        continue
+    rows = []  # CSV rows
 
-    # Use ONLY frames after equilibration for MSD/D (τ = 0..~900 ps)
-    frames_post = frames[i_eq:]
-    # Species selection (from first post-eq frame)
-    symbols0 = frames_post[0].get_chemical_symbols()
-    na_idx = [i for i, s in enumerate(symbols0) if s == "Na"]
-    p_idx  = [i for i, s in enumerate(symbols0) if s == "P"]
+    # ───────────────────── main loop ─────────────────────────────────────────────
+    for idx, (traj_path, solv) in enumerate(traj_info):
+        out_dir = out_root / os.path.basename(traj_path).replace(".traj", "").replace("_", "-")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Output directory: {out_dir}", flush=True)
+        ax = axes[idx // ncols, idx % ncols]
+        print(f"Analyzing {traj_path} for {solv}", flush=True)
+        # Read trajectory with subsampling during load (memory efficient)
+        load_start = time.time()
+        with Trajectory(traj_path, 'r') as traj_reader:
+            frame_count = len(traj_reader)
+            if frame_count == 0:
+                raise ValueError(f"Trajectory file {traj_path} is empty", flush=True)
+            print(f"Trajectory contains {frame_count} frames", flush=True)
+            # Subsample during read: only load every Nth frame to save memory
+            max_frames = min(analyze_first_n_frames, frame_count)
+            n_frames_to_load = (max_frames + subsample_step - 1) // subsample_step
+            print(f"Loading {n_frames_to_load} frames (subsampling every {subsample_step} from first {max_frames} frames)...", flush=True)
+            print(f"This may take 10-30+ minutes for large trajectory files (100GB+).", flush=True)
+            # Load frames with progress bar
+            frames = []
+            frame_indices = list(range(0, max_frames, subsample_step))
+            for i in tqdm(frame_indices, desc=f"Loading {solv}", unit="frame", ncols=80):
+                frames.append(traj_reader[i])
+        load_time = time.time() - load_start
+        print(f"Loaded {len(frames)} frames in {load_time/60:.1f} minutes ({load_time:.1f} seconds)", flush=True)
+        print(f"Subsampled frames for every {subsample_step} steps", flush=True)
+        print(f"Analyzing first {analyze_first_n_frames} frames (subsampled by {subsample_step})", flush=True)
+        if len(frames) < 5:
+            print(f"[WARN] {solv}: too few frames, skipping.", flush=True)
+            ax.set_visible(False)
+            continue
 
-    # Unwrap on the post-eq window (fresh origin at 100 ps)
-    pos_na = unwrap_positions(frames_post, na_idx)
-    pos_p  = unwrap_positions(frames_post, p_idx)
+        # Build time array and locate 100 ps cut
+        times_ps = build_time_array(frames, dt_fallback=dt_fallback)
+        dt_ps = float(np.median(np.diff(times_ps)))
+        if not (dt_ps > 0):
+            print(f"[WARN] {solv}: non-increasing time stamps; skipping.", flush=True)
+            ax.set_visible(False)
+            continue
 
-    # MSDs on post-eq window; τ measured from 100 ps point
-    msd_na, se_na = msd_time_origin(pos_na)
-    msd_p,  se_p  = msd_time_origin(pos_p)
-    tau = np.arange(msd_na.size, dtype=float) * dt_ps  # ps, τ ∈ [0, ~900]
+        # Index at which time >= 100 ps
+        i_eq = int(np.searchsorted(times_ps, EQ_TIME_PS, side="left"))
+        if i_eq >= len(frames) - 5:
+            print(f"[WARN] {solv}: not enough frames after 100 ps; skipping.", flush=True)
+            ax.set_visible(False)
+            continue
 
-    # save msd to dictionary
-    msd_dict = {
-        "frames_total": len(frames),
-        "msd_na": msd_na,
-        "se_na": se_na,
-        "msd_p": msd_p,
-        "se_p": se_p,
-        "tau": tau,
-        "dt_ps": dt_ps,
-        "EQ_TIME_PS": EQ_TIME_PS
-    }
-    with open(out_dir / f"msd_dict_{solv}.pkl", "wb") as f:
-        pickle.dump(msd_dict, f)
+        # Use ONLY frames after equilibration for MSD/D (τ = 0..~900 ps)
+        frames_post = frames[i_eq:]
+        # Species selection (from first post-eq frame)
+        symbols0 = frames_post[0].get_chemical_symbols()
+        na_idx = [i for i, s in enumerate(symbols0) if s == "Na"]
+        p_idx  = [i for i, s in enumerate(symbols0) if s == "P"]
 
-    # Fit D on entire 0..900 ps post-eq window (you can set a tau_min to skip ballistic)
-    tau_fit_min_ps = 0.0  # e.g., set to 5–20 ps if you want to exclude ballistic
-    fit_start = int(np.searchsorted(tau, tau_fit_min_ps, side="left"))
-    slope_na, intercept_na = np.polyfit(tau[fit_start:], msd_na[fit_start:], 1)
-    slope_p,  intercept_p  = np.polyfit(tau[fit_start:], msd_p[fit_start:],  1)
+        # Unwrap on the post-eq window (fresh origin at 100 ps)
+        pos_na = unwrap_positions(frames_post, na_idx)
+        pos_p  = unwrap_positions(frames_post, p_idx)
 
-    D_na_A2_ps = slope_na / 6.0
-    D_p_A2_ps  = slope_p  / 6.0
-    # 1 Å^2/ps = 1e-4 cm^2/s
-    D_na = D_na_A2_ps * 1e-4
-    D_p  = D_p_A2_ps  * 1e-4
+        # MSDs on post-eq window; τ measured from 100 ps point
+        msd_na, se_na = msd_time_origin(pos_na)
+        msd_p,  se_p  = msd_time_origin(pos_p)
+        tau = np.arange(msd_na.size, dtype=float) * dt_ps  # ps, τ ∈ [0, ~900]
 
-    # Store for CSV (rounded to 4 sig figs)
-    rows.append({
-        "solvent": solv,
-        "frames_total": len(frames),
-        "dt_ps": round_sig(dt_ps, 4),
-        "equilibration_ps": EQ_TIME_PS,
-        "window_ps": round_sig(tau[-1], 4),
-        "D_Na_A2_per_ps": round_sig(D_na_A2_ps, 4),
-        "D_Na_cm2_per_s": round_sig(D_na, 4),
-        "D_P_A2_per_ps":  round_sig(D_p_A2_ps, 4),
-        "D_P_cm2_per_s":  round_sig(D_p, 4),
-    })
+        # save msd to dictionary
+        msd_dict = {
+            "frames_total": len(frames),
+            "msd_na": msd_na,
+            "se_na": se_na,
+            "msd_p": msd_p,
+            "se_p": se_p,
+            "tau": tau,
+            "dt_ps": dt_ps,
+            "EQ_TIME_PS": EQ_TIME_PS
+        }
+        with open(out_dir / f"msd_dict_{solv}.pkl", "wb") as f:
+            pickle.dump(msd_dict, f)
 
-    # ─────────── subplot ───────────
-    ax.plot(tau, msd_na, lw=1.6, label="Na MSD")
-    ax.plot(tau, msd_p,  lw=1.6, label="P MSD")
-    ax.fill_between(tau, msd_na - se_na, msd_na + se_na, alpha=0.20)
-    ax.fill_between(tau, msd_p  - se_p,  msd_p  + se_p,  alpha=0.20)
+        # Fit D on entire 0..900 ps post-eq window (you can set a tau_min to skip ballistic)
+        tau_fit_min_ps = 0.0  # e.g., set to 5–20 ps if you want to exclude ballistic
+        fit_start = int(np.searchsorted(tau, tau_fit_min_ps, side="left"))
+        slope_na, intercept_na = np.polyfit(tau[fit_start:], msd_na[fit_start:], 1)
+        slope_p,  intercept_p  = np.polyfit(tau[fit_start:], msd_p[fit_start:],  1)
 
-    fit_na = intercept_na + slope_na * tau
-    fit_p  = intercept_p  + slope_p  * tau
-    ax.plot(tau[fit_start:], fit_na[fit_start:], linestyle="--", lw=1.2, label="Na fit")
-    ax.plot(tau[fit_start:], fit_p[fit_start:],  linestyle="--", lw=1.2, label="P fit")
+        D_na_A2_ps = slope_na / 6.0
+        D_p_A2_ps  = slope_p  / 6.0
+        # 1 Å^2/ps = 1e-4 cm^2/s
+        D_na = D_na_A2_ps * 1e-4
+        D_p  = D_p_A2_ps  * 1e-4
 
-    ax.set_title(f"NaPF6 — {solv}")
-    ax.set_xlabel("τ since 100 ps (ps)")
-    ax.set_ylabel("MSD (Å$^2$)")
-    ax.set_xlim(0.0, 1000.0)  # per feedback: show 0 → 1000 ps on x-axis
-    ax.grid(True, linestyle=":")
-    info = (f"D(Na)={D_na_A2_ps:.3f} Å²/ps\n"
-            f"      ={D_na:.2e} cm²/s\n"
-            f"D(P) ={D_p_A2_ps:.3f} Å²/ps\n"
-            f"      ={D_p:.2e} cm²/s")
-    ax.text(0.98, 0.02, info, transform=ax.transAxes, ha="right", va="bottom",
-            fontsize=8, bbox=dict(boxstyle="round", fc="white", ec="0.8", alpha=0.9))
-    ax.legend(frameon=False, fontsize=8)
+        # Store for CSV (rounded to 4 sig figs)
+        rows.append({
+            "solvent": solv,
+            "frames_total": len(frames),
+            "dt_ps": round_sig(dt_ps, 4),
+            "equilibration_ps": EQ_TIME_PS,
+            "window_ps": round_sig(tau[-1], 4),
+            "D_Na_A2_per_ps": round_sig(D_na_A2_ps, 4),
+            "D_Na_cm2_per_s": round_sig(D_na, 4),
+            "D_P_A2_per_ps":  round_sig(D_p_A2_ps, 4),
+            "D_P_cm2_per_s":  round_sig(D_p, 4),
+        })
 
-# Hide any unused subplots (if any)
-for j in range(n_sys, nrows * ncols):
-    axes[j // ncols, j % ncols].set_visible(False)
+        # ─────────── subplot ───────────
+        ax.plot(tau, msd_na, lw=1.6, label="Na MSD")
+        ax.plot(tau, msd_p,  lw=1.6, label="P MSD")
+        ax.fill_between(tau, msd_na - se_na, msd_na + se_na, alpha=0.20)
+        ax.fill_between(tau, msd_p  - se_p,  msd_p  + se_p,  alpha=0.20)
 
-fig.suptitle("MSD & Diffusion — post-eq window (100→1000 ps) — 50 fs/frame", fontsize=14)
-fig.tight_layout(rect=(0, 0.03, 1, 0.97))
-combined_png = out_dir / "msd_all_systems.png"
-fig.savefig(combined_png, dpi=300)
-plt.close(fig)
-print(f"Saved combined plot → {combined_png}")
+        fit_na = intercept_na + slope_na * tau
+        fit_p  = intercept_p  + slope_p  * tau
+        ax.plot(tau[fit_start:], fit_na[fit_start:], linestyle="--", lw=1.2, label="Na fit")
+        ax.plot(tau[fit_start:], fit_p[fit_start:],  linestyle="--", lw=1.2, label="P fit")
 
-# ─────────── one summary CSV ───────────
-if rows:
-    df = pd.DataFrame(rows)
-    csv_path = out_dir / "diffusion_coefficients_summary.csv"
-    df.to_csv(csv_path, index=False)
-    print(f"Wrote {csv_path}")
-    print(df.to_string(index=False))
-else:
-    print("No results written (no frames or no trajectories).")
+        ax.set_title(f"NaPF6 — {solv}")
+        ax.set_xlabel("τ since 100 ps (ps)")
+        ax.set_ylabel("MSD (Å$^2$)")
+        ax.set_xlim(0.0, 1000.0)  # per feedback: show 0 → 1000 ps on x-axis
+        ax.grid(True, linestyle=":")
+        info = (f"D(Na)={D_na_A2_ps:.3f} Å²/ps\n"
+                f"      ={D_na:.2e} cm²/s\n"
+                f"D(P) ={D_p_A2_ps:.3f} Å²/ps\n"
+                f"      ={D_p:.2e} cm²/s")
+        ax.text(0.98, 0.02, info, transform=ax.transAxes, ha="right", va="bottom",
+                fontsize=8, bbox=dict(boxstyle="round", fc="white", ec="0.8", alpha=0.9))
+        ax.legend(frameon=False, fontsize=8)
+
+    # Hide any unused subplots (if any)
+    for j in range(n_sys, nrows * ncols):
+        axes[j // ncols, j % ncols].set_visible(False)
+
+    fig.suptitle("MSD & Diffusion — post-eq window (100→1000 ps) — 50 fs/frame", fontsize=14)
+    fig.tight_layout(rect=(0, 0.03, 1, 0.97))
+    combined_png = out_dir / "msd_all_systems.png"
+    fig.savefig(combined_png, dpi=300)
+    plt.close(fig)
+    print(f"Saved combined plot → {combined_png}")
+
+    # ─────────── one summary CSV ───────────
+    if rows:
+        df = pd.DataFrame(rows)
+        csv_path = out_dir / "diffusion_coefficients_summary.csv"
+        df.to_csv(csv_path, index=False)
+        print(f"Wrote {csv_path}")
+        print(df.to_string(index=False))
+    else:
+        print("No results written (no frames or no trajectories).")
