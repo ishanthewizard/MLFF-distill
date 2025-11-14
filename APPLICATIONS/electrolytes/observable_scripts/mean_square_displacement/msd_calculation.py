@@ -40,6 +40,7 @@ def unwrap_positions(frames, sel_idx):
     """
     Unwrap positions across PBC step-to-step (NPT-safe via MIC).
     Returns (T, M, 3) in Å.
+    M number of centor of mass of the selected atoms
     """
     T = len(frames)
     M = len(sel_idx)
