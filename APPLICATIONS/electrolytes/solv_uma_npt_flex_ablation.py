@@ -68,7 +68,7 @@ import torch
 import numpy as np
 from copy import deepcopy
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
-from get_calc import get_uma_calc
+from get_calc import get_uma_calc, get_customized_uma_calc
 
 
 def setup_distributed(rank, world_size):
@@ -247,7 +247,8 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
         print(f"Using device: {device}")
     torch.set_num_threads(28)
     print(f"Loading UMA model from: {uma_path}")
-    structure.calc = get_uma_calc(uma_path= uma_path, small_model=False)
+    structure.calc = get_customized_uma_calc(uma_path= uma_path)
+    # structure.calc = get_uma_calc(uma_path= uma_path, small_model=False)
     print("UMA model loaded successfully")
 
 

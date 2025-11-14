@@ -26,9 +26,12 @@ class UMACalculatorWrapper(Calculator):
         if isinstance(stress, (list, np.ndarray)) and len(stress) == 6:
             atoms.info["stress"] = np.array(voigt_to_tensor6(stress))
         
+
+        # atoms.get_positions()
         # Call the fairchem calculator with only the required arguments
+        # breakpoint()
         self.fairchem_calc.calculate(atoms, properties, system_changes)
-        
+        # breakpoint()
         # Copy results from fairchem calculator
         self.results = self.fairchem_calc.results.copy()
         
@@ -65,6 +68,20 @@ def get_uma_calc(uma_path, small_model=False):
         predictor = load_predict_unit(uma_path, device="cuda", inference_settings=inference_settings, overrides={'_target_': 'fairchem.core.models.base.HydraModel'})
     else:
         predictor = load_predict_unit(uma_path, device="cuda")
+    calc = UMACalculatorWrapper(predictor, task_name="omol")
+    return calc
+
+def get_customized_uma_calc(uma_path):
+    inference_settings = InferenceSettings(
+        tf32=False,
+        activation_checkpointing=True,
+        merge_mole=False,
+        compile=False,
+        wigner_cuda=False,
+        external_graph_gen=False,
+        internal_graph_gen_version=2,
+    )
+    predictor = load_predict_unit(uma_path, device="cuda", inference_settings=inference_settings, overrides={'_target_': 'fairchem.core.models.base.HydraModel'})
     calc = UMACalculatorWrapper(predictor, task_name="omol")
     return calc
 
