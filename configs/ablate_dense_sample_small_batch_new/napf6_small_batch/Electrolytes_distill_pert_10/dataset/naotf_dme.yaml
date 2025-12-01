@@ -1,0 +1,37 @@
+normalizer_rmsd:  0.8158600879724504
+regress_stress: true
+dataset_name: omol
+
+train_dataset:
+  splits:
+    train:
+      src: ${cluster.omol_path}/all_lmdbs/per_system/naotf_dme/train
+  format: ase_db
+  a2g_args:
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+  no_shuffle: true
+  transforms:
+    common_transform:
+      dataset_name: ${dataset.dataset_name}
+    stress_reshape_transform:
+      dataset_name: ${dataset.dataset_name}
+  teacher_labels_folder: ${cluster.omol_path}/all_lmdbs/per_system/naotf_dme/labels
+
+val_dataset:
+  splits:
+    val:
+      src: ${cluster.omol_path}/all_lmdbs/per_system/naotf_dme/val
+  format: ase_db
+  a2g_args:
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+  no_shuffle: true
+  transforms:
+    common_transform:
+      dataset_name: ${dataset.dataset_name}
+    stress_reshape_transform:
+      dataset_name: ${dataset.dataset_name}
+  teacher_labels_folder: ${cluster.omol_path}/all_lmdbs/per_system/napf6_dme/labels

@@ -95,7 +95,7 @@ def cleanup_distributed():
 
 
 
-def worker(rank, trajectory_model_pairs, world_size, interval, total_target_steps, temperature, initial_temperature):
+def worker(rank, trajectory_model_pairs, world_size, interval, total_target_steps, temperatures, initial_temperatures):
     """Worker function that runs on each GPU"""
     try:
         # Initialize distributed setup if running on multiple GPUs
@@ -106,7 +106,10 @@ def worker(rank, trajectory_model_pairs, world_size, interval, total_target_step
         # Get trajectory-model pair assigned to this rank
         if rank < len(trajectory_model_pairs):
             traj_path, model_checkpoint = trajectory_model_pairs[rank]
-            print(f"Rank {rank}: Assigned trajectory: {traj_path}, model: {model_checkpoint}")
+            # Get the temperature for this specific pair
+            temperature = temperatures[rank] if rank < len(temperatures) else temperatures[0]
+            initial_temperature = initial_temperatures[rank] if rank < len(initial_temperatures) else initial_temperatures[0]
+            print(f"Rank {rank}: Assigned trajectory: {traj_path}, model: {model_checkpoint}, temperature: {temperature} K, initial_temperature: {initial_temperature} K")
         else:
             print(f"Rank {rank}: No trajectory-model pair assigned")
             return
@@ -131,37 +134,39 @@ def worker(rank, trajectory_model_pairs, world_size, interval, total_target_step
             print(f"Rank {rank}: Completed simulation for {traj_path}")
         except Exception as sim_error:
             print(f"Rank {rank}: Simulation failed for {traj_path}: {sim_error}")
-
-        # Synchronize all ranks after completion
-        if world_size > 1:
-            dist.barrier()
+            # Re-raise to be caught by outer exception handler
+            raise
 
     except Exception as e:
         print(f"Rank {rank}: Error in worker: {e}")
-        # Ensure cleanup happens even on error
-        try:
-            if dist.is_initialized():
-                cleanup_distributed()
-        except:
-            pass
         raise
     finally:
-        # Clean up distributed setup
+        # Synchronize all ranks before cleanup to prevent premature termination
+        # This ensures that even if one worker finishes early, it waits for others
+        if world_size > 1 and dist.is_initialized():
+            print(f"Rank {rank}: Waiting for all workers to complete before cleanup...")
+            dist.barrier()
+            print(f"Rank {rank}: All workers completed, proceeding with cleanup")
+        
+        # Clean up distributed setup only after all workers have synchronized
         if world_size > 1:
-            cleanup_distributed()
-            print(f"Rank {rank}: Cleaned up distributed setup")
+            if dist.is_initialized():
+                cleanup_distributed()
+                print(f"Rank {rank}: Cleaned up distributed setup")
 
 
-def run_parallel_simulations(trajectory_model_pairs, world_size, interval=50, total_target_steps=1000000, temperature=323, initial_temperature=300):
+def run_parallel_simulations(trajectory_model_pairs, world_size, interval=50, total_target_steps=1000000, temperatures=[323], initial_temperatures=[300]):
     """Main function to run parallel simulations across multiple GPUs"""
 
     # Spawn worker processes
     print(f"Starting parallel simulations on {world_size} GPUs")
     print(f"Total trajectory-model pairs: {len(trajectory_model_pairs)}")
+    print(f"Temperatures: {temperatures}")
+    print(f"Initial temperatures: {initial_temperatures}")
 
     mp.spawn(
         worker,
-        args=(trajectory_model_pairs, world_size, interval, total_target_steps, temperature, initial_temperature),
+        args=(trajectory_model_pairs, world_size, interval, total_target_steps, temperatures, initial_temperatures),
         nprocs=world_size,
         join=True
     )
@@ -179,6 +184,8 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     """
     # Skip distributed setup if already initialized (when called from worker)
     print(f"Rank {rank}/{world_size}: dist.is_initialized(): {dist.is_initialized()}")
+    # print the combination of traj and ckpt path and temperature and initial temperature
+    print(f"Trajectory: {root_path}, Model: {model_checkpoint}, Temperature: {temperature}, Initial temperature: {initial_temperature}",flush=True)
     if rank is not None and world_size is not None and not dist.is_initialized():
         setup_distributed(rank, world_size)
         print(f"Rank {rank}/{world_size}: Initialized distributed setup")
@@ -245,7 +252,39 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     else:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Using device: {device}")
-    torch.set_num_threads(28)
+    
+    # === Configure CPU threading ===
+    # For parallel execution, divide cores among processes to avoid oversubscription
+    # For single process, use all available cores
+    total_cpu_cores = os.cpu_count()
+    if total_cpu_cores is None:
+        total_cpu_cores = 1
+        print("Warning: Could not detect CPU core count, defaulting to 1 thread")
+    
+    if world_size is not None and world_size > 1:
+        # Multi-GPU mode: divide cores among processes
+        # Ensure each process gets at least 1 core
+        cores_per_process = max(1, total_cpu_cores // world_size)
+        print(f"Multi-GPU mode: Dividing {total_cpu_cores} CPU cores among {world_size} processes",flush=True)
+        print(f"Rank {rank}: Allocated {cores_per_process} CPU cores per process",flush=True)
+    else:
+        # Single GPU mode: use all available cores
+        cores_per_process = total_cpu_cores
+        print(f"Single GPU mode: Using all {total_cpu_cores} CPU cores",flush=True)
+    
+    # Set PyTorch to use allocated CPU cores
+    torch.set_num_threads(cores_per_process)
+    
+    # Set environment variables for OpenMP and MKL if not already set
+    # These affect NumPy, SciPy, and other libraries that use these backends
+    # if 'OMP_NUM_THREADS' not in os.environ:
+    #     os.environ['OMP_NUM_THREADS'] = str(cores_per_process)
+    # if 'MKL_NUM_THREADS' not in os.environ:
+    #     os.environ['MKL_NUM_THREADS'] = str(cores_per_process)
+    # if 'NUMEXPR_NUM_THREADS' not in os.environ:
+    #     os.environ['NUMEXPR_NUM_THREADS'] = str(cores_per_process)
+    
+    # print(f"Rank {rank if rank is not None else 'N/A'}: Configured threading - PyTorch={cores_per_process}, OMP={os.environ.get('OMP_NUM_THREADS')}, MKL={os.environ.get('MKL_NUM_THREADS')}")
     print(f"Loading UMA model from: {uma_path}")
     structure.calc = get_customized_uma_calc(uma_path= uma_path)
     # structure.calc = get_uma_calc(uma_path= uma_path, small_model=False)
@@ -344,10 +383,10 @@ def main():
                        help='Total target steps for simulation (default: 1000000)')
     parser.add_argument('--interval', type=int, default=10,
                        help='Interval for trajectory writing and status printing (default: 10)')
-    parser.add_argument('--temperature', type=float, default=323,
-                       help='Temperature for simulation (default: 323 K)')
-    parser.add_argument('--initial_temperature', type=float, default=300,
-                       help='Initial temperature for simulation (default: 300 K)')
+    parser.add_argument('--temperature', type=float, nargs='+', default=[323],
+                       help='Temperature(s) for simulation (default: 323 K). Can specify multiple temperatures, one per trajectory.')
+    parser.add_argument('--initial_temperature', type=float, nargs='+', default=[300],
+                       help='Initial temperature(s) for simulation (default: 300 K). Can specify multiple temperatures, one per trajectory.')
     args = parser.parse_args()
     
     # === Configuration ===
@@ -355,8 +394,8 @@ def main():
     interval = args.interval
     model_checkpoints = args.models
     trajectory_paths = args.trajectories
-    temperature = args.temperature
-    initial_temperature = args.initial_temperature
+    temperatures = args.temperature
+    initial_temperatures = args.initial_temperature
     world_size = torch.cuda.device_count()  # Number of available GPUs
 
     if world_size == 0:
@@ -367,13 +406,20 @@ def main():
     print(f"Target steps: {total_target_steps}")
     print(f"Interval: {interval}")
     print(f"Trajectory paths: {trajectory_paths}")
-    print(f"Temperature: {temperature}")
-    print(f"Initial temperature: {initial_temperature}")
+    print(f"Temperatures: {temperatures}")
+    print(f"Initial temperatures: {initial_temperatures}")
     
     # === Validation ===
     # Check that trajectory and model lists have the same length
     if len(trajectory_paths) != len(model_checkpoints):
         raise ValueError(f"Number of trajectories ({len(trajectory_paths)}) must equal number of models ({len(model_checkpoints)})")
+    
+    # Check that temperature arrays have the same length as trajectories
+    if len(temperatures) != len(trajectory_paths):
+        raise ValueError(f"Number of temperatures ({len(temperatures)}) must equal number of trajectories ({len(trajectory_paths)})")
+    
+    if len(initial_temperatures) != len(trajectory_paths):
+        raise ValueError(f"Number of initial temperatures ({len(initial_temperatures)}) must equal number of trajectories ({len(trajectory_paths)})")
     
     # Check that both lists don't exceed 4 items
     if len(trajectory_paths) > 4:
@@ -401,7 +447,10 @@ def main():
     if len(trajectory_model_pairs) == 1:
         # Single trajectory-model pair - run on single GPU
         traj_path, model_checkpoint = trajectory_model_pairs[0]
+        temperature = temperatures[0]
+        initial_temperature = initial_temperatures[0]
         print(f"Running single trajectory-model pair on single GPU: {traj_path} + {model_checkpoint}")
+        print(f"Temperature: {temperature} K, Initial temperature: {initial_temperature} K")
         simulate(
             root_path=traj_path,
             rank=None,
@@ -420,8 +469,8 @@ def main():
             world_size=min(world_size, len(trajectory_model_pairs)),  # Don't use more GPUs than pairs
             interval=interval,
             total_target_steps=total_target_steps,
-            temperature=temperature,
-            initial_temperature=initial_temperature
+            temperatures=temperatures,
+            initial_temperatures=initial_temperatures
         )
 
 

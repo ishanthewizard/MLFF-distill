@@ -23,51 +23,34 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
+from typing import Sequence, Tuple
 from tqdm import tqdm
 from multiprocessing import Pool
 import pickle
-# ---------------- user config ----------------
-OUT_DIR  = Path("/global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/electrolyte_application/temp/test_out")
-OUT_DIR.mkdir(parents=True, exist_ok=True)
+import argparse
+from utils.component_dictionary import cation_dict, anion_dict, solvent_dict
 
-# TO LLM: you need to pay attention to the format when doing auto completion: (traj_path, system_name, cat_symbol(need to be strictly matched with cation_dict), anion_symbol(need to be strictly matched with anion_dict), solvent_symbol(need to be strictly matched with solvent_dict))
-TARGETS = [
 
-    ("/global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/electrolyte_application/ablate_distillation/10ns_solvent_0_1M/md_omol_naotf_tgdme_1m_s1p1/md_omol_naotf_tgdme_1m_s1p1.traj",    "NaOTf — TGDME",     "Na", "OTf", "TGDME"),
-    # ("/global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/electrolyte_application/ablate_distillation/10ns_solvent_0_1M/md_omol_naotf_diglyme_1m_s1p1/md_omol_naotf_diglyme_1m_s1p1.traj",    "NaOTf — Diglyme",     "Na", "OTf", "Diglyme"),
-    ("/global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/electrolyte_application/ablate_distillation/10ns_solvent_0_1M/md_omol_naotf_dme_s1p1_omol/md_omol_naotf_dme_s1p1_omol.traj",    "NaOTf — DME",     "Na", "OTf", "DME"),
-    ("/global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/electrolyte_application/ablate_distillation/10ns_solvent_0_1M/md_omol_naotf_pc_1m_s1p1/md_omol_naotf_pc_1m_s1p1.traj",    "NaOTf — PC",     "Na", "OTf", "PC"),
-    # ("/global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/electrolyte_application/ablate_distillation/10ns_solvent_0_1M/md_omol_napf6_diglyme_pfactor_0.1_1fs/md_omol_napf6_diglyme_pfactor_0.1_1fs.traj", "NaPF6 — Diglyme", "Na", "PF6", "Diglyme"),
-    ("/global/homes/y/yuejian/project/MLFF-distill/yuejian/OMOL/electrolyte_application/ablate_distillation/10ns_solvent_0_1M/md_omol_napf6_propylene_carbonate_pfactor_0.1_1fs_mask_t_s1p1/md_omol_napf6_propylene_carbonate_pfactor_0.1_1fs_mask_t_s1p1.traj", "NaPF6 — Propylene Carbonate", "Na", "PF6", "PC"),
-]
+# cation_dict = {
+#     "Na": ["Na"],
+#     "Li": ["Li"],
+# }
 
-cation_dict = {
-    "Na": ["Na"],
-    "Li": ["Li"],
-}
+# anion_dict = {
+#     "PF6": ["P", "F", "F", "F", "F", "F", "F"],
+#     "OTf": ["C", "S", "F", "F", "F", "O", "O", "O"],
+# }
 
-anion_dict = {
-    "PF6": ["P", "F", "F", "F", "F", "F", "F"],
-    "OTf": ["C", "S", "F", "F", "F", "O", "O", "O"],
-}
+# solvent_dict = {
+#     "Diglyme": ["H", "C", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "H", "H", "H"],
+#     "DME":["H", "C", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "H", "H", "H"],
+#     "PC": ["C", "H", "O", "C", "C", "H", "H", "O", "O", "C", "H", "H", "H"],
+#     "TGDME": ["H", "C", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "C",
+#               "H", "H", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "H", "H", "H"],
+#     "DEG": ["H", "O", "C", "C", "H", "H", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "H"],
+# }
 
-solvent_dict = {
-    "Diglyme": ["H", "C", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "H", "H", "H"],
-    "DME":["H", "C", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "H", "H", "H"],
-    "PC": ["C", "H", "O", "C", "C", "H", "H", "O", "O", "C", "H", "H", "H"],
-    "TGDME": ["H", "C", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "C",
-              "H", "H", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "H", "H", "H"],
-    "DEG": ["H", "O", "C", "C", "H", "H", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "H"],
-}
 
-EQ_TIME_PS       = 100.0
-KNOWN_DT_PS      = 0.01       # 10 fs
-TARGET_FRAMES    = 10000 # this is about dt < 1ps
-TAU_MIN_FIT_PS   = 1000.0 # 1000 ps  = 1 ns
-TAU_MAX_FIT_PS   = 9000.0 # 9000 ps = 9 ns
-N_WORKERS        = 8
-PLOT_NCOLS       = 2
-PARALLEL_MSD     = False # not sure if this is reliable
 # ---------------- helpers ----------------
 def a2ps_to_m2s(D_a2ps):
     return D_a2ps * 1e-20 / 1e-12
@@ -206,7 +189,7 @@ def _mass_weighted_com(positions, masses):
     msum = masses.sum()
     return (positions * masses[:, None]).sum(axis=0) / msum if msum > 0 else positions.mean(axis=0)
 
-def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbol, anion_symbol, solvent_symbol):
+def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbol, anion_symbol, solvent_symbol, TAU_MAX_FIT_PS):
     """
     Streams frames, subsamples, removes system COM drift, and unwraps via MIC.
     Builds molecule groups once (first analyzed frame), classifies into cation/anion/solvent.
@@ -221,7 +204,13 @@ def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbo
         n_total = len(trj)
         if n_total < 3: # at least 3 frames are needed for the analysis
             raise RuntimeError("Too few frames in trajectory.")
-
+        # cut n_total based on TAU_MAX_FIT_PS
+        # ps to n_frames using dt_ps
+        n_frames = int(TAU_MAX_FIT_PS / dt_ps)
+        if n_total < n_frames:
+            raise RuntimeError(f"Trajectory {traj_path.name} has less frames ({n_total}) than the maximum fitting time ({TAU_MAX_FIT_PS} ps).")
+        n_total = n_frames
+        print("analyzing frames from 0 to", n_total)
         # infer dt if needed
         if dt_ps is None:
             t0 = trj[0].info.get("time", None)
@@ -299,9 +288,16 @@ def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbo
 
         # Stream/unwrap
         for k in tqdm(range(1, T), desc=f"{traj_path.name}: unwrap", unit="frame", leave=False):
-            f = trj[idxs[k]]
-            f_p = trj[idxs[k - 1]]
-
+            try:
+                f = trj[idxs[k]]
+            except Exception as e:
+                print(f"Error reading frame {k} of {traj_path.name}: {e}")
+                continue
+            try:
+                f_p = trj[idxs[k - 1]]
+            except Exception as e:
+                print(f"Error reading frame {k - 1} of {traj_path.name}: {e}")
+                continue
             com_c = f.get_center_of_mass()
             com_p = f_p.get_center_of_mass()
 
@@ -395,127 +391,277 @@ def fit_diffusion(tau_ps, msd, tau_min_ps=15.0, tau_max_ps=None):
     D_a2ps = slope / 6.0
     return D_a2ps, slope, intercept, mask
 
-# ---------------- plotting grid ----------------
-n_sys = len(TARGETS)
-ncols = PLOT_NCOLS
-nrows = (n_sys + ncols - 1) // ncols
-fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(12, 6.5), squeeze=False)
-rows_out = []
-
-# ---------------- main loop ----------------
-for k, (fname, title, cat, anion, solvent) in enumerate(tqdm(TARGETS, desc="Processing trajectories", unit="traj")):
-    ax = axes[k // ncols, k % ncols]
-    traj_path = Path(fname)
-    if not traj_path.exists():
-        print(f"⚠️ Missing {traj_path}")
-        ax.set_visible(False)
-        continue
-
-    print(f"\n🔹 {title} ← {traj_path.name}")
-    tau, pos_cat, pos_anion, pos_solvent, stride_used, T_used, dt_ps_used = stream_subsample_unwrap(
-        traj_path, EQ_TIME_PS, KNOWN_DT_PS, TARGET_FRAMES, cat, anion, solvent
-    )
-    dt_ps_eff = stride_used * dt_ps_used
-    print(f"   → stride={stride_used} (~{dt_ps_eff:.3f} ps), frames={T_used}, window≈{tau[-1]:.1f} ps")
-
-    # MSD calculation
-    if PARALLEL_MSD:
-        print(f"   → MSD({cat}, {anion}, {solvent}) with {N_WORKERS} workers…")
-        msd_cat = msd_time_origin_parallel(pos_cat, n_workers=N_WORKERS)
-        msd_anion = msd_time_origin_parallel(pos_anion, n_workers=N_WORKERS) if pos_anion is not None else None
-        msd_solvent = msd_time_origin_parallel(pos_solvent, n_workers=N_WORKERS) if pos_solvent is not None else None
-    else:
-        print(f"   → MSD({cat}, {anion}, {solvent})…")
-        msd_cat = msd_time_origin(pos_cat)
-        msd_anion = msd_time_origin(pos_anion) if pos_anion is not None else None
-        msd_solvent = msd_time_origin(pos_solvent) if pos_solvent is not None else None
-
-    # save msd to dictionary for anion cation and solvent respectively
-    msd_dict = {
-        # "frames_total": T_used,
-        "msd_cat": msd_cat,
-        "msd_anion": msd_anion,
-        "msd_solvent": msd_solvent,
-        "tau": tau,
-        "dt_ps": dt_ps_eff,
-        "EQ_TIME_PS": EQ_TIME_PS,
-    }
-    with open(OUT_DIR / f"msd_dict_{title}.pkl", "wb") as f:
-        pickle.dump(msd_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-    # Fits
-    Dcat_a2ps, slope_c, b_c, mask_c = fit_diffusion(tau, msd_cat, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS)
+def fit_diffusion_wrapper(tau, msd_cat, msd_anion, msd_solvent, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS):
+    Dcat_a2ps, _, _, _ = fit_diffusion(tau, msd_cat, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS)
     Dcat_1e10 = a2ps_to_m2s(Dcat_a2ps) * 1e10
-    print(f"   → D({cat}⁺) = {Dcat_1e10:.2f} ×10⁻¹⁰ m²/s ({Dcat_a2ps:.4f} Å²/ps)")
+    # print(f"   → D(Na⁺) = {Dcat_1e10:.2f} ×10⁻¹⁰ m²/s ({Dcat_a2ps:.4f} Å²/ps)")
 
-    Danion_a2ps = Danion_1e10 = None
-    if msd_anion is not None:
-        Danion_a2ps, slope_a, b_a, mask_a = fit_diffusion(tau, msd_anion, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS)
-        Danion_1e10 = a2ps_to_m2s(Danion_a2ps) * 1e10
-        print(f"   → D(anion) = {Danion_1e10:.2f} ×10⁻¹⁰ m²/s ({Danion_a2ps:.4f} Å²/ps)")
 
-    Dsolv_a2ps = Dsolv_1e10 = None
-    if msd_solvent is not None:
-        Dsolv_a2ps, slope_s, b_s, mask_s = fit_diffusion(tau, msd_solvent, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS)
-        Dsolv_1e10 = a2ps_to_m2s(Dsolv_a2ps) * 1e10
-        print(f"   → D(solvent) = {Dsolv_1e10:.2f} ×10⁻¹⁰ m²/s ({Dsolv_a2ps:.4f} Å²/ps)")
+    Danion_a2ps, _, _, _ = fit_diffusion(tau, msd_anion, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS)
+    Danion_1e10 = a2ps_to_m2s(Danion_a2ps) * 1e10
+    # print(f"   → D(anion) = {Danion_1e10:.2f} ×10⁻¹⁰ m²/s ({Danion_a2ps:.4f} Å²/ps)")
 
-    # Plot
-    ax.plot(tau, msd_cat, lw=1.5, label=f"{cat} MSD")
-    ax.plot(tau[mask_c], (b_c + slope_c * tau)[mask_c], "--", lw=1.0, label=f"{cat} fit")
-    if msd_anion is not None:
-        ax.plot(tau, msd_anion, lw=1.2, label="Anion MSD", alpha=0.9)
-        ax.plot(tau[mask_a], (b_a + slope_a * tau)[mask_a], "--", lw=1.0, label="Anion fit")
-    if msd_solvent is not None:
-        ax.plot(tau, msd_solvent, lw=1.2, label="Solvent MSD", alpha=0.9)
-        ax.plot(tau[mask_s], (b_s + slope_s * tau)[mask_s], "--", lw=1.0, label="Solvent fit")
 
-    ax.set_title(title)
-    ax.set_xlabel(r"$\tau$ since 100 ps (ps)")
-    ax.set_ylabel(r"MSD ($\mathrm{\AA^2}$)")
-    ax.grid(True, linestyle=":")
+    Dsolv_a2ps, _, _, _ = fit_diffusion(tau, msd_solvent, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS)
+    Dsolv_1e10 = a2ps_to_m2s(Dsolv_a2ps) * 1e10
+    # print(f"   → D(solvent) = {Dsolv_1e10:.2f} ×10⁻¹⁰ m²/s ({Dsolv_a2ps:.4f} Å²/ps)")
 
-    note = (f"D({cat}⁺) = {Dcat_1e10:.2f}×10⁻¹⁰ m²/s\n= {Dcat_a2ps:.4f} Å²/ps")
-    if Danion_1e10 is not None:
-        note += f"\nD(anion) = {Danion_1e10:.2f}×10⁻¹⁰"
-    if Dsolv_1e10 is not None:
-        note += f"\nD(solvent) = {Dsolv_1e10:.2f}×10⁻¹⁰"
-    ax.text(0.98, 0.02, note, transform=ax.transAxes, ha="right", va="bottom",
-            fontsize=8, bbox=dict(boxstyle="round", fc="white", ec="0.8", alpha=0.9))
-    ax.legend(frameon=False, fontsize=8)
+    return Dcat_1e10, Danion_1e10, Dsolv_1e10, Dcat_a2ps, Danion_a2ps, Dsolv_a2ps
 
-    rows_out.append({
-        "system": title,
-        "cation": cat,
-        "subsample_stride": stride_used,
-        "frames_used": T_used,
-        "effective_dt_ps": stride_used * dt_ps_used,
-        "analysis_window_ps": float(tau[-1]),
-        "tau_min_fit_ps": TAU_MIN_FIT_PS,
-        "D_cation_(x1e-10_m2_s)": float(Dcat_1e10),
-        "D_cation_A2_per_ps": float(Dcat_a2ps),
-        "D_anion_(x1e-10_m2_s)": float(Danion_1e10) if Danion_1e10 is not None else None,
-        "D_anion_A2_per_ps": float(Danion_a2ps) if Danion_a2ps is not None else None,
-        "D_solvent_(x1e-10_m2_s)": float(Dsolv_1e10) if Dsolv_1e10 is not None else None,
-        "D_solvent_A2_per_ps": float(Dsolv_a2ps) if Dsolv_a2ps is not None else None,
-    })
 
-# hide any empty axes
-for j in range(len(TARGETS), nrows * ncols):
-    axes[j // ncols, j % ncols].set_visible(False)
+def main(
+    TARGETS: Sequence[Tuple[str, str, str, str, str, str, str]],
+    EQ_TIME_PS: float,
+    KNOWN_DT_PS: float,
+    TARGET_FRAMES: int,
+    TAU_MIN_FIT_PS: float,
+    TAU_MAX_FIT_PS: float,
+    N_WORKERS: int,
+    PLOT_NCOLS: int,
+    PARALLEL_MSD: bool,
+    OUT_DIR: Path,
+) -> None:
+    """
+    Drivers MSD calculation over a list of trajectories.
 
-fig.suptitle(f"MSD & Diffusion — ≥{EQ_TIME_PS:.0f} ps, fit {TAU_MIN_FIT_PS:.0f}–{TAU_MAX_FIT_PS:.0f} ps", fontsize=12.5)
-fig.tight_layout(rect=(0, 0.03, 1, 0.96))
-png_path = OUT_DIR / "uma_diffusion_selected_fast.png"
-fig.savefig(png_path, dpi=300)
-plt.close(fig)
-print(f"\n✅ Saved plot → {png_path}")
+    Parameters
+    ----------
+    TARGETS
+        Tuples containing (trajectory path, subplot title, cation key, anion
+        key, solvent key, concentration_M, temperature_K).
+    EQ_TIME_PS
+        Equilibration time in picoseconds before starting the analysis window.
+    KNOWN_DT_PS
+        Base timestep of the trajectory in picoseconds (before subsampling).
+    TARGET_FRAMES
+        Number of frames to stream/analyze (after equilibration).
+    TAU_MIN_FIT_PS, TAU_MAX_FIT_PS
+        Fitting range for the Einstein slope in picoseconds.
+    N_WORKERS
+        Worker count for parallel MSD evaluation.
+    PLOT_NCOLS
+        Number of columns in the output figure grid.
+    PARALLEL_MSD
+        Whether to compute MSDs using multiple processes.
+    OUT_DIR
+        Directory where plots and CSV/pickle outputs are saved.
 
-if rows_out:
-    df = pd.DataFrame(rows_out)
-    csv_path = OUT_DIR / "uma_diffusion_selected_fast.csv"
-    df.to_csv(csv_path, index=False)
-    print(f"✅ Wrote CSV → {csv_path}\n")
-    print(df.to_string(index=False))
-else:
-    print("⚠️ No results produced.")
+    Returns
+    -------
+    None
+    """
+    # ---------------- plotting grid ----------------
+    n_sys = len(TARGETS)
+    ncols = PLOT_NCOLS
+    nrows = (n_sys + ncols - 1) // ncols
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(12, 15), squeeze=False)
+    rows_out = []
+
+    # ---------------- main loop ----------------
+    for k, (fname, title, cat, anion, solvent, concentration, temperature) in enumerate(tqdm(TARGETS, desc="Processing trajectories", unit="traj")):
+        ax = axes[k // ncols, k % ncols]
+        traj_path = Path(fname)
+        if not traj_path.exists():
+            print(f"⚠️ Missing {traj_path}")
+            ax.set_visible(False)
+            continue
+        # concate title with temperature and concentration
+        title = f"{title}_{temperature}_{concentration}"
+        print(f"\n🔹 {title} ← {traj_path.name}")
+        tau, pos_cat, pos_anion, pos_solvent, stride_used, T_used, dt_ps_used = stream_subsample_unwrap(
+            traj_path, EQ_TIME_PS, KNOWN_DT_PS, TARGET_FRAMES, cat, anion, solvent, TAU_MAX_FIT_PS
+        )
+        dt_ps_eff = stride_used * dt_ps_used
+        print(f"   → stride={stride_used} (~{dt_ps_eff:.3f} ps), frames={T_used}, window≈{tau[-1]:.1f} ps")
+
+        # MSD calculation
+        if PARALLEL_MSD:
+            print(f"   → MSD({cat}, {anion}, {solvent}) with {N_WORKERS} workers…")
+            msd_cat = msd_time_origin_parallel(pos_cat, n_workers=N_WORKERS)
+            msd_anion = msd_time_origin_parallel(pos_anion, n_workers=N_WORKERS) if pos_anion is not None else None
+            msd_solvent = msd_time_origin_parallel(pos_solvent, n_workers=N_WORKERS) if pos_solvent is not None else None
+        else:
+            print(f"   → MSD({cat}, {anion}, {solvent})…")
+            msd_cat = msd_time_origin(pos_cat)
+            msd_anion = msd_time_origin(pos_anion) if pos_anion is not None else None
+            msd_solvent = msd_time_origin(pos_solvent) if pos_solvent is not None else None
+
+        # save msd to dictionary for anion cation and solvent respectively
+        msd_dict = {
+            # "frames_total": T_used,
+            "msd_cat": msd_cat,
+            "msd_anion": msd_anion,
+            "msd_solvent": msd_solvent,
+            "tau": tau,
+            "dt_ps": dt_ps_eff,
+            "EQ_TIME_PS": EQ_TIME_PS,
+        }
+        with open(OUT_DIR / f"msd_dict_{title}.pkl", "wb") as f:
+            pickle.dump(msd_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        # Fits
+        Dcat_a2ps, slope_c, b_c, mask_c = fit_diffusion(tau, msd_cat, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS)
+        Dcat_1e10 = a2ps_to_m2s(Dcat_a2ps) * 1e10
+        print(f"   → D({cat}⁺) = {Dcat_1e10:.2f} ×10⁻¹⁰ m²/s ({Dcat_a2ps:.4f} Å²/ps)")
+
+        Danion_a2ps = Danion_1e10 = None
+        if msd_anion is not None:
+            Danion_a2ps, slope_a, b_a, mask_a = fit_diffusion(tau, msd_anion, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS)
+            Danion_1e10 = a2ps_to_m2s(Danion_a2ps) * 1e10
+            print(f"   → D(anion) = {Danion_1e10:.2f} ×10⁻¹⁰ m²/s ({Danion_a2ps:.4f} Å²/ps)")
+
+        Dsolv_a2ps = Dsolv_1e10 = None
+        if msd_solvent is not None:
+            Dsolv_a2ps, slope_s, b_s, mask_s = fit_diffusion(tau, msd_solvent, TAU_MIN_FIT_PS, TAU_MAX_FIT_PS)
+            Dsolv_1e10 = a2ps_to_m2s(Dsolv_a2ps) * 1e10
+            print(f"   → D(solvent) = {Dsolv_1e10:.2f} ×10⁻¹⁰ m²/s ({Dsolv_a2ps:.4f} Å²/ps)")
+
+        # Plot
+        ax.plot(tau, msd_cat, lw=1.5, label=f"{cat} MSD")
+        ax.plot(tau[mask_c], (b_c + slope_c * tau)[mask_c], "--", lw=1.0, label=f"{cat} fit")
+        if msd_anion is not None:
+            ax.plot(tau, msd_anion, lw=1.2, label="Anion MSD", alpha=0.9)
+            ax.plot(tau[mask_a], (b_a + slope_a * tau)[mask_a], "--", lw=1.0, label="Anion fit")
+        if msd_solvent is not None:
+            ax.plot(tau, msd_solvent, lw=1.2, label="Solvent MSD", alpha=0.9)
+            ax.plot(tau[mask_s], (b_s + slope_s * tau)[mask_s], "--", lw=1.0, label="Solvent fit")
+
+        ax.set_title(title)
+        ax.set_xlabel(r"$\tau$ since 100 ps (ps)")
+        ax.set_ylabel(r"MSD ($\mathrm{\AA^2}$)")
+        ax.grid(True, linestyle=":")
+
+        note = (f"D({cat}⁺) = {Dcat_1e10:.2f}×10⁻¹⁰ m²/s\n= {Dcat_a2ps:.4f} Å²/ps")
+        if Danion_1e10 is not None:
+            note += f"\nD(anion) = {Danion_1e10:.2f}×10⁻¹⁰"
+        if Dsolv_1e10 is not None:
+            note += f"\nD(solvent) = {Dsolv_1e10:.2f}×10⁻¹⁰"
+        ax.text(0.98, 0.02, note, transform=ax.transAxes, ha="right", va="bottom",
+                fontsize=8, bbox=dict(boxstyle="round", fc="white", ec="0.8", alpha=0.9))
+        ax.legend(frameon=False, fontsize=8)
+
+        rows_out.append({
+            "system": title,
+            "cation": cat,
+            "anion": anion,
+            "solvent": solvent,
+            "concentration_M": concentration,
+            "temperature_K": temperature,
+            "subsample_stride": stride_used,
+            "frames_used": T_used,
+            "effective_dt_ps": stride_used * dt_ps_used,
+            "analysis_window_ps": float(tau[-1]),
+            "tau_min_fit_ps": TAU_MIN_FIT_PS,
+            "D_cation_(x1e-10_m2_s)": float(Dcat_1e10),
+            "D_cation_A2_per_ps": float(Dcat_a2ps),
+            "D_anion_(x1e-10_m2_s)": float(Danion_1e10) if Danion_1e10 is not None else None,
+            "D_anion_A2_per_ps": float(Danion_a2ps) if Danion_a2ps is not None else None,
+            "D_solvent_(x1e-10_m2_s)": float(Dsolv_1e10) if Dsolv_1e10 is not None else None,
+            "D_solvent_A2_per_ps": float(Dsolv_a2ps) if Dsolv_a2ps is not None else None,
+        })
+        
+        # plot diffusivity vs tau_max_fit_ps
+        # naotf
+        D_cations = []
+        D_anions = []
+        D_solvent = []
+        tau_max_fit_ps_list = np.linspace(TAU_MIN_FIT_PS+1000,TAU_MAX_FIT_PS,10)
+        for max_fit_ps in tau_max_fit_ps_list:
+            Dcat_1e10, Danion_1e10, Dsolv_1e10, Dcat_a2ps, Danion_a2ps, Dsolv_a2ps = fit_diffusion_wrapper(tau, msd_cat, msd_anion, msd_solvent, TAU_MIN_FIT_PS, max_fit_ps)
+            D_cations.append(Dcat_1e10)
+            D_anions.append(Danion_1e10)
+            D_solvent.append(Dsolv_1e10)
+
+        max_fit_ps_list_ns = tau_max_fit_ps_list / 1000 # in ns
+
+        # Create a new figure to avoid conflicts with the main subplot figure
+        fig_diff, ax_diff = plt.subplots()
+        ax_diff.plot(max_fit_ps_list_ns, D_cations, label="cation")
+        ax_diff.plot(max_fit_ps_list_ns, D_anions, label="anion")
+        ax_diff.plot(max_fit_ps_list_ns, D_solvent, label="solvent")
+        ax_diff.legend()
+        ax_diff.set_xlabel("simulation time (ns)")
+        ax_diff.set_ylabel("Diffusion coefficient (×10⁻¹⁰m²/s)")
+        ax_diff.set_title(f"{title}"+"Diffusivity - simulation time")
+        fig_diff.savefig(OUT_DIR / f"Diffusivity_vs_time_{title}.png")
+        plt.close(fig_diff)
+
+    # hide any empty axes
+    for j in range(len(TARGETS), nrows * ncols):
+        axes[j // ncols, j % ncols].set_visible(False)
+
+    fig.suptitle(f"MSD & Diffusion — ≥{EQ_TIME_PS:.0f} ps, fit {TAU_MIN_FIT_PS:.0f}–{TAU_MAX_FIT_PS:.0f} ps", fontsize=12.5)
+    fig.tight_layout(rect=(0, 0.03, 1, 0.96))
+    png_path = OUT_DIR / "Diffusion_Coefficients.png"
+    fig.savefig(png_path, dpi=300)
+    plt.close(fig)
+    print(f"\n✅ Saved plot → {png_path}")
+
+    if rows_out:
+        df = pd.DataFrame(rows_out)
+        csv_path = OUT_DIR / "Diffusion_Coefficients.csv"
+        df.to_csv(csv_path, index=False)
+        print(f"✅ Wrote CSV → {csv_path}\n")
+        print(df.to_string(index=False))
+    else:
+        print("⚠️ No results produced.")
+    
+    return 
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(
+        description="Compute MSDs and diffusion coefficients with optional convergence time list."
+    )
+    parser.add_argument(
+        "--out-dir",
+        "-o",
+        metavar="DIR",
+        type=str,
+        help="Output directory for MSDs.",
+    )
+    parser.add_argument(
+        "--tau-max-fit-ps",
+        "-t",
+        metavar="PS",
+        type=int,
+        help="Maximum fitting time (in ps).",
+    )
+    args = parser.parse_args()
+
+    # ---------------- user config ----------------
+    OUT_DIR  = Path(args.out_dir)
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # Format: (traj_path, system_name, cat_symbol, anion_symbol, solvent_symbol, concentration_M,temperature_K)
+    # Note: cat_symbol, anion_symbol, and solvent_symbol must match keys in cation_dict, anion_dict, and solvent_dict respectively.
+    # concentration_M is a string like "1M", "0_5M", etc.
+    # temperature_K is a string like "298K", "300K", etc.
+    TARGETS = [
+        ("/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/ablate_distillation/ablation_diffusivity/20ns_solute_solvent_1M/naotf_dme/naotf_dme.traj", "NaOTf — DME", "Na", "OTf", "DME", "1M","298K"),
+        ("/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/ablate_distillation/ablation_diffusivity/20ns_solute_solvent_1M/napf6_dme/napf6_dme.traj", "NaPF6 — DME", "Na", "PF6", "DME", "1M","298K"),
+    ]
+
+
+    EQ_TIME_PS       = 100.0
+    KNOWN_DT_PS      = 0.01       # 10 fs
+    # TARGET_FRAMES    = 20000 # this is about dt < 1ps
+    TAU_MIN_FIT_PS   = 1000.0 # 1000 ps  = 1 ns
+    TAU_MAX_FIT_PS   = args.tau_max_fit_ps
+    TARGET_FRAMES    = int(TAU_MAX_FIT_PS - TAU_MIN_FIT_PS) # dt = 1ps
+    N_WORKERS        = 8
+    PLOT_NCOLS       = 2
+    PARALLEL_MSD     = False # not sure if this is reliable
+    
+    main(
+        TARGETS,
+        EQ_TIME_PS,
+        KNOWN_DT_PS,
+        TARGET_FRAMES,
+        TAU_MIN_FIT_PS,
+        TAU_MAX_FIT_PS,
+        N_WORKERS,
+        PLOT_NCOLS,
+        PARALLEL_MSD,
+        OUT_DIR
+    )

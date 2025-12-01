@@ -73,10 +73,10 @@ def get_uma_calc(uma_path, small_model=False):
 
 def get_customized_uma_calc(uma_path):
     inference_settings = InferenceSettings(
-        tf32=False,
-        activation_checkpointing=True,
-        merge_mole=False,
-        compile=False,
+        tf32=True,
+        activation_checkpointing=False,
+        merge_mole=True,
+        compile=True,
         wigner_cuda=False,
         external_graph_gen=False,
         internal_graph_gen_version=2,
