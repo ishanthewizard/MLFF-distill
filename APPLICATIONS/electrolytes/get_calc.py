@@ -85,6 +85,20 @@ def get_customized_uma_calc(uma_path):
     calc = UMACalculatorWrapper(predictor, task_name="omol")
     return calc
 
+def get_customized_eval_uma_calc(uma_path):
+    inference_settings = InferenceSettings(
+        tf32=True,
+        activation_checkpointing=False,
+        merge_mole=False,
+        compile=False,
+        wigner_cuda=False,
+        external_graph_gen=False,
+        internal_graph_gen_version=2,
+    )
+    predictor = load_predict_unit(uma_path, device="cuda", inference_settings=inference_settings, overrides={'_target_': 'fairchem.core.models.base.HydraModel'})
+    calc = UMACalculatorWrapper(predictor, task_name="omol")
+    return calc
+
 def voigt_to_tensor6(six):
     # Assumes six = [xx, yy, zz, yz, xz, xy]
     tensor = [

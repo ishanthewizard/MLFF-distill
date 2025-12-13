@@ -58,14 +58,6 @@ def a2ps_to_m2s(D_a2ps):
 def species_indices(symbols, species):
     return [i for i, s in enumerate(symbols) if s == species]
 
-def _first_available_mol_id_array(atoms):
-    for key in ("molid","mol_id","molecule","resid","resids"):
-        try:
-            arr = atoms.get_array(key)
-            return key, arr
-        except Exception:
-            continue
-    return None, None
 
 def direct_groups_from_species(symbols, species_list):
     """
@@ -126,64 +118,6 @@ def direct_groups_from_species(symbols, species_list):
             seen_indices.update(group_set)
     
     return unique_groups
-    
-def _groups_from_ids(ids):
-    groups = []
-    for uid in np.unique(ids):
-        groups.append(np.where(ids == uid)[0].astype(int))
-    return groups
-
-def _groups_from_connectivity(atoms):
-    # Build connectivity via covalent radii (this is run once on the first frame)
-    cutoffs = natural_cutoffs(atoms, mult=1.1)
-    nl = NeighborList(cutoffs, self_interaction=False, bothways=True)
-    nl.update(atoms)
-    n = len(atoms)
-    adj = [[] for _ in range(n)]
-    for i in range(n):
-        ii, _ = nl.get_neighbors(i)
-        adj[i].extend(ii.tolist())
-    # Connected components
-    seen = np.zeros(n, dtype=bool)
-    groups = []
-    for i in range(n):
-        if seen[i]: continue
-        stack = [i]
-        seen[i] = True
-        comp = []
-        while stack:
-            j = stack.pop()
-            comp.append(j)
-            for k in adj[j]:
-                if not seen[k]:
-                    seen[k] = True
-                    stack.append(k)
-        groups.append(np.array(comp, dtype=int))
-    return groups
-
-def _count_in_group(symbols, idxs, element):
-    return sum(1 for i in idxs if symbols[i] == element)
-
-def _classify_groups(groups, symbols):
-    """Return dictionaries of index-lists for cation, anion, solvent molecules."""
-    cats, ans, solv = [], [], []
-    for g in groups:
-        gset = {symbols[i] for i in g}
-        # cation molecule = contains Li or Na (single atom group typically)
-        if "Li" in gset or "Na" in gset:
-            cats.append(g); continue
-        # PF6–: P + >=6 F
-        if ("P" in gset) and (_count_in_group(symbols, g, "F") >= 6):
-            ans.append(g); continue
-        # OTf–: S + >=3 O + >=3 F
-        if ("S" in gset) and (_count_in_group(symbols, g, "O") >= 3) and (_count_in_group(symbols, g, "F") >= 3):
-            ans.append(g); continue
-        # TFSI– (loose): N + >=2 S + >=6 F
-        if ("N" in gset) and (_count_in_group(symbols, g, "S") >= 2) and (_count_in_group(symbols, g, "F") >= 6):
-            ans.append(g); continue
-        # else solvent
-        solv.append(g)
-    return cats, ans, solv
 
 def _mass_weighted_com(positions, masses):
     msum = masses.sum()
