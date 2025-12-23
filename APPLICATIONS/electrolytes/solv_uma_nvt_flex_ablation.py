@@ -63,6 +63,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 from ase.io import read, Trajectory
 from ase.md.langevin import Langevin
+from ase.md.nvtberendsen import NVTBerendsen
 from ase import units
 from fairchem.core import pretrained_mlip, FAIRChemCalculator
 import torch
@@ -214,15 +215,22 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     print("UMA model loaded successfully")
 
 
-    # === Set up NVT dynamics (Langevin thermostat) ===
-    dyn = Langevin(
-        atoms=structure,
-        timestep=1 * units.fs,
-        temperature=temperature,  # target temperature
-        friction=0.01,  # 1/fs, mild damping
+    # === Set up NVT dynamics (Berendsen thermostat) ===
+    # Previous Langevin block kept for quick switches if needed:
+    # dyn = Langevin(
+    #     atoms=structure,
+    #     timestep=1. * units.fs,
+    #     temperature=temperature,  # target temperature
+    #     friction=0.01 / units.fs,  # 1/fs, mild damping
+    # )
+    dyn = NVTBerendsen(
+    atoms=structure,
+    timestep=1.0 * units.fs,
+    temperature_K=temperature,
+    taut=100 * units.fs
     )
 
-    # # === Output files ===
+    # === Output files ===
     traj = Trajectory(output_traj, "a", structure)
     dyn.attach(traj.write, interval=interval)
 
@@ -266,10 +274,10 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
         line = (f"Step {step:>8} | T={temp:6.1f} K | Epot={epot:10.3f} eV | "
                 f"Ekin={ekin:10.3f} eV | Vol={vol:10.3f} Å³{its_per_sec_str} | remaining steps: {remaining_steps_str} | remaining time: {remaining_time_str}")
         print(line, file=fh)
-
+    
     dyn.attach(print_status, interval=interval)
 
-    print("Starting NVT (Langevin) molecular dynamics simulation...")
+    print("Starting NVT (Berendsen) molecular dynamics simulation...")
     print(f"Target: {total_target_steps} steps at 1 fs timestep")
     print(f"Simulation temperature: {temperature} K, Initial temperature: {initial_temperature} K")
     start_time = time.time()
