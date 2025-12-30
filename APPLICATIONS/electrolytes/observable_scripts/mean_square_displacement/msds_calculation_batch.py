@@ -27,6 +27,14 @@ if __name__ == "__main__":
         help="Maximum fitting time (in ps).",
     )
     parser.add_argument(
+        "--known-dt-ps",
+        "-d",
+        metavar="PS",
+        type=float,
+        default=0.01,
+        help="Base timestep of the trajectory in picoseconds (default: 0.01 ps = 10 fs).",
+    )
+    parser.add_argument(
         "--targets-json",
         metavar="JSON",
         type=str,
@@ -39,6 +47,7 @@ if __name__ == "__main__":
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     print(f"OUT_DIR: {OUT_DIR}")
     print(f"tau_max_fit_ps: {args.tau_max_fit_ps}")
+    print(f"known_dt_ps: {args.known_dt_ps}")
     
     # Get TARGETS from command-line argument or environment variable
     targets_json_str = args.targets_json
@@ -60,7 +69,7 @@ if __name__ == "__main__":
 
 
     EQ_TIME_PS       = 100.0
-    KNOWN_DT_PS      = 0.01       # 10 fs
+    KNOWN_DT_PS      = args.known_dt_ps
     # TARGET_FRAMES    = 20000 # this is about dt < 1ps
     TAU_MIN_FIT_PS   = 1000.0 # 1000 ps  = 1 ns
     TAU_MAX_FIT_PS   = args.tau_max_fit_ps
