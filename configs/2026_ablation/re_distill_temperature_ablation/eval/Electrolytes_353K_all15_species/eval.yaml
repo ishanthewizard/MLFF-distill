@@ -1,0 +1,32 @@
+defaults:
+  - cluster: local
+  - dataset: NA_PF6
+  - element_refs: NA_PF6_refs
+  - tasks: omol_stress
+  - /base
+  - _self_
+
+# dataset:
+#   omol_val:
+#     splits:
+#       val:
+#         sample_n: 200   # ← your new value
+
+runner:
+  _target_: fairchem.core.components.evaluate.eval_runner.EvalRunner #fairchem.core.components.train.train_runner.TrainEvalRunner
+  dataloader: ${eval_dataloader}
+  eval_unit:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.MLIPEvalUnit
+    job_config: ${job}
+    tasks: ${tasks}
+    bf16: ${bf16}
+    model:
+      _target_: fairchem.core.units.mlip_unit.mlip_unit.load_inference_model
+      checkpoint_location: /global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/model_checkpoints/ablation_ckpt/trained_on_all_systems/202601-1919-1500-55dc-353k/checkpoints/final/inference_ckpt.pt
+      return_checkpoint: False
+      use_ema: True
+      overrides:
+        backbone:
+          otf_graph: true
+  callbacks:
+  - _target_: torchtnt.framework.callbacks.TQDMProgressBar
