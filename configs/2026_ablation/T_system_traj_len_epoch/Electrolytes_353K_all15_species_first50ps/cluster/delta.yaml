@@ -1,0 +1,23 @@
+device: CUDA
+mode: SLURM
+ranks_per_node: 4
+num_nodes: 1
+
+slurm:
+  qos: null
+  partition: ghx4
+  nodelist: ~
+  mem_gb: 200
+  timeout_hr: 48
+  cpus_per_task: 64
+  constraint: null  # omit --constraint to avoid "Invalid feature specification" on delta-gh
+  account: bfoy-dtai-gh
+  gpu_bind: "verbose,closest"
+  exclude: null
+  ntasks_per_socket: 1
+
+debug: False
+run_dir: /u/yjian1/project/MLFF-distill/yjian1/MLFF-distill/logs
+dataloader_workers: 0
+
+omol_path: /u/czhang31/data

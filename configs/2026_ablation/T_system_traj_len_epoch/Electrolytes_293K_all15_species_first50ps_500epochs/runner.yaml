@@ -1,0 +1,23 @@
+defaults: 
+  - train # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
+  - override cluster: delta
+  - override backbone: eSEN_xtra_XTRA_small  #Not needed for eval
+  - override dataset: first50ps_all_salts_293K #Solvated
+  - override element_refs: all_salt_first_50ps_293K
+  - _self_
+
+batch_size: 4
+# max_atoms: 3000 # this is useless
+job:
+  run_name: first50ps_all_salts_293K_500epochs
+  # graph_parallel_group_size: 1
+
+# runner:
+#   train_eval_unit:
+#     cosine_lr_scheduler_fn:
+#       warmup_epochs: 0.1 # usually 0.01 but solvated and protein_ligand are so small if you use 0.01 you get div by 0 error
+
+# direct_forces_coef: 30
+# energy_coef:        30
+# hessian_coef:       60
+# num_hessian_samples: 3

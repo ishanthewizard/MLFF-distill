@@ -1,0 +1,25 @@
+# Example config override to enable torch.compile
+# Usage: python -m fairchem.core._cli -c configs/.../train.yaml runner.callbacks+=src_v2.model_compile_wrapper.CompileCallback
+
+defaults:
+  - train # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
+  - override cluster: Nersc
+  - override backbone: eSEN_xtra_XTRA_small
+  - override dataset: ALL_15 #Solvated
+  - override element_refs: 353K
+  - _self_
+
+# Enable model compilation
+runner:
+  callbacks:
+    - _target_: src_v2.model_compile_wrapper.CompileCallback
+      compile_mode: reduce-overhead  # Options: "default", "reduce-overhead", "max-autotune"
+      fullgraph: false
+      dynamic: true
+      backend: inductor
+      disable: false  # Set to true to disable compilation
+
+# batch_size: 1
+max_atoms: 3000
+job:
+  run_name: all15_species_353K_wo_hessian_compiled
