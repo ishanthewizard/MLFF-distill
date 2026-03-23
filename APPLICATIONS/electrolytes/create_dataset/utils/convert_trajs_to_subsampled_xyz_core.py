@@ -121,6 +121,13 @@ def process_single_trajectory(traj_path, subsample_step=5, window_size=None):
         return None, 0, 0
 
     try:
+        def _has_energy_forces(a):
+            return (
+                a.calc is not None
+                and "energy" in getattr(a.calc, "results", {})
+                and "forces" in getattr(a.calc, "results", {})
+            )
+
         # IMPORTANT: return a plain in-memory list of Atoms.
         # Returning a Trajectory-backed slice will crash later once the file handle is closed
         # (e.g., during train/val indexing) with "ValueError: seek of closed file".
@@ -128,6 +135,11 @@ def process_single_trajectory(traj_path, subsample_step=5, window_size=None):
             traj = read(traj_path, index=":")
         else:
             traj = read(traj_path, index=f":{window_size}")
+
+        # If first frame has no calculator (e.g. initial structure in some UMA trajs), cut it.
+        if len(traj) > 0 and not _has_energy_forces(traj[0]):
+            traj = traj[1:]
+            print(f"  Cut first frame (no calc)")
 
         original_count = len(traj)
         print(f"  Total frames in trajectory: {original_count}")
