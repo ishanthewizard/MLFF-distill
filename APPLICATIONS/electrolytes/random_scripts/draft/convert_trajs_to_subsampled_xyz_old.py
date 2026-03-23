@@ -75,17 +75,25 @@ from pathlib import Path
 #     '/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolytes/first_100ps_traj_to_send/md_omol_napf6_tgdme_1m_s1p1.traj'
 # ]
 
+# input_trajs = [
+#     '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_diglyme_1m_s1p1/md_omol_naotf_diglyme_1m_s1p1.traj',
+#     '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_dme_s1p1_omol/md_omol_naotf_dme_s1p1_omol.traj',
+#     '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_pc_1m_s1p1/md_omol_naotf_pc_1m_s1p1.traj',
+#     '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_tgdme_1m_s1p1/md_omol_naotf_tgdme_1m_s1p1.traj'
+# ]
+
+
 input_trajs = [
-    '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_diglyme_1m_s1p1/md_omol_naotf_diglyme_1m_s1p1.traj',
-    '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_dme_s1p1_omol/md_omol_naotf_dme_s1p1_omol.traj',
-    '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_pc_1m_s1p1/md_omol_naotf_pc_1m_s1p1.traj',
-    '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/UMA_simulate_data_checkpoints/Sep_18/md_omol_naotf_tgdme_1m_s1p1/md_omol_naotf_tgdme_1m_s1p1.traj'
+    '/global/homes/y/yuejian/project/MLFF-distill/m5024/UMA_trajs_293K/naotf_diglyme.traj',
+    '/global/homes/y/yuejian/project/MLFF-distill/m5024/UMA_trajs_293K/naotf_dme.traj',
+    '/global/homes/y/yuejian/project/MLFF-distill/m5024/UMA_trajs_293K/naotf_pc.traj',
+    '/global/homes/y/yuejian/project/MLFF-distill/m5024/UMA_trajs_293K/naotf_tgdme.traj'
 ]
 
 # input_trajs = input_trajs_3 + input_trajs_2 + input_trajs_1
 
-output_train_folder = '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/toy_test/Sep_18_naotf_per_salt_data/train'
-output_val_folder  = '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/toy_test/Sep_18_naotf_per_salt_data/val'
+output_train_folder = '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/new_toy_test/Sep_18_naotf_per_salt_data/train'
+output_val_folder  = '/global/homes/y/yuejian/project/MLFF-distill/m4558/distillation_project/new_toy_test/Sep_18_naotf_per_salt_data/val'
 
 # Subsample every N steps (adjust as needed)
 SUBSAMPLE_STEP = 5

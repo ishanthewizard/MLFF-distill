@@ -149,7 +149,7 @@ def launch_processing(data_dir, output_dir, num_workers):
 
 
 if __name__ == "__main__":
-    train_path = '/home/yuejian/project/MLFF-distill/OMOL/electrolytes_application/ablate_dense_sample/napf6_unequilibrated/train'
+    train_path = '/global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/data/lmdb_for_distillation/all_salt_first_50ps/293K/lmdbs_293K/all_trajs_uneq/train'
     force_rms, linref_coeff = compute_normalizer_and_linear_reference(
         train_path, 8
     )
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     
     # Save linear reference coefficients to YAML file
     parent_dir = Path(train_path).parent
-    output_file = parent_dir / "NAOTF_refs.yaml"
+    output_file = parent_dir / "species_refs.yaml"
     
     # Create the data structure similar to NA_PF6_refs.yaml
     yaml_data = {

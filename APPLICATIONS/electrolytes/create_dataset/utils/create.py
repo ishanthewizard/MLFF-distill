@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 import argparse
 import glob
 import logging
@@ -14,6 +15,9 @@ from ase.io import read
 from tqdm import tqdm
 
 from fairchem.core.datasets import AseDBDataset
+# NOTE: Dataset assembly tool. Converts ASE atoms files to ASE LMDB shards for
+# train/val, then computes force RMS and linear reference coefficients. Run via
+# CLI with --train-dir, --val-dir, --output-dir, and optional --num-workers.
 
 logging.basicConfig(level=logging.INFO)
 

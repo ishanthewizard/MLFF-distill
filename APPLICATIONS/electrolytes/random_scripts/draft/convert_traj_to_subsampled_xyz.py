@@ -1,6 +1,9 @@
 import os
 import random
 from ase.io import read, write
+# NOTE: Single-trajectory helper to subsample an ASE .traj every 5 frames,
+# randomly split 90/10 into train/val, and write XYZ files. Set input_traj,
+# output_train_folder, and output_val_folder before running.
 
 # =============================================================================
 # EDIT THESE PATHS AS NEEDED
