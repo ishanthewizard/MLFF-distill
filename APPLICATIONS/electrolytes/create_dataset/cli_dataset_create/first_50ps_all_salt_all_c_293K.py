@@ -52,13 +52,13 @@ output_val_folder = os.path.join(output_root, 'val')
 SUBSAMPLE_STEP = 5
 # NOTE: Subsample every N frames (5 = every 5th frame) to reduce dataset size
 
-WINDOW_SIZE = 50
+WINDOW_SIZE = 5000
 # NOTE: Max frames to read per trajectory; 500 = 5 ps at 10 fs timestep (5000 = 50 ps)
 
 TRAIN_RATIO = 0.9
 # NOTE: Fraction of subsampled frames for training (0.9 = 90% train, 10% validation)
 
-NUM_WORKERS = 8
+NUM_WORKERS = 16
 # NOTE: Parallel workers for launch_processing and compute_normalizer_and_linear_reference
 
 # -----------------------------------------------------------------------------

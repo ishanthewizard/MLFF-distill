@@ -149,7 +149,7 @@ def launch_processing(data_dir, output_dir, num_workers):
 
 
 if __name__ == "__main__":
-    train_path = '/global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/data/lmdb_for_distillation/all_salt_first_50ps/293K/lmdbs_293K/all_trajs_uneq/train'
+    train_path = '/u/yjian1/project/MLFF-distill/yjian1/MLFF-distill/dataset/all_salt_all_concentration_first_50ps/train'
     force_rms, linref_coeff = compute_normalizer_and_linear_reference(
         train_path, 8
     )
