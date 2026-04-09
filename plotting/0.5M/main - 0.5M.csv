@@ -1,0 +1,7 @@
+cation,anion,solvent,temperature,solute concentration,293K 50ps student cation diffusivity,293K 100ps student cation diffusivity(17ns),293K 100ps micro student cation diffusivity(7ns),OPLS cation diffusivity,exp student cation diffusivity,293K 50ps student anion diffusivity,293K 100ps student anion diffusivity (17ns),293K 100ps micro student anion diffusivity(7ns),OPLS anion diffusivity,exp anion diffusivity,293K 50ps student solvent diffusivity,293K 100ps student solvent diffusivity (17ns),293K 100ps micro student solvent diffusivity(7ns),OPLS student solvent diffusivity,exp solvent diffusivity
+Li,PF6,DME,273.2K,0.5M,5.42,4,,,4.67,6.68,3.42,,,5.17,12.35,11.43,,,12.3
+Li,PF6,DME,298.2K,0.5M,4.96,7.51,,,7.14,12.31,14.82,,,7.75,16.45,21.08,,,18.7
+Li,PF6,DME,323.2K,0.5M,36.61,15.03,,,10.3,51.44,21.12,,,11.2,112.04,62.69,,,25.8
+Na,PF6,DME,273.2K,0.5M,2.88,,,,4.14,3.69,,,,6,13.47,,,,12.6
+Na,PF6,DME,298.2K,0.5M,30.15,5.55,,,8.19,45.38,7.55,,,9.11,64.89,14.34,,,19.4
+Na,PF6,DME,323.2K,0.5M,45.65,13.21,,,20.6,109.9,11.35,,,12.7,112.09,27.25,,,27.7

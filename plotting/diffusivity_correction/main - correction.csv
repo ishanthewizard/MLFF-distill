@@ -1,0 +1,6 @@
+cation,anion,solvent,temperature,solute concentration,293K 100ps student cation diffusivity(17ns),293K 100ps student cation diffusivity(17ns)correction,OPLS cation diffusivity,exp student cation diffusivity,293K 100ps student anion diffusivity (17ns),293K 100ps student anion diffusivity (17ns)correction,OPLS anion diffusivity,exp anion diffusivity,293K 100ps student solvent diffusivity (17ns),293K 100ps student solvent diffusivity (17ns)correction,OPLS student solvent diffusivity,exp solvent diffusivity,viscosity,cell_volume
+Na,OTf,DME,298K,1M,3.46,5.385059308,1.37,5.9,4.38,6.305059308,21.94,5.44,10.88,12.80505931,5.17,15.3,1.145,22173.001
+Na,OTf,DEGDME,298K,1M,1.07,1.9753725,0.25,1.79,0.93,1.8353725,15.3,2.87,2,2.9053725,9.54,5.94,2.422,22520.03
+Na,PF6,DME,298K,1M,9.68,11.23885134,1.29,7.04,10.07,11.62885134,52.52,6.42,16.93,18.48885134,37.83,13.6,1.43,21436.361
+Na,PF6,DEGDME,298K,1M,1.08,3.154795739,0.31,,1.49,3.564795739,32.8,2.96,2.27,4.344795739,9.04,4.89,1.06,22321.822
+Na,PF6,PC,298K,1M,0.28,0.563378285,0.24,,0.72,1.003378285,56.52,0.579,0.69,0.973378285,3.31,2.43,7.284,27000
