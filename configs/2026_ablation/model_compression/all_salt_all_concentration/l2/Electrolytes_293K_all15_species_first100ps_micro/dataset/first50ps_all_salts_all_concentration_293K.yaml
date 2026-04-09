@@ -1,0 +1,38 @@
+normalizer_rmsd: 0.818778939390668
+regress_stress: true
+dataset_name: omol
+
+train_dataset:
+  splits:
+    train:
+      src: /u/yjian1/project/MLFF-distill/yjian1/MLFF-distill/dataset/all_salt_all_concentration_first_50ps/train
+  format: ase_db
+  a2g_args:
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+  no_shuffle: true
+  transforms:
+    common_transform:
+      dataset_name: ${dataset.dataset_name}
+    stress_reshape_transform:
+      dataset_name: ${dataset.dataset_name}
+  teacher_labels_folder: ${cluster.omol_path}/electrolytes_application/labels/NAPF6/s1p1
+
+val_dataset:
+  splits:
+    val:
+      src: /u/yjian1/project/MLFF-distill/yjian1/MLFF-distill/dataset/all_salt_all_concentration_first_50ps/val
+  format: ase_db
+  a2g_args:
+    r_energy: True
+    r_forces: True
+    r_data_keys: ['spin', 'charge']
+  no_shuffle: true
+  transforms:
+    common_transform:
+      dataset_name: ${dataset.dataset_name}
+    stress_reshape_transform:
+      dataset_name: ${dataset.dataset_name}
+  teacher_labels_folder: ${cluster.omol_path}/electrolytes_application/labels/NAPF6/s1p1
+
