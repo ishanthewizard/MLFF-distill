@@ -1,0 +1,21 @@
+device: CUDA
+mode: SLURM
+ranks_per_node: 4
+num_nodes: 4
+
+slurm:
+  qos: premium
+  partition: ~
+  nodelist: ~
+  mem_gb: 80
+  timeout_hr: 22
+  cpus_per_task: 5
+  constraint: gpu
+  exclude: null
+  account: m5250_g #
+
+debug: False
+run_dir: /global/homes/y/yuejian/project/MLFF-distill/yuejian/distill_log
+dataloader_workers: 0
+
+omol_path: /global/homes/y/yuejian/project/MLFF-distill/yuejian/OMol_Whole
