@@ -13,16 +13,14 @@ Requires: ASE, NumPy, pandas
 
 import os
 import numpy as np
-import pandas as pd
 from ase.io import Trajectory
 from tqdm import tqdm
-# ------------------------------------------------------------------
 # Physical constants
 AMU_TO_KG       = 1.66053906660e-27   # kg per atomic mass unit
 ANGSTROM3_TO_M3 = 1e-30               # Å³ → m³
 
 # Sampling parameters
-N_SNAPSHOTS = 1_000   # how many snapshots to analyse
+N_SNAPSHOTS = 1000   # how many snapshots to analyse
 STRIDE      = 10     # gap (in MD steps / frames) between snapshots
 # ------------------------------------------------------------------
 
@@ -58,24 +56,57 @@ def compute_density_stats(traj):
 
 # ------------------------------------------------------------------
 if __name__ == "__main__":
-    results = []
-    root_path = "/projects/beye/iamin/trajs"
-    solvents = ["DME", "DG", "DMC", "TGDME", "PC", "THF"]
-    traj_paths = [os.path.join(root_path, f"napf6_{solvent}_1ns.traj") for solvent in solvents ]
+    import argparse
+    parser = argparse.ArgumentParser(description="Compute density from ASE trajectories")
+    parser.add_argument("--trajs", nargs='+', required=True, help="List of trajectory files")
+    parser.add_argument("--out-dir", required=True, help="Output directory for the CSV")
+    parser.add_argument("--note", type=str, default="", help="Optional note to attach to the CSV filename")
+    args = parser.parse_args()
 
-    for fname in traj_paths:
+    os.makedirs(args.out_dir, exist_ok=True)
+    results = []
+
+    def extract_system_name(filename):
+        name = os.path.basename(filename).replace(".traj", "")
+        if name.startswith("md_omol_"):
+            name = name[len("md_omol_"):]
+        parts = name.split('_', 1)
+        salt = parts[0] if len(parts) > 0 else name
+        rest = parts[1] if len(parts) > 1 else ""
+        
+        cation = "Na" if salt.startswith("na") else "Li" if salt.startswith("li") else "Unknown"
+        anion_raw = salt[2:] if cation in ["Na", "Li"] else salt
+        anion = "PF6" if anion_raw == "pf6" else "OTf" if anion_raw == "otf" else anion_raw
+        
+        if rest.startswith("propylene_carbonate"):
+            solvent = "propylene_carbonate"
+        else:
+            solvent = rest.split('_')[0] if rest else "Unknown"
+            
+        return f"{cation} - {anion} - {solvent}"
+
+    for fname in args.trajs:
         try:
+            print(f"Processing {fname}...")
+            sys_name = extract_system_name(fname)
             traj = Trajectory(fname)
             mean_rho, sd_rho = compute_density_stats(traj)
             results.append({
-                "system": fname[:-5],                 # strip ".traj"
+                "system": sys_name,
                 "average_density_g_cm3": float(f"{mean_rho:.4g}"),
                 "std_dev": float(f"{sd_rho:.4g}")
             })
         except Exception as exc:
             print(f"[WARN] {fname}: {exc}")
 
-    df = pd.DataFrame(results)
-    plot_dir = '/projects/beye/iamin/observables/distilled_densities'
-    df.to_csv(f"{plot_dir}/simulation_density_results_napf6_hessianw80", index=False)
-    print("✅  Written simulation_density_results.csv with std_dev column.")
+    if results:
+        import csv
+        filename = f"simulation_density_results_{args.note}.csv" if args.note else "simulation_density_results.csv"
+        out_csv = os.path.join(args.out_dir, filename)
+        with open(out_csv, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=["system", "average_density_g_cm3", "std_dev"])
+            writer.writeheader()
+            writer.writerows(results)
+        print(f"✅  Written {out_csv} with {len(results)} rows.")
+    else:
+        print("No valid results computed.")

@@ -4,6 +4,10 @@ Add more Slurm configs
 """
 
 from __future__ import annotations
+import sys
+import os
+sys.path.append(os.getcwd())
+
 from dataclasses import dataclass, field
 from typing import Optional
 import uuid
@@ -14,6 +18,7 @@ import logging
 import hydra
 from omegaconf import DictConfig
 from submitit import AutoExecutor
+
 from fairchem.core._cli import (
     SchedulerType,
     DeviceType,

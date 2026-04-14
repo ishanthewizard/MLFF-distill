@@ -14,8 +14,8 @@ USAGE:
         --models /path/to/model1.ckpt /path/to/model2.ckpt /path/to/model3.ckpt /path/to/model4.ckpt
 
     # With custom parameters
-    python solv_uma_npt_flex_ablation.py /path/to/trajectory --models /path/to/model.ckpt \
-        --steps 2000000 --interval 50 --temperature 350 --initial_temperature 300
+    python solv_uma_npt_flex_ablation_resume.py /path/to/trajectory --models /path/to/model.ckpt \
+        --steps 2000000 --interval 50 --temperature 350 --initial_temperature 300 --timestep 1.0
 
 REQUIRED ARGUMENTS:
     trajectories: Path(s) to trajectory directories containing .traj files
@@ -26,6 +26,7 @@ OPTIONAL ARGUMENTS:
     --interval: Interval for trajectory writing and status printing (default: 10)
     --temperature: Simulation temperature in Kelvin (default: 323)
     --initial_temperature: Initial temperature in Kelvin (default: 300)
+    --timestep: MD timestep in femtoseconds (default: 1.0)
 
 REQUIREMENTS:
     - CUDA-capable GPU(s)
@@ -95,7 +96,16 @@ def cleanup_distributed():
 
 
 
-def worker(rank, trajectory_model_pairs, world_size, interval, total_target_steps, temperatures, initial_temperatures):
+def worker(
+    rank,
+    trajectory_model_pairs,
+    world_size,
+    interval,
+    total_target_steps,
+    temperatures,
+    initial_temperatures,
+    timestep_fs,
+):
     """Worker function that runs on each GPU"""
     try:
         # Initialize distributed setup if running on multiple GPUs
@@ -129,7 +139,8 @@ def worker(rank, trajectory_model_pairs, world_size, interval, total_target_step
                 total_target_steps=total_target_steps,
                 model_checkpoint=model_checkpoint,
                 temperature=temperature,
-                initial_temperature=initial_temperature
+                initial_temperature=initial_temperature,
+                timestep_fs=timestep_fs,
             )
             print(f"Rank {rank}: Completed simulation for {traj_path}")
         except Exception as sim_error:
@@ -155,7 +166,15 @@ def worker(rank, trajectory_model_pairs, world_size, interval, total_target_step
                 print(f"Rank {rank}: Cleaned up distributed setup")
 
 
-def run_parallel_simulations(trajectory_model_pairs, world_size, interval=50, total_target_steps=1000000, temperatures=[323], initial_temperatures=[300]):
+def run_parallel_simulations(
+    trajectory_model_pairs,
+    world_size,
+    interval=50,
+    total_target_steps=1000000,
+    temperatures=[323],
+    initial_temperatures=[300],
+    timestep_fs=1.0,
+):
     """Main function to run parallel simulations across multiple GPUs"""
 
     # Spawn worker processes
@@ -163,10 +182,19 @@ def run_parallel_simulations(trajectory_model_pairs, world_size, interval=50, to
     print(f"Total trajectory-model pairs: {len(trajectory_model_pairs)}")
     print(f"Temperatures: {temperatures}")
     print(f"Initial temperatures: {initial_temperatures}")
+    print(f"Timestep: {timestep_fs} fs")
 
     mp.spawn(
         worker,
-        args=(trajectory_model_pairs, world_size, interval, total_target_steps, temperatures, initial_temperatures),
+        args=(
+            trajectory_model_pairs,
+            world_size,
+            interval,
+            total_target_steps,
+            temperatures,
+            initial_temperatures,
+            timestep_fs,
+        ),
         nprocs=world_size,
         join=True
     )
@@ -174,7 +202,17 @@ def run_parallel_simulations(trajectory_model_pairs, world_size, interval=50, to
 
 
 
-def simulate(root_path, rank=None, world_size=None, interval=50, total_target_steps=1000000, model_checkpoint=None, temperature=323, initial_temperature=300):
+def simulate(
+    root_path,
+    rank=None,
+    world_size=None,
+    interval=50,
+    total_target_steps=1000000,
+    model_checkpoint=None,
+    temperature=323,
+    initial_temperature=300,
+    timestep_fs=1.0,
+):
     """
     Run MD simulation on a specific GPU rank.
 
@@ -305,7 +343,7 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     # === Set up NPT dynamics ===
     dyn = NPT(
         atoms=structure,
-        timestep = 1 * units.fs,
+        timestep=timestep_fs * units.fs,
         temperature_K= temperature, # 298.2,
         externalstress=1.0 * units.bar,
         ttime=100 * units.fs,
@@ -361,7 +399,7 @@ def simulate(root_path, rank=None, world_size=None, interval=50, total_target_st
     dyn.attach(print_status, interval=interval)
 
     print("Starting NPT molecular dynamics simulation...")
-    print(f"Target: {total_target_steps} steps at 1 fs timestep")
+    print(f"Target: {total_target_steps} steps at {timestep_fs} fs timestep")
     print(f"Simulation temperature: {temperature} K, Initial temperature: {initial_temperature} K, Pressure: 1.0 bar")
     start_time = time.time()
     dyn.run(steps=total_target_steps - existing_simulated_steps)
@@ -398,6 +436,13 @@ def main():
                        help='Temperature(s) for simulation (default: 323 K). Can specify multiple temperatures, one per trajectory.')
     parser.add_argument('--initial_temperature', type=float, nargs='+', default=[300],
                        help='Initial temperature(s) for simulation (default: 300 K). Can specify multiple temperatures, one per trajectory.')
+    parser.add_argument(
+        '--timestep',
+        type=float,
+        default=1.0,
+        dest='timestep_fs',
+        help='MD timestep in femtoseconds (default: 1.0)',
+    )
     args = parser.parse_args()
     
     # === Configuration ===
@@ -407,10 +452,14 @@ def main():
     trajectory_paths = args.trajectories
     temperatures = args.temperature
     initial_temperatures = args.initial_temperature
+    timestep_fs = args.timestep_fs
     world_size = torch.cuda.device_count()  # Number of available GPUs
 
     if world_size == 0:
         raise RuntimeError("No CUDA devices available")
+
+    if timestep_fs <= 0:
+        raise ValueError(f"timestep must be > 0 fs, got {timestep_fs}")
 
     print(f"Found {world_size} CUDA devices")
     print(f"Model checkpoints: {model_checkpoints}")
@@ -419,6 +468,7 @@ def main():
     print(f"Trajectory paths: {trajectory_paths}")
     print(f"Temperatures: {temperatures}")
     print(f"Initial temperatures: {initial_temperatures}")
+    print(f"Timestep: {timestep_fs} fs")
     
     # === Validation ===
     # Check that trajectory and model lists have the same length
@@ -470,7 +520,8 @@ def main():
             total_target_steps=total_target_steps,
             model_checkpoint=model_checkpoint,
             temperature=temperature,
-            initial_temperature=initial_temperature
+            initial_temperature=initial_temperature,
+            timestep_fs=timestep_fs,
         )
     else:
         # Multiple trajectory-model pairs - distribute across GPUs
@@ -481,7 +532,8 @@ def main():
             interval=interval,
             total_target_steps=total_target_steps,
             temperatures=temperatures,
-            initial_temperatures=initial_temperatures
+            initial_temperatures=initial_temperatures,
+            timestep_fs=timestep_fs,
         )
 
 
