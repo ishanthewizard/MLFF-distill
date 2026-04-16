@@ -1,0 +1,87 @@
+#!/bin/bash
+#SBATCH --mem=64g
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=16
+#SBATCH --partition=ghx4
+#SBATCH --time=48:00:00
+#SBATCH --job-name=uma_teacher_natfsi_dme
+#SBATCH --account=bfoy-dtai-gh
+#SBATCH --gpus-per-node=1
+#SBATCH --gpu-bind=verbose,closest
+#SBATCH --output=/u/yjian1/project/MLFF-distill/yjian1/log/md_flex_%x_%j_%Y%m%d_%H%M%S.out
+#SBATCH --error=/u/yjian1/project/MLFF-distill/yjian1/log/md_flex_%x_%j_%Y%m%d_%H%M%S.err
+#SBATCH --mail-user=yuejian@berkeley.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+set -euo pipefail
+
+echo "=========================================="
+echo "Job ID: ${SLURM_JOB_ID:-}"
+echo "Job Name: ${SLURM_JOB_NAME:-}"
+echo "Node: ${SLURM_NODELIST:-}"
+echo "Start Time: $(date)"
+echo "=========================================="
+
+mkdir -p /u/yjian1/project/MLFF-distill/yjian1/log
+export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$CONDA_PREFIX/lib64:${LD_LIBRARY_PATH:-}"
+cd /u/yjian1/project/MLFF-distill
+
+MODEL_CHECKPOINTS=(
+    "/u/yjian1/project/MLFF-distill/yjian1/MLFF-distill/models/uma-s-1p1.pt"
+)
+TRAJECTORY_DIRS=(
+    "/u/yjian1/project/MLFF-distill/yjian1/electrolyte_application/ablate_temperature_whole_exp/generating_teacher_dataset/initial_boxes_for_UMA/natfsi_dme"
+)
+TEMPERATURES=(353.0)
+INITIAL_TEMPERATURES=(353.0)
+TARGET_STEPS=1000000
+INTERVAL=10
+
+if [ ${#TRAJECTORY_DIRS[@]} -ne ${#MODEL_CHECKPOINTS[@]} ]; then
+    echo "ERROR: Number of trajectories (${#TRAJECTORY_DIRS[@]}) must equal number of models (${#MODEL_CHECKPOINTS[@]})"
+    exit 1
+fi
+if [ ${#TEMPERATURES[@]} -ne ${#TRAJECTORY_DIRS[@]} ]; then
+    echo "ERROR: Number of temperatures (${#TEMPERATURES[@]}) must equal number of trajectories (${#TRAJECTORY_DIRS[@]})"
+    exit 1
+fi
+if [ ${#INITIAL_TEMPERATURES[@]} -ne ${#TRAJECTORY_DIRS[@]} ]; then
+    echo "ERROR: Number of initial temperatures (${#INITIAL_TEMPERATURES[@]}) must equal number of trajectories (${#TRAJECTORY_DIRS[@]})"
+    exit 1
+fi
+if [ ${#TRAJECTORY_DIRS[@]} -gt 4 ]; then
+    echo "ERROR: Number of trajectory-model pairs (${#TRAJECTORY_DIRS[@]}) cannot exceed 4"
+    exit 1
+fi
+
+echo "Starting MD simulation with trajectory-model pairs..."
+echo "Number of pairs: ${#TRAJECTORY_DIRS[@]}"
+echo "Models: ${MODEL_CHECKPOINTS[@]}"
+echo "Trajectories: ${TRAJECTORY_DIRS[@]}"
+echo "Target steps: $TARGET_STEPS"
+echo "Interval: $INTERVAL"
+echo "Temperatures: ${TEMPERATURES[@]} K"
+echo "Initial temperatures: ${INITIAL_TEMPERATURES[@]} K"
+
+CMD=(python -u APPLICATIONS/electrolytes/solv_uma_npt_flex_ablation.py)
+CMD+=("${TRAJECTORY_DIRS[@]}")
+CMD+=(--models "${MODEL_CHECKPOINTS[@]}")
+CMD+=(--steps "$TARGET_STEPS")
+CMD+=(--interval "$INTERVAL")
+CMD+=(--temperature "${TEMPERATURES[@]}")
+CMD+=(--initial_temperature "${INITIAL_TEMPERATURES[@]}")
+
+echo "Running command: ${CMD[*]}"
+"${CMD[@]}"
+exit_code=$?
+
+echo "=========================================="
+if [ $exit_code -eq 0 ]; then
+    echo "MD simulation completed successfully!"
+else
+    echo "MD simulation exited with code: $exit_code"
+fi
+echo "End Time: $(date)"
+echo "=========================================="
