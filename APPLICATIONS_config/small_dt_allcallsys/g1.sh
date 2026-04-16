@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # === SLURM Job Parameters ===
-#SBATCH --account=m4558_g              # Billing account for compute time
+#SBATCH --account=m5250_g              # Billing account for compute time
 #SBATCH --constraint=gpu               # Request GPU nodes only
 #SBATCH --cpus-per-task=32              # 5 CPU cores per task (for each GPU)
 #SBATCH --gpus-per-node=4              # Request 4 GPUs per node
@@ -38,36 +38,36 @@ MODEL_CHECKPOINTS=(
 
 # Trajectory directories (space-separated list, same length as models)
 TRAJECTORY_DIRS=(
-    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/ablate_distillation/ablation_diffusivity/20ns_solvent_solute_0.5M/323_2K/md_omol_lipf6_pfactor_0.1_1fs_mask_t"
-    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/ablate_distillation/ablation_diffusivity/20ns_solvent_solute_0.5M/323_2K/md_omol_napf6_dme_re1"
-    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/ablate_distillation/ablation_diffusivity/20ns_solvent_solute_0.5M/298_2K/md_omol_napf6_dme_re1"
-    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/ablate_distillation/ablation_diffusivity/20ns_solvent_0_1M/md_omol_napf6_dme_re1"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/smaller_dt_and_all_c_all_sys/100ps_double_data_breaking_init_boxes/20ns_solvent_0_1M/md_omol_naotf_diglyme_1m_s1p1"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/smaller_dt_and_all_c_all_sys/100ps_double_data_breaking_init_boxes/20ns_solvent_0_1M/md_omol_naotf_tgdme_1m_s1p1"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/smaller_dt_and_all_c_all_sys/100ps_double_data_breaking_init_boxes/20ns_solvent_0_1M/md_omol_napf6_diglyme_pfactor_0.1_1fs"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/smaller_dt_and_all_c_all_sys/100ps_double_data_breaking_init_boxes/20ns_solvent_0_1M/md_omol_napf6_dme_re1"
 )
 
 # Temperature arrays (space-separated list, same length as models and trajectories)
 TEMPERATURES=(
-    323.2
-    323.2
-    298.2
+    298.0
+    298.0
+    298.0
     298.0
 )
 
 # Initial temperature arrays (space-separated list, same length as models and trajectories)
 INITIAL_TEMPERATURES=(
-    323.2
-    323.2
-    298.2
+    298.0
+    298.0
+    298.0
     298.0
 )
 
 # Simulation parameters
-TARGET_STEPS=10000000    # Total MD steps (10 ns at 1 fs timestep)
+TARGET_STEPS=20000000    # Total MD steps (10 ns at 1 fs timestep)
 INTERVAL=100            # Output interval for trajectory and status
 TIMESTEPS=(
-    1.0
-    1.0
-    1.0
-    1.0
+    0.7
+    0.7
+    0.7
+    0.7
 )
 
 
