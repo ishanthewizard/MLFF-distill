@@ -63,6 +63,12 @@ INITIAL_TEMPERATURES=(
 # Simulation parameters
 TARGET_STEPS=10000000    # Total MD steps (10 ns at 1 fs timestep)
 INTERVAL=100            # Output interval for trajectory and status
+TIMESTEPS=(
+    1.0
+    1.0
+    1.0
+    1.0
+)
 
 
 
@@ -84,6 +90,11 @@ if [ ${#INITIAL_TEMPERATURES[@]} -ne ${#TRAJECTORY_DIRS[@]} ]; then
     exit 1
 fi
 
+if [ ${#TIMESTEPS[@]} -ne ${#TRAJECTORY_DIRS[@]} ]; then
+    echo "ERROR: Number of timesteps (${#TIMESTEPS[@]}) must equal number of trajectories (${#TRAJECTORY_DIRS[@]})"
+    exit 1
+fi
+
 # Check that both lists don't exceed 4 items
 if [ ${#TRAJECTORY_DIRS[@]} -gt 4 ]; then
     echo "ERROR: Number of trajectory-model pairs (${#TRAJECTORY_DIRS[@]}) cannot exceed 4"
@@ -99,6 +110,7 @@ echo "Target steps: $TARGET_STEPS"
 echo "Interval: $INTERVAL"
 echo "Temperatures: ${TEMPERATURES[@]} K"
 echo "Initial temperatures: ${INITIAL_TEMPERATURES[@]} K"
+echo "Timesteps: ${TIMESTEPS[@]} fs"
 
 # Build command with all arguments
 CMD="python APPLICATIONS/electrolytes/solv_uma_npt_flex_ablation_resume.py"
@@ -108,6 +120,7 @@ CMD="$CMD --steps $TARGET_STEPS"
 CMD="$CMD --interval $INTERVAL"
 CMD="$CMD --temperature ${TEMPERATURES[@]}"
 CMD="$CMD --initial_temperature ${INITIAL_TEMPERATURES[@]}"
+CMD="$CMD --timestep ${TIMESTEPS[@]}"
 
 echo "Running command: $CMD"
 
