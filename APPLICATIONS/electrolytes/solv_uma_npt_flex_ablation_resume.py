@@ -104,7 +104,7 @@ def worker(
     total_target_steps,
     temperatures,
     initial_temperatures,
-    timestep_fs,
+    timestep_fs_list,
 ):
     """Worker function that runs on each GPU"""
     try:
@@ -119,7 +119,8 @@ def worker(
             # Get the temperature for this specific pair
             temperature = temperatures[rank] if rank < len(temperatures) else temperatures[0]
             initial_temperature = initial_temperatures[rank] if rank < len(initial_temperatures) else initial_temperatures[0]
-            print(f"Rank {rank}: Assigned trajectory: {traj_path}, model: {model_checkpoint}, temperature: {temperature} K, initial_temperature: {initial_temperature} K")
+            timestep_fs = timestep_fs_list[rank] if rank < len(timestep_fs_list) else timestep_fs_list[0]
+            print(f"Rank {rank}: Assigned trajectory: {traj_path}, model: {model_checkpoint}, temperature: {temperature} K, initial_temperature: {initial_temperature} K, timestep: {timestep_fs} fs")
         else:
             print(f"Rank {rank}: No trajectory-model pair assigned")
             return
@@ -173,7 +174,7 @@ def run_parallel_simulations(
     total_target_steps=1000000,
     temperatures=[323],
     initial_temperatures=[300],
-    timestep_fs=1.0,
+    timestep_fs_list=[1.0],
 ):
     """Main function to run parallel simulations across multiple GPUs"""
 
@@ -182,7 +183,7 @@ def run_parallel_simulations(
     print(f"Total trajectory-model pairs: {len(trajectory_model_pairs)}")
     print(f"Temperatures: {temperatures}")
     print(f"Initial temperatures: {initial_temperatures}")
-    print(f"Timestep: {timestep_fs} fs")
+    print(f"Timesteps: {timestep_fs_list} fs")
 
     mp.spawn(
         worker,
@@ -193,7 +194,7 @@ def run_parallel_simulations(
             total_target_steps,
             temperatures,
             initial_temperatures,
-            timestep_fs,
+            timestep_fs_list,
         ),
         nprocs=world_size,
         join=True
@@ -439,9 +440,10 @@ def main():
     parser.add_argument(
         '--timestep',
         type=float,
-        default=1.0,
-        dest='timestep_fs',
-        help='MD timestep in femtoseconds (default: 1.0)',
+        nargs='+',
+        default=[1.0],
+        dest='timestep_fs_list',
+        help='MD timestep(s) in femtoseconds (default: 1.0). Can specify multiple values, one per trajectory.',
     )
     args = parser.parse_args()
     
@@ -452,14 +454,18 @@ def main():
     trajectory_paths = args.trajectories
     temperatures = args.temperature
     initial_temperatures = args.initial_temperature
-    timestep_fs = args.timestep_fs
+    timestep_fs_list = args.timestep_fs_list
     world_size = torch.cuda.device_count()  # Number of available GPUs
 
     if world_size == 0:
         raise RuntimeError("No CUDA devices available")
 
-    if timestep_fs <= 0:
-        raise ValueError(f"timestep must be > 0 fs, got {timestep_fs}")
+    if len(timestep_fs_list) != len(trajectory_paths):
+        raise ValueError(f"Number of timesteps ({len(timestep_fs_list)}) must equal number of trajectories ({len(trajectory_paths)})")
+
+    for timestep_fs in timestep_fs_list:
+        if timestep_fs <= 0:
+            raise ValueError(f"timestep must be > 0 fs, got {timestep_fs}")
 
     print(f"Found {world_size} CUDA devices")
     print(f"Model checkpoints: {model_checkpoints}")
@@ -468,7 +474,7 @@ def main():
     print(f"Trajectory paths: {trajectory_paths}")
     print(f"Temperatures: {temperatures}")
     print(f"Initial temperatures: {initial_temperatures}")
-    print(f"Timestep: {timestep_fs} fs")
+    print(f"Timesteps: {timestep_fs_list} fs")
     
     # === Validation ===
     # Check that trajectory and model lists have the same length
@@ -510,8 +516,9 @@ def main():
         traj_path, model_checkpoint = trajectory_model_pairs[0]
         temperature = temperatures[0]
         initial_temperature = initial_temperatures[0]
+        timestep_fs = timestep_fs_list[0]
         print(f"Running single trajectory-model pair on single GPU: {traj_path} + {model_checkpoint}")
-        print(f"Temperature: {temperature} K, Initial temperature: {initial_temperature} K")
+        print(f"Temperature: {temperature} K, Initial temperature: {initial_temperature} K, Timestep: {timestep_fs} fs")
         simulate(
             root_path=traj_path,
             rank=None,
@@ -533,7 +540,7 @@ def main():
             total_target_steps=total_target_steps,
             temperatures=temperatures,
             initial_temperatures=initial_temperatures,
-            timestep_fs=timestep_fs,
+            timestep_fs_list=timestep_fs_list,
         )
 
 
