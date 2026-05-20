@@ -25,6 +25,8 @@ ARGUMENTS:
     --calculator-path      Path to UMA checkpoint (.pt or .ckpt)
     --augmentations        One or more of: volume_preserving_distortion, rattle  (default: volume_preserving_distortion)
     --augment-probability  Fraction of frames to augment, in [0, 1]  (default: 1.0)
+    --max-stretch-min      Lower bound of max_stretch sampled per frame  (default: 0.05)
+    --max-stretch-max      Upper bound of max_stretch sampled per frame  (default: 0.15)
     --num-workers          Parallel workers for saving  (default: 8)
     --sanity-check         Before augmenting, compare UMA predictions to stored labels
     --sanity-check-n       Number of frames for sanity check  (default: 3)
@@ -56,6 +58,10 @@ def main():
                         choices=list(AUGMENTATIONS.keys()))
     # augment with probability
     parser.add_argument("--augment-probability", type=float, default=1.0)
+    parser.add_argument("--max-stretch-min", type=float, default=0.05,
+                        help="Lower bound of the max_stretch range sampled per frame (default: 0.05).")
+    parser.add_argument("--max-stretch-max", type=float, default=0.15,
+                        help="Upper bound of the max_stretch range sampled per frame (default: 0.15).")
     parser.add_argument("--sanity-check", action="store_true",
                         help="Before augmenting, verify UMA predictions match stored labels on a few frames.")
     parser.add_argument("--sanity-check-n", type=int, default=3,
@@ -80,7 +86,8 @@ def main():
                 for f in frames:
                     if random.random() < args.augment_probability:
                         try:
-                            a = AUGMENTATIONS[aug](f)
+                            max_stretch = random.uniform(args.max_stretch_min, args.max_stretch_max)
+                            a = AUGMENTATIONS[aug](f, max_stretch=max_stretch)
                             if a is not None:
                                 augmented.append(a)
                         except Exception as e:
