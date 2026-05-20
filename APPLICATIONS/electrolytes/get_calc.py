@@ -54,14 +54,14 @@ class UMACalculatorWrapper(Calculator):
         
         self.counter += 1
 
-def get_uma_calc(uma_path, small_model=False):
+def get_uma_calc(uma_path, small_model=False, wigner_cuda=True, activation_checkpointing=False):
     if small_model:
         inference_settings = InferenceSettings(
-            tf32=False,
-            activation_checkpointing=False,
+            tf32=True,
+            activation_checkpointing=activation_checkpointing,
             merge_mole=False,
-            compile=False,
-            wigner_cuda=True,
+            compile=True,
+            wigner_cuda=wigner_cuda,
             external_graph_gen=False,
             internal_graph_gen_version=2,
         )

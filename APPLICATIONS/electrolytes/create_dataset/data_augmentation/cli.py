@@ -1,6 +1,39 @@
+"""
+Data augmentation pipeline for MLFF training data.
+
+USAGE TEMPLATE:
+
+    python /home/yuejian/project/MLFF-distill/APPLICATIONS/electrolytes/create_dataset/data_augmentation/cli.py \\
+        --input-dir  /data/yuejian/electrolyte/test \\
+        --output-dir /data/yuejian/electrolyte_augmented \\
+        --calculator-path /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/uma-s-1p1.pt \\
+        --augmentations volume_preserving_distortion \\
+        --augment-probability 1.0 \\
+        --num-workers 8
+
+SANITY CHECK (run UMA on original frames before augmenting, verify labels match):
+
+    python /home/yuejian/project/MLFF-distill/APPLICATIONS/electrolytes/create_dataset/data_augmentation/cli.py \\
+        --input-dir  /data/yuejian/electrolyte \\
+        --output-dir /data/yuejian/electrolyte_augmented \\
+        --calculator-path /home/yuejian/project/MLFF-distill/OMol_Whole/ckpt/uma-s-1p1.pt \\
+        --sanity-check --sanity-check-n 3 --stress-tol 0.5
+
+ARGUMENTS:
+    --input-dir            Directory with train/ and (optionally) val/ subdirs of .aselmdb files
+    --output-dir           Where to write augmented .aselmdb files + species_refs.yaml + force_rms.txt
+    --calculator-path      Path to UMA checkpoint (.pt or .ckpt)
+    --augmentations        One or more of: volume_preserving_distortion, rattle  (default: volume_preserving_distortion)
+    --augment-probability  Fraction of frames to augment, in [0, 1]  (default: 1.0)
+    --num-workers          Parallel workers for saving  (default: 8)
+    --sanity-check         Before augmenting, compare UMA predictions to stored labels
+    --sanity-check-n       Number of frames for sanity check  (default: 3)
+    --stress-tol           Max stress MAE in GPa for sanity check  (default: 0.5)
+"""
 from __future__ import annotations
 
 import argparse
+import random
 import sys
 import yaml
 from pathlib import Path
@@ -8,7 +41,7 @@ from pathlib import Path
 # data_augmentation/ must be first so `utils` resolves to utils.py here, not create_dataset/utils/
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "utils"))  # create_dataset/utils/
 sys.path.insert(0, str(Path(__file__).resolve().parent))                   # data_augmentation/
-from utils import load_frames, relabel, save_frames, AUGMENTATIONS
+from utils import load_frames, relabel, save_frames, sanity_check_labels, AUGMENTATIONS
 from compute_ref import compute_normalizer_and_linear_reference
 
 
@@ -21,6 +54,14 @@ def main():
     parser.add_argument("--augmentations", nargs="+",
                         default=["volume_preserving_distortion"],
                         choices=list(AUGMENTATIONS.keys()))
+    # augment with probability
+    parser.add_argument("--augment-probability", type=float, default=1.0)
+    parser.add_argument("--sanity-check", action="store_true",
+                        help="Before augmenting, verify UMA predictions match stored labels on a few frames.")
+    parser.add_argument("--sanity-check-n", type=int, default=3,
+                        help="Number of frames to use for sanity check (default: 3).")
+    parser.add_argument("--stress-tol", type=float, default=0.5,
+                        help="Max allowed stress MAE in GPa for sanity check (default: 0.5).")
     args = parser.parse_args()
 
     input_dir, output_dir = Path(args.input_dir), Path(args.output_dir)
@@ -30,10 +71,26 @@ def main():
         if not src.exists():
             continue
         frames = load_frames(src)
-        for aug in args.augmentations:
-            frames += [a for f in frames if (a := AUGMENTATIONS[aug](f)) is not None]
-        relabel(frames, args.calculator_path)
-        save_frames(frames, output_dir / split, args.num_workers)
+        new_frames = []
+        if args.sanity_check and split == "train":
+            sanity_check_labels(frames, args.calculator_path, n_frames=args.sanity_check_n, stress_tol=args.stress_tol)
+        if split == "train":
+            for aug in args.augmentations:
+                augmented = []
+                for f in frames:
+                    if random.random() < args.augment_probability:
+                        try:
+                            a = AUGMENTATIONS[aug](f)
+                            if a is not None:
+                                augmented.append(a)
+                        except Exception as e:
+                            print(f"[{aug}] augmentation failed for frame {f}: {e}")
+                    else:
+                        # just add original frame
+                        augmented.append(f)
+                new_frames += augmented
+        relabel(new_frames, args.calculator_path)
+        save_frames(new_frames, output_dir / split, args.num_workers)
 
     force_rms, linref_coeff = compute_normalizer_and_linear_reference(
         str(output_dir / "train"), args.num_workers
