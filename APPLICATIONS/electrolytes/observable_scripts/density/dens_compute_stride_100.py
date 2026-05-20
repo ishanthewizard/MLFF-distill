@@ -3,15 +3,37 @@
 Density analysis for ASE trajectories
 -------------------------------------
 
-For each *.traj file in the working directory:
-  • Pick the LAST 1 000 frames, stepping backwards every 100 MD steps.
-  • Compute the average density (g cm⁻³) and its sample standard deviation.
-  • Write one line per trajectory to simulation_density_results.csv.
+Inputs:
+  • --trajs: One or more ASE .traj files.
+  • --dt: Time spacing between consecutive trajectory frames, with units
+    (fs/ps/ns), e.g. 100fs or 0.1ps.
+  • --start-time: Time to start density analysis, with units (fs/ps/ns),
+    e.g. 2ns.
+  • --n-frames (optional, default 1000): Maximum number of consecutive
+    frames to analyze starting from --start-time.
+  • --out-dir: Directory where the output CSV is written.
+  • --note (optional): Suffix used in output filename.
+
+Selection rule:
+  • start_idx = ceil(start_time / dt)
+  • analyze frames in [start_idx, start_idx + n_frames), truncated if
+    trajectory ends earlier.
+
+Outputs:
+  • CSV file in --out-dir:
+      - simulation_density_results.csv
+      - simulation_density_results_<note>.csv (if --note is provided)
+  • CSV columns:
+      - system
+      - average_density_g_cm3
+      - std_dev
+  • One row per trajectory file.
 
 Requires: ASE, NumPy, pandas
 """
 
 import os
+import re
 import numpy as np
 from ase.io import Trajectory
 from tqdm import tqdm
@@ -19,33 +41,69 @@ from tqdm import tqdm
 AMU_TO_KG       = 1.66053906660e-27   # kg per atomic mass unit
 ANGSTROM3_TO_M3 = 1e-30               # Å³ → m³
 
-# Sampling parameters
+# Sampling defaults
 N_SNAPSHOTS = 1000   # how many snapshots to analyse
-STRIDE      = 10     # gap (in MD steps / frames) between snapshots
 # ------------------------------------------------------------------
 
 
-def last_snapshots(traj, n=N_SNAPSHOTS, stride=STRIDE):
+def parse_time_to_fs(time_str):
     """
-    Return the final `n` frames of `traj`, sampled every `stride` steps
-    working backwards from the end.
+    Parse a time string with units (fs, ps, ns) to femtoseconds.
 
-    Example with n=3, stride=2, len=10  -->  frames 8, 6, 4.
+    Examples:
+        "100fs" -> 100.0
+        "2ps"   -> 2000.0
+        "2ns"   -> 2_000_000.0
     """
-    tail   = traj[-n * stride:]   # slice the last n*stride frames (or whole traj)
-    frames = tail[::stride]       # walk through that tail with the desired stride
-    return frames[-n:]            # ensure at most n frames are returned
+    value = time_str.strip().lower()
+    unit_factors = {"fs": 1.0, "ps": 1e3, "ns": 1e6}
+    for unit, factor in unit_factors.items():
+        if value.endswith(unit):
+            return float(value[:-len(unit)]) * factor
+    raise ValueError(
+        f"Unsupported time format '{time_str}'. Use values like 100fs, 2ps, 2ns."
+    )
 
 
-def compute_density_stats(traj):
+def select_frame_range(traj, dt_fs, start_time_fs, n=N_SNAPSHOTS):
+    """
+    Return frame index range for up to `n` consecutive frames from `start_time_fs`.
+
+    Args:
+        traj: ASE trajectory object.
+        dt_fs: Time step between consecutive frames in femtoseconds.
+        start_time_fs: Start time for density calculation in femtoseconds.
+        n: Number of frames to include.
+    """
+    if dt_fs <= 0:
+        raise ValueError(f"dt must be positive, got {dt_fs}.")
+    if start_time_fs < 0:
+        raise ValueError(f"start_time must be non-negative, got {start_time_fs}.")
+    if n <= 0:
+        raise ValueError(f"n must be positive, got {n}.")
+
+    start_idx = int(np.ceil(start_time_fs / dt_fs))
+    if start_idx >= len(traj):
+        raise ValueError(
+            f"Start frame index {start_idx} is beyond trajectory length {len(traj)}."
+        )
+
+    end_idx = min(start_idx + n, len(traj))
+    return start_idx, end_idx
+
+
+def compute_density_stats(traj, dt_fs, start_time_fs, n=N_SNAPSHOTS):
     """
     Calculate mean and sample standard deviation of density (g cm⁻³)
-    using the specified snapshot selection.
+    using a user-selected time range.
     """
-    frames    = last_snapshots(traj)
+    start_idx, end_idx = select_frame_range(
+        traj, dt_fs=dt_fs, start_time_fs=start_time_fs, n=n
+    )
     densities = []
 
-    for atoms in tqdm(frames):
+    for frame_idx in tqdm(range(start_idx, end_idx), desc="Density frames"):
+        atoms = traj[frame_idx]
         mass_kg   = atoms.get_masses().sum() * AMU_TO_KG
         volume_m3 = atoms.get_volume()       * ANGSTROM3_TO_M3
         densities.append((mass_kg / volume_m3) / 1000.0)  # convert kg/m³ → g/cm³
@@ -60,8 +118,29 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compute density from ASE trajectories")
     parser.add_argument("--trajs", nargs='+', required=True, help="List of trajectory files")
     parser.add_argument("--out-dir", required=True, help="Output directory for the CSV")
+    parser.add_argument(
+        "--dt",
+        type=str,
+        required=True,
+        help="Time between consecutive frames (e.g., 100fs, 0.1ps).",
+    )
+    parser.add_argument(
+        "--start-time",
+        type=str,
+        required=True,
+        help="Start time for density analysis (e.g., 2ns).",
+    )
+    parser.add_argument(
+        "--n-frames",
+        type=int,
+        default=N_SNAPSHOTS,
+        help=f"Number of frames to analyze from start time (default: {N_SNAPSHOTS}).",
+    )
     parser.add_argument("--note", type=str, default="", help="Optional note to attach to the CSV filename")
     args = parser.parse_args()
+
+    dt_fs = parse_time_to_fs(args.dt)
+    start_time_fs = parse_time_to_fs(args.start_time)
 
     os.makedirs(args.out_dir, exist_ok=True)
     results = []
@@ -85,14 +164,39 @@ if __name__ == "__main__":
             
         return f"{cation} - {anion} - {solvent}"
 
+    def extract_conditions_from_path(path):
+        concentration = "Unknown"
+        temperature = "Unknown"
+        normalized_path = os.path.normpath(path)
+        path_parts = normalized_path.split(os.sep)
+
+        # Concentration can appear as 1M, 0.5M, or 0_1M in directory names.
+        conc_match = re.search(r"(\d+(?:[._]\d+)?)M", normalized_path)
+        if conc_match:
+            concentration = f"{conc_match.group(1).replace('_', '.')}M"
+
+        for part in path_parts:
+            temp_match = re.fullmatch(r"(\d+)(?:_2)?K", part)
+            if temp_match:
+                temperature = f"{temp_match.group(1)}K"
+                break
+
+        return concentration, temperature
+
     for fname in args.trajs:
         try:
             print(f"Processing {fname}...")
             sys_name = extract_system_name(fname)
-            traj = Trajectory(fname)
-            mean_rho, sd_rho = compute_density_stats(traj)
+            concentration, temperature = extract_conditions_from_path(fname)
+            with Trajectory(fname, "r") as traj_reader:
+                mean_rho, sd_rho = compute_density_stats(
+                    traj_reader, dt_fs=dt_fs, start_time_fs=start_time_fs, n=args.n_frames
+                )
             results.append({
+                "traj_file": fname,
                 "system": sys_name,
+                "concentration": concentration,
+                "temperature": temperature,
                 "average_density_g_cm3": float(f"{mean_rho:.4g}"),
                 "std_dev": float(f"{sd_rho:.4g}")
             })
@@ -104,7 +208,17 @@ if __name__ == "__main__":
         filename = f"simulation_density_results_{args.note}.csv" if args.note else "simulation_density_results.csv"
         out_csv = os.path.join(args.out_dir, filename)
         with open(out_csv, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=["system", "average_density_g_cm3", "std_dev"])
+            writer = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "traj_file",
+                    "system",
+                    "concentration",
+                    "temperature",
+                    "average_density_g_cm3",
+                    "std_dev",
+                ],
+            )
             writer.writeheader()
             writer.writerows(results)
         print(f"✅  Written {out_csv} with {len(results)} rows.")

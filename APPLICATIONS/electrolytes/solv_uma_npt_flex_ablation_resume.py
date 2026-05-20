@@ -54,6 +54,7 @@ import sys
 import os
 import time
 import signal
+import socket
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
@@ -78,8 +79,8 @@ def setup_distributed(rank, world_size):
         print(f"Rank {rank}/{world_size}: No need for distributed setup with single GPU")
         return  # No need for distributed setup with single GPU
 
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12355'
+    os.environ['MASTER_ADDR'] = os.environ.get('MASTER_ADDR', 'localhost')
+    os.environ['MASTER_PORT'] = os.environ.get('MASTER_PORT', '12355')
     os.environ['NCCL_IB_DISABLE'] = '1'
     os.environ['NCCL_SOCKET_IFNAME'] = 'lo'
 
@@ -177,9 +178,17 @@ def run_parallel_simulations(
     timestep_fs_list=[1.0],
 ):
     """Main function to run parallel simulations across multiple GPUs"""
+    # Pick a per-job free local port to avoid collisions with other jobs on the same node.
+    # Child processes spawned by torch.multiprocessing inherit this env var.
+    if 'MASTER_PORT' not in os.environ:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('', 0))
+            os.environ['MASTER_PORT'] = str(s.getsockname()[1])
+    os.environ.setdefault('MASTER_ADDR', 'localhost')
 
     # Spawn worker processes
     print(f"Starting parallel simulations on {world_size} GPUs")
+    print(f"Distributed master endpoint: {os.environ['MASTER_ADDR']}:{os.environ['MASTER_PORT']}")
     print(f"Total trajectory-model pairs: {len(trajectory_model_pairs)}")
     print(f"Temperatures: {temperatures}")
     print(f"Initial temperatures: {initial_temperatures}")

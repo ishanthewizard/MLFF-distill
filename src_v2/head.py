@@ -1,10 +1,6 @@
 import torch
 import torch.nn as nn
 from fairchem.core.models.base import HeadInterface
-from fairchem.core.models.uma.outputs import (
-    compute_energy as uma_compute_energy,
-    compute_forces_and_stress as uma_compute_forces_and_stress,
-)
 from fairchem.core.models.uma.nn.so3_layers import SO3_Linear
 from fairchem.core.common import gp_utils
 from fairchem.core.common.utils import conditional_grad
@@ -35,53 +31,52 @@ def compute_energy(emb, energy_block, batch, num_systems, natoms=None, reduce="s
     """
     # Extract L=0 (scalar) component for energy prediction
     node_embedding = get_l_component_range(emb["node_embedding"], 0, 0).squeeze(1)
-    node_energies = energy_block(node_embedding)
-    energy = reduce_node_to_system(node_energies, batch, num_systems, natoms, reduce)
-    
+    node_energies = energy_block(node_embedding).view(-1)
+    energy_part = reduce_node_to_system(
+        node_energies, batch, num_systems, natoms=None, reduce="sum"
+    )
+    energy = energy_part
+
+    if reduce == "mean":
+        if natoms is None:
+            raise ValueError("natoms must be provided when reduce='mean'")
+        energy = energy / natoms
+    elif reduce != "sum":
+        raise ValueError(f"reduce can only be sum or mean, got: {reduce}")
+
     if gp_utils.initialized():
         energy = gp_utils.reduce_from_model_parallel_region(energy)
-        
-    return energy, node_energies
 
-def compute_forces_and_stress(energy_part, pos, displacement=None, cell=None, batch=None, training=True):
+    return energy, energy_part
+
+def compute_forces_and_stress(energy_part, pos, cell, batch, training=True):
     """
     Computes forces and stress using autograd.
     """
-    if not energy_part.requires_grad:
-        return None, None
-
-    targets = []
-    if pos.requires_grad: targets.append(pos)
-    if displacement is not None and displacement.requires_grad: targets.append(displacement)
-    
-    if not targets:
-        return None, None
-
     grads = torch.autograd.grad(
-        energy_part.sum(),
-        targets,
+        [energy_part.sum()],
+        [pos, cell],
         create_graph=training,
-        retain_graph=training,  # Must be False for compiled models during inference
-        allow_unused=True
     )
-    
-    # Map grads back to pos and displacement
-    forces = None
-    stress = None
-    
-    grad_idx = 0
-    if pos.requires_grad:
-        forces = -grads[grad_idx]
-        grad_idx += 1
-    if displacement is not None and displacement.requires_grad:
-        # Virial based stress conversion
-        virial = grads[grad_idx]
-        # In eSCN, virial might be [natoms, 3, 3] or [nbatch, 3, 3] depending on implementation
-        # Usually it's already summed if we differentiated energy_sum
-        volume = torch.det(cell).abs().view(-1, 1, 1) if cell is not None else 1.0
-        stress = (virial / volume).view(-1, 9)
-        grad_idx += 1
-        
+
+    if gp_utils.initialized():
+        grads = (
+            gp_utils.reduce_from_model_parallel_region(grads[0]),
+            gp_utils.reduce_from_model_parallel_region(grads[1]),
+        )
+
+    num_systems = cell.shape[0]
+    forces = torch.neg(grads[0])
+    pos_virial_per_atom = grads[0].unsqueeze(2) * pos.unsqueeze(1)
+    pos_virial = torch.zeros(
+        (num_systems, 3, 3), device=pos.device, dtype=pos_virial_per_atom.dtype
+    )
+    pos_virial.index_add_(0, batch, pos_virial_per_atom)
+    cell_virial = cell.mT @ grads[1]
+    virial = (pos_virial + pos_virial.mT + cell_virial + cell_virial.mT) / 2
+    volume = torch.det(cell).abs().unsqueeze(-1)
+    stress = (virial / volume.view(-1, 1, 1)).view(-1, 9)
+
     return forces, stress
 
 class Direct_Force_Head(nn.Module, HeadInterface):
@@ -143,7 +138,15 @@ class Energy_Head(nn.Module, HeadInterface):
         self.prefix = prefix
         self.wrap_property = wrap_property
         self.reduce = reduce
+        # fairchem's conditional_grad decorator checks `regress_forces` +
+        # `direct_forces` on the head. We enable grad whenever this head needs
+        # autograd-based stress, even if force regression is handled by a
+        # separate direct-force head.
+        self.regress_forces = getattr(backbone, "regress_forces", False)
         self.regress_stress = getattr(backbone, "regress_stress", False)
+        if self.regress_stress:
+            self.regress_forces = True
+        self.direct_forces = False
         self.direct_stress = getattr(backbone, "direct_stress", False)
         
         self.sphere_channels = backbone.sphere_channels
@@ -162,7 +165,7 @@ class Energy_Head(nn.Module, HeadInterface):
         energy_key = f"{self.prefix}_energy" if self.prefix else "energy"
         stress_key = f"{self.prefix}_stress" if self.prefix else "stress"
         
-        energy, energy_part = uma_compute_energy(
+        energy, energy_part = compute_energy(
             emb,
             self.energy_block,
             data["batch"],
@@ -177,7 +180,7 @@ class Energy_Head(nn.Module, HeadInterface):
         # conditional_grad(torch.enable_grad()) ensures this works even under
         # inference no_grad context (which happens when direct_forces=True).
         if self.regress_stress and not self.direct_stress:
-            _, stress = uma_compute_forces_and_stress(
+            _, stress = compute_forces_and_stress(
                 energy_part,
                 data["pos"],
                 data["cell"],

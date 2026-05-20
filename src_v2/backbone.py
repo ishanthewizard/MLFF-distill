@@ -29,6 +29,18 @@ class CustomESCNMDBackbone(eSCNMDBackbone):
         # - MLIPPredictUnit._run_inference uses nullcontext() (not no_grad)
         # - _get_displacement_and_cell sets up displacement with requires_grad=True
         # The actual force computation uses Direct_Force_Head regardless.
-        if self.regress_config.stress:
+        regress_cfg = getattr(self, "regress_config", None)
+        if regress_cfg is not None and regress_cfg.stress:
             return False
-        return self.regress_config.direct_forces
+        if regress_cfg is not None:
+            return regress_cfg.direct_forces
+        return getattr(self, "_direct_forces_fallback", False)
+
+    @direct_forces.setter
+    def direct_forces(self, value: bool) -> None:
+        # Base eSCNMDBackbone.__init__ assigns to this attribute. Keep assignment
+        # compatible with that initialization path while preserving our override.
+        regress_cfg = getattr(self, "regress_config", None)
+        if regress_cfg is not None:
+            regress_cfg.direct_forces = value
+        self._direct_forces_fallback = bool(value)
