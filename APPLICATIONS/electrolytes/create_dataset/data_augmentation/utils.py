@@ -63,8 +63,8 @@ class _UMACalc(Calculator):
 def _build_calc(uma_path):
     inference_settings = InferenceSettings(
         tf32=True,
-        activation_checkpointing=True,
-        merge_mole=True,
+        activation_checkpointing=False,
+        merge_mole=False,
         compile=False,
         wigner_cuda=False,
         external_graph_gen=False,

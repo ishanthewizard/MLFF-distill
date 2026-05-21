@@ -26,6 +26,7 @@ def random_isochoric_F(max_stretch: float, rng=None) -> np.ndarray:
     F = np.diag([1.0 + e1, 1.0 + e2, 1.0 + e3])
     # exact volume preservation
     F /= np.linalg.det(F) ** (1.0 / 3.0)
+    # breakpoint()
     assert abs(np.linalg.det(F) - 1.0) < 1e-8, f"det(F)={np.linalg.det(F)}"
     return F
 

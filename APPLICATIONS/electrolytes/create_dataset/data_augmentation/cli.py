@@ -60,8 +60,8 @@ def main():
     parser.add_argument("--augment-probability", type=float, default=1.0)
     parser.add_argument("--max-stretch-min", type=float, default=0.05,
                         help="Lower bound of the max_stretch range sampled per frame (default: 0.05).")
-    parser.add_argument("--max-stretch-max", type=float, default=0.15,
-                        help="Upper bound of the max_stretch range sampled per frame (default: 0.15).")
+    parser.add_argument("--max-stretch-max", type=float, default=0.48,
+                        help="Upper bound of the max_stretch range sampled per frame (default: 0.15), should be less than 0.5.")
     parser.add_argument("--sanity-check", action="store_true",
                         help="Before augmenting, verify UMA predictions match stored labels on a few frames.")
     parser.add_argument("--sanity-check-n", type=int, default=3,
@@ -85,13 +85,13 @@ def main():
                 augmented = []
                 for f in frames:
                     if random.random() < args.augment_probability:
-                        try:
-                            max_stretch = random.uniform(args.max_stretch_min, args.max_stretch_max)
-                            a = AUGMENTATIONS[aug](f, max_stretch=max_stretch)
-                            if a is not None:
-                                augmented.append(a)
-                        except Exception as e:
-                            print(f"[{aug}] augmentation failed for frame {f}: {e}")
+                        # try:
+                        max_stretch = random.uniform(args.max_stretch_min, args.max_stretch_max)
+                        a = AUGMENTATIONS[aug](f, max_stretch=max_stretch)
+                        if a is not None:
+                            augmented.append(a)
+                        # except Exception as e:
+                        #     print(f"[{aug}] augmentation failed for frame {f}: {e}")
                     else:
                         # just add original frame
                         augmented.append(f)
