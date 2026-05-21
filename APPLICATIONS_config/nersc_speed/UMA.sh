@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # === SLURM Job Parameters ===
-#SBATCH --account=m4558_g              # Billing account for compute time
-#SBATCH --constraint=gpu               # Request GPU nodes only
+#SBATCH --account=m5250_g              # Billing account for compute time
+#SBATCH --constraint=gpu&hbm80g               # Request GPU nodes only
 #SBATCH --cpus-per-task=32              # 5 CPU cores per task (for each GPU)
 #SBATCH --gpus-per-node=4              # Request 4 GPUs per node
-#SBATCH --job-name=nvt_outliers    # Name of the job (shows in queue)
+#SBATCH --job-name=UMA_speed_test    # Name of the job (shows in queue)
 #SBATCH --mem=200GB                     # Total memory per node (80GB)
 #SBATCH --nodes=1                      # Use only 1 compute node
 #SBATCH --ntasks-per-node=4            # 4 tasks per node (1 per GPU)
-#SBATCH --qos=regular                  # Quality of service
-#SBATCH --time=15:00:00                 # Maximum runtime: 2 hours
+#SBATCH --qos=premium                 # Quality of service
+#SBATCH --time=01:00:00                 # Maximum runtime: 2 hours
 #SBATCH --open-mode=append             # Append to output files (important for requeued jobs)
 #SBATCH --output=/global/homes/y/yuejian/project/MLFF-distill/yuejian/log/md_flex_%x_%j_%Y%m%d_%H%M%S.out  # Standard output file
 #SBATCH --error=/global/homes/y/yuejian/project/MLFF-distill/yuejian/log/md_flex_%x_%j_%Y%m%d_%H%M%S.err   # Standard error file
@@ -38,10 +38,10 @@ MODEL_CHECKPOINTS=(
 
 # Trajectory directories (space-separated list, same length as models)
 TRAJECTORY_DIRS=(
-    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/speed_test/UMA/lipf6_dme"
-    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/speed_test/UMA/naotf_dme"
-    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/speed_test/UMA/napf6_dme"
-    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/speed_test/UMA/napf6_pc"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/speed_test/test_pool/naotf_dme"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/speed_test/test_pool/naotf_dme_1"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/speed_test/test_pool/naotf_dme_2"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/speed_test/test_pool/naotf_dme_3"
 )
 
 # Temperature arrays (space-separated list, same length as models and trajectories)

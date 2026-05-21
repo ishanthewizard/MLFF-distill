@@ -526,14 +526,14 @@ def main(
 
     fig.suptitle(f"MSD & Diffusion — ≥{EQ_TIME_PS:.0f} ps, fit {TAU_MIN_FIT_PS:.0f}–{TAU_MAX_FIT_PS:.0f} ps", fontsize=12.5)
     fig.tight_layout(rect=(0, 0.03, 1, 0.96))
-    png_path = OUT_DIR / "Diffusion_Coefficients_"+str(title)+".png"
+    png_path = OUT_DIR / f"Diffusion_Coefficients_{title}.png"
     fig.savefig(png_path, dpi=300)
     plt.close(fig)
     print(f"\n✅ Saved plot → {png_path}")
 
     if rows_out:
         df = pd.DataFrame(rows_out)
-        csv_path = OUT_DIR / "Diffusion_Coefficients_"+str(title)+".csv"
+        csv_path = OUT_DIR / f"Diffusion_Coefficients_{title}.csv"
         df.to_csv(csv_path, index=False)
         print(f"✅ Wrote CSV → {csv_path}\n")
         print(df.to_string(index=False))

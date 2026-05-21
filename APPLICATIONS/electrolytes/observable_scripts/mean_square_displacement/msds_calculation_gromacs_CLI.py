@@ -356,9 +356,12 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             if args.topology_mode == "tpr":
                 topo_path = tpr
             else:
-                topo_path = out_dir / "topologies_element_gro" / ("%s.element.gro" % stem)
+                _cache = Path("/global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/results/opls_baseline/results/topologies_element_gro")
+                topo_path = _cache / ("%s.element.gro" % stem)
                 if not topo_path.exists():
-                    write_element_topology_gro(tpr, xtc, topo_path)
+                    topo_path = out_dir / "topologies_element_gro" / ("%s.element.gro" % stem)
+                    if not topo_path.exists():
+                        write_element_topology_gro(tpr, xtc, topo_path)
             targets.append(
                 (
                     str(topo_path),

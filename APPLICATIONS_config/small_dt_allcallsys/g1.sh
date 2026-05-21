@@ -9,11 +9,11 @@
 #SBATCH --mem=200GB                     # Total memory per node (80GB)
 #SBATCH --nodes=1                      # Use only 1 compute node
 #SBATCH --ntasks-per-node=4            # 4 tasks per node (1 per GPU)
-#SBATCH --qos=regular                  # Quality of service
-#SBATCH --time=15:00:00                 # Maximum runtime: 2 hours
+#SBATCH --qos=debug                  # Quality of service
+#SBATCH --time=00:30:00                 # Maximum runtime: 2 hours
 #SBATCH --open-mode=append             # Append to output files (important for requeued jobs)
-#SBATCH --output=/global/homes/y/yuejian/project/MLFF-distill/yuejian/log/md_flex_%x_%j_%Y%m%d_%H%M%S.out  # Standard output file
-#SBATCH --error=/global/homes/y/yuejian/project/MLFF-distill/yuejian/log/md_flex_%x_%j_%Y%m%d_%H%M%S.err   # Standard error file
+#SBATCH --output=/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/log/md_flex_%x_%j_%Y%m%d_%H%M%S.out  # Standard output file
+#SBATCH --error=/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/log/md_flex_%x_%j_%Y%m%d_%H%M%S.err   # Standard error file
 
 # === Environment Setup and Logging ===
 echo "=========================================="

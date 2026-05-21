@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+"""Stress MAE computation between teacher and student models on a trajectory.
+
+All functions are pure: accept paths/arrays, return data structures.
+Stress is the 6-component Voigt vector [xx, yy, zz, yz, xz, xy] in eV/Å³.
+"""
+
+import sys
+from pathlib import Path
+
+import numpy as np
+from ase.io.trajectory import Trajectory
+from tqdm import tqdm
+
+_OBS  = Path(__file__).resolve().parents[1]   # observable_scripts/
+_ELEC = Path(__file__).resolve().parents[2]   # electrolytes/
+for _p in (_OBS, _ELEC):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
+
+
+def _load_calc(ckpt_path: str | Path):
+    """Load a FAIRChem UMA calculator from a checkpoint path."""
+    from get_calc import get_customized_uma_calc
+    return get_customized_uma_calc(str(ckpt_path))
+
+
+def _resolve_stride(n_tot: int, dt_fs: float,
+                    analyze_dt_ps: float | None, n_frames: int) -> int:
+    """Return frame stride.
+
+    Priority: analyze_dt_ps (time-based) > n_frames (count-based).
+    analyze_dt_ps = desired time gap between evaluated frames in picoseconds.
+    """
+    if analyze_dt_ps is not None:
+        return max(1, round(analyze_dt_ps * 1000.0 / dt_fs))
+    return max(1, n_tot // n_frames)
+
+
+def compute_stress_mae(
+    traj_path: str | Path,
+    teacher_ckpt: str | Path,
+    student_ckpt: str | Path | None = None,
+    n_frames: int = 500,
+    dt_fs: float = 100.0,
+    max_ns: float | None = None,
+    analyze_dt_ps: float | None = None,
+) -> dict:
+    """Compute per-frame stress MAE between teacher and student on a trajectory.
+
+    Stress is the 6-component Voigt vector [xx, yy, zz, yz, xz, xy] in eV/Å³,
+    as returned by ASE's atoms.get_stress().
+
+    If student_ckpt is None, stress stored in the trajectory's calc results
+    is used as the student reference (avoids redundant re-inference).
+
+    Sampling resolution is controlled by analyze_dt_ps (preferred) or n_frames:
+      analyze_dt_ps : evaluate one frame every this many picoseconds of sim time.
+      n_frames      : fallback — sample this many frames uniformly (used when
+                      analyze_dt_ps is None).
+
+    Returns dict with keys:
+        times_ns  : ndarray (n,)    — frame timestamps in ns
+        mae       : ndarray (n,)    — mean |σ_teacher − σ_student| per frame (eV/Å³)
+        max_err   : ndarray (n,)    — max component error per frame (eV/Å³)
+        rmse      : ndarray (n,)    — RMS stress error per frame (eV/Å³)
+        component_mae : ndarray (n,6) — per-component MAE [xx,yy,zz,yz,xz,xy]
+        stride    : int             — frame stride used
+        dt_fs     : float           — trajectory frame interval (fs)
+    """
+    traj_path = Path(traj_path)
+
+    with Trajectory(str(traj_path), mode="r") as _t:
+        n_tot = len(_t)
+    if max_ns is not None:
+        n_tot = min(n_tot, max(1, int(max_ns * 1e6 / dt_fs)))
+    stride  = _resolve_stride(n_tot, dt_fs, analyze_dt_ps, n_frames)
+    indices = list(range(0, n_tot, stride))
+
+    teacher_calc = _load_calc(teacher_ckpt)
+    student_calc = _load_calc(student_ckpt) if student_ckpt is not None else None
+
+    times, mae_list, max_err_list, rmse_list, comp_mae_list = [], [], [], [], []
+    with Trajectory(str(traj_path), mode="r") as traj:
+        for idx in tqdm(indices, desc=f"stress_mae {traj_path.name}", unit="frame"):
+            at = traj[idx]
+            at.set_pbc([True, True, True])
+            at.wrap()
+            at.info.setdefault("charge", 0)
+            at.info.setdefault("spin", 1)
+
+            at_t = at.copy()
+            at_t.calc = teacher_calc
+            # voigt=True (default): returns (6,) array [xx,yy,zz,yz,xz,xy]
+            s_teacher = at_t.get_stress()  # (6,) eV/Å³
+
+            if student_calc is not None:
+                at_s = at.copy()
+                at_s.calc = student_calc
+                s_student = at_s.get_stress()
+            elif at.calc is not None and "stress" in at.calc.results:
+                s_student = np.array(at.calc.results["stress"])
+            else:
+                continue
+
+            err = np.abs(s_teacher - s_student)          # (6,)
+            mae_list.append(float(err.mean()))
+            max_err_list.append(float(err.max()))
+            rmse_list.append(float(np.sqrt((err ** 2).mean())))
+            comp_mae_list.append(err)
+            times.append(idx * dt_fs * 1e-6)
+
+    return {
+        "times_ns":     np.array(times),
+        "mae":          np.array(mae_list),
+        "max_err":      np.array(max_err_list),
+        "rmse":         np.array(rmse_list),
+        "component_mae": np.array(comp_mae_list) if comp_mae_list else np.empty((0, 6)),
+        "stride":       stride,
+        "dt_fs":        dt_fs,
+    }

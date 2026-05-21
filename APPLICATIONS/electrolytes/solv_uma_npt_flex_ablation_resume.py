@@ -2,20 +2,31 @@
 Molecular Dynamics Simulation Script with UMA Potential
 
 This script runs NPT (constant pressure and temperature) molecular dynamics simulations
-using UMA (Universal Machine-learned Atomic) potentials. It supports both single GPU
-and multi-GPU parallel execution.
+using UMA (Universal Machine-learned Atomic) potentials. It supports three execution modes:
+1. Single-node single-GPU
+2. Single-node multi-GPU  
+3. Multi-node multi-GPU
 
-USAGE:
-    # Single trajectory with single model (single GPU)
-    python solv_uma_npt_flex_ablation.py /path/to/trajectory --models /path/to/model.ckpt
+EXECUTION MODES:
 
-    # Multiple trajectories with multiple models (multi-GPU)
-    python solv_uma_npt_flex_ablation.py /path/to/traj1 /path/to/traj2 /path/to/traj3 /path/to/traj4 \
+1. SINGLE-NODE SINGLE-GPU:
+    python solv_uma_npt_flex_ablation_resume.py /path/to/trajectory --models /path/to/model.ckpt
+
+2. SINGLE-NODE MULTI-GPU:
+    python solv_uma_npt_flex_ablation_resume.py /path/to/traj1 /path/to/traj2 /path/to/traj3 /path/to/traj4 \
         --models /path/to/model1.ckpt /path/to/model2.ckpt /path/to/model3.ckpt /path/to/model4.ckpt
 
-    # With custom parameters
-    python solv_uma_npt_flex_ablation_resume.py /path/to/trajectory --models /path/to/model.ckpt \
-        --steps 2000000 --interval 50 --temperature 350 --initial_temperature 300 --timestep 1.0
+3. MULTI-NODE MULTI-GPU (via torchrun or SLURM):
+    # Using torchrun:
+    torchrun --nnodes=2 --nproc_per_node=4 --rdzv_id=12345 --rdzv_backend=c10d \
+        --rdzv_endpoint=node1:29500 solv_uma_npt_flex_ablation_resume.py \
+        /path/to/traj1 /path/to/traj2 ... --models /path/to/model1.ckpt /path/to/model2.ckpt ...
+    
+    # Using SLURM with srun:
+    srun torchrun --nnodes=$SLURM_NNODES --nproc_per_node=4 \
+        --rdzv_id=$SLURM_JOB_ID --rdzv_backend=c10d \
+        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+        solv_uma_npt_flex_ablation_resume.py ...
 
 REQUIRED ARGUMENTS:
     trajectories: Path(s) to trajectory directories containing .traj files
@@ -32,22 +43,28 @@ REQUIREMENTS:
     - CUDA-capable GPU(s)
     - Trajectory files (.traj) in specified directories
     - UMA model checkpoint files (.ckpt)
-    - Number of trajectory-model pairs cannot exceed 4
-    - Number of trajectory-model pairs cannot exceed number of available GPUs
+    - For multi-node: proper distributed environment setup
 
 OUTPUT:
     - Appends to existing .traj files in trajectory directories
     - Creates/updates .log files with simulation status
     - Supports resuming interrupted simulations
 
-EXAMPLES:
-    # Basic usage with single trajectory
-    python solv_uma_npt_flex_ablation.py ./my_simulation --models ./uma_model.ckpt
-
-    # Multi-GPU simulation with 4 trajectories
-    python solv_uma_npt_flex_ablation.py ./sim1 ./sim2 ./sim3 ./sim4 \
-        --models ./model1.ckpt ./model2.ckpt ./model3.ckpt ./model4.ckpt \
-        --steps 500000 --interval 20 --temperature 300
+SLURM SCRIPT EXAMPLE for Multi-Node:
+    #!/bin/bash
+    #SBATCH --job-name=multinode_md
+    #SBATCH --nodes=2
+    #SBATCH --ntasks-per-node=4
+    #SBATCH --gpus-per-task=1
+    #SBATCH --cpus-per-task=8
+    
+    export MASTER_ADDR=$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)
+    export MASTER_PORT=29500
+    
+    srun torchrun --nnodes=$SLURM_NNODES --nproc_per_node=$SLURM_NTASKS_PER_NODE \
+        --rdzv_id=$SLURM_JOB_ID --rdzv_backend=c10d \
+        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+        solv_uma_npt_flex_ablation_resume.py /path/to/trajectories --models /path/to/models
 """
 
 import sys
@@ -70,23 +87,115 @@ import torch
 import numpy as np
 from copy import deepcopy
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
+
+# Add the electrolytes directory to path to find get_calc
+import sys
+import os
+electrolytes_dir = os.path.dirname(os.path.abspath(__file__))
+if electrolytes_dir not in sys.path:
+    sys.path.insert(0, electrolytes_dir)
+
 from get_calc import get_uma_calc, get_customized_uma_calc
 
 
-def setup_distributed(rank, world_size):
-    """Initialize torch.distributed for multi-GPU setup"""
+def get_execution_mode():
+    """Determine execution mode based on environment variables"""
+    # Check if running with torchrun or distributed launcher
+    if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
+        world_size = int(os.environ['WORLD_SIZE'])
+        if world_size > torch.cuda.device_count():  # Multi-node
+            return 'multi_node'
+        else:  # Single node multi-GPU
+            return 'single_node_multi_gpu'
+    elif 'SLURM_PROCID' in os.environ and 'SLURM_NTASKS' in os.environ:
+        # SLURM environment without torchrun
+        return 'multi_node'
+    elif torch.cuda.device_count() > 1:
+        return 'single_node_multi_gpu'
+    else:
+        return 'single_node_single_gpu'
+
+def setup_distributed_multinode():
+    """Initialize torch.distributed for multi-node multi-GPU setup"""
+    # Handle both torchrun and SLURM environments
+    if 'RANK' in os.environ and 'LOCAL_RANK' in os.environ:
+        # torchrun environment
+        rank = int(os.environ.get('RANK', '0'))  # Global rank across all nodes
+        local_rank = int(os.environ.get('LOCAL_RANK', '0'))  # Local GPU rank on this node  
+        world_size = int(os.environ.get('WORLD_SIZE', '1'))  # Total processes across all nodes
+    else:
+        # SLURM environment
+        rank = int(os.environ.get('SLURM_PROCID', '0'))  # Global process ID
+        world_size = int(os.environ.get('SLURM_NTASKS', '1'))  # Total tasks
+        # Calculate local rank from task ID and tasks per node
+        ntasks_per_node = int(os.environ.get('SLURM_NTASKS_PER_NODE', '1'))
+        local_rank = rank % ntasks_per_node
+    
+    master_addr = os.environ.get('MASTER_ADDR', 'localhost')
+    master_port = os.environ.get('MASTER_PORT', '29500')
+    
+    # Set NCCL environment variables for better multi-node communication
+    os.environ['NCCL_IB_DISABLE'] = '1'
+    os.environ['NCCL_SOCKET_IFNAME'] = '^docker0,lo'
+    
+    print(f"Multi-node setup: global_rank={rank}, local_rank={local_rank}, world_size={world_size}")
+    print(f"Master endpoint: {master_addr}:{master_port}")
+    
+    # Check available GPUs and handle SLURM GPU allocation
+    num_gpus = torch.cuda.device_count()
+    cuda_visible = os.environ.get('CUDA_VISIBLE_DEVICES', 'Not set')
+    
+    print(f"Available GPUs on this node: {num_gpus}")
+    print(f"CUDA_VISIBLE_DEVICES: {cuda_visible}")
+    print(f"Global rank {rank}: Calculated local rank: {local_rank}")
+    
+    # If SLURM assigns only 1 GPU per task, use GPU 0 regardless of local_rank
+    if num_gpus == 1:
+        actual_device = 0
+        print(f"Global rank {rank}: SLURM assigned single GPU, using device 0")
+    else:
+        actual_device = local_rank
+        if local_rank >= num_gpus:
+            raise RuntimeError(f"Local rank {local_rank} exceeds available GPUs {num_gpus}")
+        print(f"Global rank {rank}: Using calculated local rank {local_rank}")
+    
+    # Set the GPU device BEFORE initializing process group
+    torch.cuda.set_device(actual_device)
+    
+    # Verify device assignment
+    current_device = torch.cuda.current_device()
+    device_name = torch.cuda.get_device_name(current_device)
+    print(f"Global rank {rank}: Successfully set CUDA device {current_device} ({device_name})")
+    print(f"Global rank {rank}: Device {current_device} memory: {torch.cuda.get_device_properties(current_device).total_memory / 1e9:.1f} GB")
+    
+    # Initialize the process group - remove device_id parameter to avoid conflicts
+    dist.init_process_group(
+        backend="nccl",
+        init_method="env://",
+        rank=rank,
+        world_size=world_size
+    )
+    
+    print(f"Global rank {rank}: Process group initialized successfully")
+    return rank, local_rank, world_size
+
+def setup_distributed_single_node(rank, world_size):
+    """Initialize torch.distributed for single-node multi-GPU setup"""
     if world_size <= 1:
         print(f"Rank {rank}/{world_size}: No need for distributed setup with single GPU")
-        return  # No need for distributed setup with single GPU
+        return rank, rank, world_size  # Return consistent format
 
     os.environ['MASTER_ADDR'] = os.environ.get('MASTER_ADDR', 'localhost')
     os.environ['MASTER_PORT'] = os.environ.get('MASTER_PORT', '12355')
     os.environ['NCCL_IB_DISABLE'] = '1'
     os.environ['NCCL_SOCKET_IFNAME'] = 'lo'
 
+    print(f"Single-node multi-GPU setup: rank={rank}, world_size={world_size}")
+    
     # Initialize the process group
     dist.init_process_group("nccl", rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
+    return rank, rank, world_size  # global_rank = local_rank for single node
 
 
 def cleanup_distributed():
@@ -97,7 +206,7 @@ def cleanup_distributed():
 
 
 
-def worker(
+def worker_single_node(
     rank,
     trajectory_model_pairs,
     world_size,
@@ -107,12 +216,12 @@ def worker(
     initial_temperatures,
     timestep_fs_list,
 ):
-    """Worker function that runs on each GPU"""
+    """Worker function for single-node execution (spawned by mp.spawn)"""
     try:
         # Initialize distributed setup if running on multiple GPUs
+        global_rank, local_rank, world_size = setup_distributed_single_node(rank, world_size)
         if world_size > 1:
-            setup_distributed(rank, world_size)
-            print(f"Rank {rank}/{world_size}: Initialized distributed setup")
+            print(f"Rank {rank}/{world_size}: Initialized single-node distributed setup")
 
         # Get trajectory-model pair assigned to this rank
         if rank < len(trajectory_model_pairs):
@@ -135,7 +244,7 @@ def worker(
         try:
             simulate(
                 root_path=traj_path,
-                rank=rank,
+                rank=local_rank,
                 world_size=world_size,
                 interval=interval,
                 total_target_steps=total_target_steps,
@@ -147,28 +256,81 @@ def worker(
             print(f"Rank {rank}: Completed simulation for {traj_path}")
         except Exception as sim_error:
             print(f"Rank {rank}: Simulation failed for {traj_path}: {sim_error}")
-            # Re-raise to be caught by outer exception handler
             raise
 
     except Exception as e:
         print(f"Rank {rank}: Error in worker: {e}")
         raise
     finally:
-        # Synchronize all ranks before cleanup to prevent premature termination
-        # This ensures that even if one worker finishes early, it waits for others
+        # Synchronize all ranks before cleanup
         if world_size > 1 and dist.is_initialized():
             print(f"Rank {rank}: Waiting for all workers to complete before cleanup...")
             dist.barrier()
             print(f"Rank {rank}: All workers completed, proceeding with cleanup")
         
-        # Clean up distributed setup only after all workers have synchronized
+        # Clean up distributed setup
         if world_size > 1:
             if dist.is_initialized():
                 cleanup_distributed()
                 print(f"Rank {rank}: Cleaned up distributed setup")
 
 
-def run_parallel_simulations(
+def worker_multinode(
+    trajectory_model_pairs,
+    interval,
+    total_target_steps,
+    temperatures,
+    initial_temperatures,
+    timestep_fs_list,
+):
+    """Worker function for multi-node execution (called directly, no mp.spawn)"""
+    global_rank, local_rank, world_size = setup_distributed_multinode()
+    
+    try:
+        print(f"Global rank {global_rank} (local rank {local_rank}): Initialized multi-node distributed setup")
+
+        # Get trajectory-model pair assigned to this global rank
+        if global_rank < len(trajectory_model_pairs):
+            traj_path, model_checkpoint = trajectory_model_pairs[global_rank]
+            temperature = temperatures[global_rank] if global_rank < len(temperatures) else temperatures[0]
+            initial_temperature = initial_temperatures[global_rank] if global_rank < len(initial_temperatures) else initial_temperatures[0]
+            timestep_fs = timestep_fs_list[global_rank] if global_rank < len(timestep_fs_list) else timestep_fs_list[0]
+            
+            print(f"Global rank {global_rank} (local rank {local_rank}): Assigned trajectory: {traj_path}")
+            print(f"Global rank {global_rank}: Model: {model_checkpoint}, Temperature: {temperature} K, Initial: {initial_temperature} K, Timestep: {timestep_fs} fs")
+        else:
+            print(f"Global rank {global_rank}: No trajectory-model pair assigned")
+            return
+
+        # Run simulation independently (no distributed synchronization needed)
+        print(f"Global rank {global_rank} (local rank {local_rank}): Starting simulation")
+        # With --gpus-per-task=1, each task only sees GPU 0 in its isolated context
+        # Run as single GPU mode since each task is independent
+        simulate(
+            root_path=traj_path,
+            rank=None,  # Single GPU mode - no distributed coordination needed
+            world_size=None,
+            interval=interval,
+            total_target_steps=total_target_steps,
+            model_checkpoint=model_checkpoint,
+            temperature=temperature,
+            initial_temperature=initial_temperature,
+            timestep_fs=timestep_fs,
+        )
+        print(f"Global rank {global_rank}: Completed simulation")
+        
+    except Exception as e:
+        print(f"Global rank {global_rank}: Error in multi-node worker: {e}")
+        raise
+    finally:
+        # Since we're running independent simulations, clean up distributed only if it was used
+        if dist.is_initialized():
+            print(f"Global rank {global_rank}: Cleaning up distributed setup")
+            cleanup_distributed()
+            print(f"Global rank {global_rank}: Cleaned up distributed setup")
+
+
+def run_parallel_simulations_single_node(
     trajectory_model_pairs,
     world_size,
     interval=50,
@@ -195,7 +357,7 @@ def run_parallel_simulations(
     print(f"Timesteps: {timestep_fs_list} fs")
 
     mp.spawn(
-        worker,
+        worker_single_node,
         args=(
             trajectory_model_pairs,
             world_size,
@@ -208,7 +370,36 @@ def run_parallel_simulations(
         nprocs=world_size,
         join=True
     )
-    print("All parallel simulations completed successfully!")
+    print("All single-node parallel simulations completed successfully!")
+
+
+def run_parallel_simulations_multinode(
+    trajectory_model_pairs,
+    interval=50,
+    total_target_steps=1000000,
+    temperatures=[323],
+    initial_temperatures=[300],
+    timestep_fs_list=[1.0],
+):
+    """Main function to run multi-node parallel simulations (no mp.spawn needed)"""
+    world_size = int(os.environ.get('WORLD_SIZE', '1'))
+    
+    print(f"Starting multi-node parallel simulations across {world_size} processes")
+    print(f"Total trajectory-model pairs: {len(trajectory_model_pairs)}")
+    print(f"Temperatures: {temperatures}")
+    print(f"Initial temperatures: {initial_temperatures}")
+    print(f"Timesteps: {timestep_fs_list} fs")
+
+    # Call worker directly (no mp.spawn for multi-node)
+    worker_multinode(
+        trajectory_model_pairs=trajectory_model_pairs,
+        interval=interval,
+        total_target_steps=total_target_steps,
+        temperatures=temperatures,
+        initial_temperatures=initial_temperatures,
+        timestep_fs_list=timestep_fs_list,
+    )
+    print("Multi-node parallel simulations completed successfully!")
 
 
 
@@ -230,15 +421,16 @@ def simulate(
         rank: GPU rank (0, 1, 2, 3 for 4-GPU node)
         world_size: Total number of GPUs
     """
-    # Skip distributed setup if already initialized (when called from worker)
-    print(f"Rank {rank}/{world_size}: dist.is_initialized(): {dist.is_initialized()}")
-    # print the combination of traj and ckpt path and temperature and initial temperature
+    # Print simulation info
     print(f"Trajectory: {root_path}, Model: {model_checkpoint}, Temperature: {temperature}, Initial temperature: {initial_temperature}",flush=True)
-    if rank is not None and world_size is not None and not dist.is_initialized():
-        setup_distributed(rank, world_size)
-        print(f"Rank {rank}/{world_size}: Initialized distributed setup")
+    
+    # Distributed setup is handled by the caller (worker functions)
+    if rank is not None and world_size is not None:
+        print(f"Rank {rank}/{world_size}: dist.is_initialized(): {dist.is_initialized()}")
+        if world_size > 1 and not dist.is_initialized():
+            print(f"Warning: Rank {rank}: Expected distributed to be initialized but it's not")
     else:
-        print(f"Not using distributed setup, single GPU mode")
+        print(f"Single GPU mode: rank={rank}, world_size={world_size}")
     # print ckpt and traj path
     print(f"UMA model checkpoint: {model_checkpoint}"+f"Trajectory: {root_path}")
     # === Get ion type from command line ===
@@ -425,15 +617,11 @@ def simulate(
 
 
 
-def main():
-    """Main function that parses command line arguments and runs simulations"""
+def parse_arguments():
+    """Parse command line arguments"""
     import argparse
     
-    # === Set up signal handler for graceful shutdown ===
-    # signal.signal(signal.SIGTERM, signal_handler)
-    
-    # === Command Line Argument Parser ===
-    parser = argparse.ArgumentParser(description='Run MD simulations with UMA potential')
+    parser = argparse.ArgumentParser(description='Run MD simulations with UMA potential - supports single-node single-GPU, single-node multi-GPU, and multi-node multi-GPU')
     parser.add_argument('trajectories', nargs='+', 
                        help='Path(s) to trajectory directories (space-separated)')
     parser.add_argument('--models', nargs='+', required=True,
@@ -454,7 +642,18 @@ def main():
         dest='timestep_fs_list',
         help='MD timestep(s) in femtoseconds (default: 1.0). Can specify multiple values, one per trajectory.',
     )
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def validate_inputs(trajectory_paths, model_checkpoints, temperatures, initial_temperatures, timestep_fs_list, execution_mode):
+    """Validate input arguments"""
+    # Basic validation
+    if len(timestep_fs_list) != len(trajectory_paths):
+        raise ValueError(f"Number of timesteps ({len(timestep_fs_list)}) must equal number of trajectories ({len(trajectory_paths)})")
+
+    for timestep_fs in timestep_fs_list:
+        if timestep_fs <= 0:
+            raise ValueError(f"timestep must be > 0 fs, got {timestep_fs}")
     
     # === Configuration ===
     total_target_steps = args.steps
@@ -497,14 +696,16 @@ def main():
     if len(initial_temperatures) != len(trajectory_paths):
         raise ValueError(f"Number of initial temperatures ({len(initial_temperatures)}) must equal number of trajectories ({len(trajectory_paths)})")
     
-    # Check that both lists don't exceed 4 items
-    if len(trajectory_paths) > 4:
-        raise ValueError(f"Number of trajectory-model pairs ({len(trajectory_paths)}) cannot exceed 4")
+    # Mode-specific validation
+    if execution_mode == 'single_node_single_gpu' or execution_mode == 'single_node_multi_gpu':
+        world_size = torch.cuda.device_count()
+        if world_size == 0:
+            raise RuntimeError("No CUDA devices available")
+            
+        # Check GPU limits for single node
+        if len(trajectory_paths) > world_size:
+            raise ValueError(f"Number of trajectory-model pairs ({len(trajectory_paths)}) is greater than the number of GPUs ({world_size})")
     
-    # Check that we don't have more pairs than GPUs
-    if len(trajectory_paths) > world_size:
-        raise ValueError(f"Number of trajectory-model pairs ({len(trajectory_paths)}) is greater than the number of GPUs ({world_size})")
-
     # Verify all model checkpoints exist
     for model_checkpoint in model_checkpoints:
         if not os.path.exists(model_checkpoint):
@@ -515,13 +716,70 @@ def main():
         if not os.path.exists(traj_path):
             raise FileNotFoundError(f"Trajectory directory not found: {traj_path}")
 
-    # === Create trajectory-model pairs ===
+
+def main():
+    """Main function that parses command line arguments and runs simulations"""
+    # Determine execution mode
+    execution_mode = get_execution_mode()
+    print(f"Detected execution mode: {execution_mode}")
+    
+    # Parse arguments
+    args = parse_arguments()
+    
+    # Extract configuration
+    total_target_steps = args.steps
+    interval = args.interval
+    model_checkpoints = args.models
+    trajectory_paths = args.trajectories
+    temperatures = args.temperature
+    initial_temperatures = args.initial_temperature
+    timestep_fs_list = args.timestep_fs_list
+    
+    print(f"Target steps: {total_target_steps}")
+    print(f"Interval: {interval}")
+    print(f"Model checkpoints: {model_checkpoints}")
+    print(f"Trajectory paths: {trajectory_paths}")
+    print(f"Temperatures: {temperatures}")
+    print(f"Initial temperatures: {initial_temperatures}")
+    print(f"Timesteps: {timestep_fs_list} fs")
+    
+    # Validate inputs
+    validate_inputs(trajectory_paths, model_checkpoints, temperatures, initial_temperatures, timestep_fs_list, execution_mode)
+    
+    # Create trajectory-model pairs
     trajectory_model_pairs = list(zip(trajectory_paths, model_checkpoints))
     print(f"Created {len(trajectory_model_pairs)} trajectory-model pairs")
-
-    # === Run parallel simulations ===
-    if len(trajectory_model_pairs) == 1:
+    
+    # Run simulations based on execution mode
+    if execution_mode == 'multi_node':
+        print("Running in multi-node multi-GPU mode")
+        run_parallel_simulations_multinode(
+            trajectory_model_pairs=trajectory_model_pairs,
+            interval=interval,
+            total_target_steps=total_target_steps,
+            temperatures=temperatures,
+            initial_temperatures=initial_temperatures,
+            timestep_fs_list=timestep_fs_list,
+        )
+        
+    elif execution_mode == 'single_node_multi_gpu':
+        world_size = torch.cuda.device_count()
+        print(f"Running in single-node multi-GPU mode with {world_size} GPUs")
+        run_parallel_simulations_single_node(
+            trajectory_model_pairs=trajectory_model_pairs,
+            world_size=min(world_size, len(trajectory_model_pairs)),  # Don't use more GPUs than pairs
+            interval=interval,
+            total_target_steps=total_target_steps,
+            temperatures=temperatures,
+            initial_temperatures=initial_temperatures,
+            timestep_fs_list=timestep_fs_list,
+        )
+        
+    elif execution_mode == 'single_node_single_gpu':
         # Single trajectory-model pair - run on single GPU
+        if len(trajectory_model_pairs) > 1:
+            raise ValueError(f"Single GPU mode can only handle 1 trajectory-model pair, got {len(trajectory_model_pairs)}")
+            
         traj_path, model_checkpoint = trajectory_model_pairs[0]
         temperature = temperatures[0]
         initial_temperature = initial_temperatures[0]
@@ -539,6 +797,7 @@ def main():
             initial_temperature=initial_temperature,
             timestep_fs=timestep_fs,
         )
+    
     else:
         # Multiple trajectory-model pairs - distribute across GPUs
         print(f"Running {len(trajectory_model_pairs)} trajectory-model pairs on {world_size} GPUs")

@@ -1,0 +1,146 @@
+#!/bin/bash
+
+# === SLURM Job Parameters ===
+#SBATCH --account=m5250_g              # Billing account for compute time
+#SBATCH --constraint=gpu               # Request GPU nodes only
+#SBATCH --cpus-per-task=32              # 5 CPU cores per task (for each GPU)
+#SBATCH --gpus-per-node=4              # Request 4 GPUs per node
+#SBATCH --job-name=g2    # Name of the job (shows in queue)
+#SBATCH --mem=200GB                     # Total memory per node (80GB)
+#SBATCH --nodes=1                      # Use only 1 compute node
+#SBATCH --ntasks-per-node=4            # 4 tasks per node (1 per GPU)
+#SBATCH --qos=preempt                  # Quality of service
+#SBATCH --time=02:00:00                 # Maximum runtime: 2 hours
+#SBATCH --open-mode=append             # Append to output files (important for requeued jobs)
+#SBATCH --output=/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/log/md_flex_%x_%j_%Y%m%d_%H%M%S.out  # Standard output file
+#SBATCH --error=/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/log/md_flex_%x_%j_%Y%m%d_%H%M%S.err   # Standard error file
+
+# === Environment Setup and Logging ===
+echo "=========================================="
+echo "Job ID: $SLURM_JOB_ID"              
+echo "Job Name: $SLURM_JOB_NAME"          
+echo "Node: $SLURM_NODELIST"              
+echo "Start Time: $(date)"                
+echo "Requeue Count: ${SLURM_RESTART_COUNT:-0}"  
+echo "=========================================="
+
+# === Change to Working Directory ===
+cd /global/homes/y/yuejian/project/MLFF-distill
+
+# === Configuration - EDIT THESE PATHS FOR YOUR SIMULATIONS ===
+# Model checkpoint paths (space-separated list)
+MODEL_CHECKPOINTS=(
+    "/global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/model_checkpoints/ablation_ckpt/trained_on_all_systems/202602-1315-1942-821a-first100ps_all_salts_293K/final/inference_ckpt.pt"
+    "/global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/model_checkpoints/ablation_ckpt/micro_student/202604-0917-3915-a13d-micro-50ps-all-systems-all-concentration/inference_ckpt.pt"
+    "/global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/model_checkpoints/ablation_ckpt/micro_student/202604-0917-3915-a13d-micro-50ps-all-systems-all-concentration/inference_ckpt.pt"
+    "/global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/model_checkpoints/ablation_ckpt/micro_student/202604-0917-3915-a13d-micro-50ps-all-systems-all-concentration/inference_ckpt.pt"
+)
+
+# Trajectory directories (space-separated list, same length as models)
+TRAJECTORY_DIRS=(
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/smaller_dt_and_all_c_all_sys/100ps_double_data_breaking_init_boxes/20ns_solvent_solute_0.5M/273_2K/md_omol_napf6_dme_re1"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/smaller_dt_and_all_c_all_sys/all_concentration_all_sys_20ns_solvent_0_1M/md_omol_naotf_diglyme_1m_s1p1"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/smaller_dt_and_all_c_all_sys/all_concentration_all_sys_20ns_solvent_0_1M/md_omol_naotf_dme_s1p1_omol"
+    "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/smaller_dt_and_all_c_all_sys/all_concentration_all_sys_20ns_solvent_0_1M/md_omol_naotf_pc_1m_s1p1"
+)
+
+# Temperature arrays (space-separated list, same length as models and trajectories)
+TEMPERATURES=(
+    273.2
+    298.0
+    298.0
+    298.0
+)
+
+# Initial temperature arrays (space-separated list, same length as models and trajectories)
+INITIAL_TEMPERATURES=(
+    273.2
+    298.0
+    298.0
+    298.0
+)
+
+# Simulation parameters
+TARGET_STEPS=20000000    # Total MD steps (10 ns at 1 fs timestep)
+INTERVAL=100            # Output interval for trajectory and status
+TIMESTEPS=(
+    0.7
+    1.0
+    1.0
+    1.0
+)
+
+
+
+# === Validation ===
+# Check that trajectory and model lists have the same length
+if [ ${#TRAJECTORY_DIRS[@]} -ne ${#MODEL_CHECKPOINTS[@]} ]; then
+    echo "ERROR: Number of trajectories (${#TRAJECTORY_DIRS[@]}) must equal number of models (${#MODEL_CHECKPOINTS[@]})"
+    exit 1
+fi
+
+# Check that temperature arrays have the same length
+if [ ${#TEMPERATURES[@]} -ne ${#TRAJECTORY_DIRS[@]} ]; then
+    echo "ERROR: Number of temperatures (${#TEMPERATURES[@]}) must equal number of trajectories (${#TRAJECTORY_DIRS[@]})"
+    exit 1
+fi
+
+if [ ${#INITIAL_TEMPERATURES[@]} -ne ${#TRAJECTORY_DIRS[@]} ]; then
+    echo "ERROR: Number of initial temperatures (${#INITIAL_TEMPERATURES[@]}) must equal number of trajectories (${#TRAJECTORY_DIRS[@]})"
+    exit 1
+fi
+
+if [ ${#TIMESTEPS[@]} -ne ${#TRAJECTORY_DIRS[@]} ]; then
+    echo "ERROR: Number of timesteps (${#TIMESTEPS[@]}) must equal number of trajectories (${#TRAJECTORY_DIRS[@]})"
+    exit 1
+fi
+
+# Check that both lists don't exceed 4 items
+if [ ${#TRAJECTORY_DIRS[@]} -gt 4 ]; then
+    echo "ERROR: Number of trajectory-model pairs (${#TRAJECTORY_DIRS[@]}) cannot exceed 4"
+    exit 1
+fi
+
+# === Launch MD Simulation ===
+echo "Starting MD simulation with trajectory-model pairs..."
+echo "Number of pairs: ${#TRAJECTORY_DIRS[@]}"
+echo "Models: ${MODEL_CHECKPOINTS[@]}"
+echo "Trajectories: ${TRAJECTORY_DIRS[@]}"
+echo "Target steps: $TARGET_STEPS"
+echo "Interval: $INTERVAL"
+echo "Temperatures: ${TEMPERATURES[@]} K"
+echo "Initial temperatures: ${INITIAL_TEMPERATURES[@]} K"
+echo "Timesteps: ${TIMESTEPS[@]} fs"
+
+# Build command with all arguments
+CMD="python APPLICATIONS/electrolytes/solv_uma_npt_flex_ablation_resume.py"
+CMD="$CMD ${TRAJECTORY_DIRS[@]}"
+CMD="$CMD --models ${MODEL_CHECKPOINTS[@]}"
+CMD="$CMD --steps $TARGET_STEPS"
+CMD="$CMD --interval $INTERVAL"
+CMD="$CMD --temperature ${TEMPERATURES[@]}"
+CMD="$CMD --initial_temperature ${INITIAL_TEMPERATURES[@]}"
+CMD="$CMD --timestep ${TIMESTEPS[@]}"
+
+echo "Running command: $CMD"
+
+# Run Python script in background (&) so we can capture its process ID
+$CMD &
+python_pid=$!                           # Store process ID of background Python job
+
+echo "Python process started with PID: $python_pid"
+
+
+# === Wait for Completion ===
+wait $python_pid                        # Wait for Python process to finish
+exit_code=$?                           # Capture exit code of Python process
+
+# === Final Status Report ===
+echo "=========================================="
+if [ $exit_code -eq 0 ]; then          
+    echo "MD simulation completed successfully!"
+else
+    echo "MD simulation exited with code: $exit_code"  
+fi
+echo "End Time: $(date)"                
+echo "=========================================="
