@@ -1,0 +1,2 @@
+system,cation,anion,solvent,concentration_M,temperature_K,subsample_stride,frames_used,effective_dt_ps,analysis_window_ps,tau_min_fit_ps,D_cation_(x1e-10_m2_s),D_cation_A2_per_ps,D_anion_(x1e-10_m2_s),D_anion_A2_per_ps,D_solvent_(x1e-10_m2_s),D_solvent_A2_per_ps
+NaPF6 — PC_298K_1M,Na,PF6,PC,1M,298K,10,200,1.0000000149011612,199.00000296533108,50.0,0.4434312887766466,0.004434312887766466,26.067575449057422,0.26067575449057423,3.532411401100857,0.03532411401100857

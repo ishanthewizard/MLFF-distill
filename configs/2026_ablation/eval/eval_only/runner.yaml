@@ -1,0 +1,34 @@
+defaults: 
+  - eval # OTHER OPTIONS: 1. train 2. distill 3. eval 4. labels
+  - override cluster: local
+  # - override backbone: eSEN_micro_full_n_elements #Not needed for eval
+  - override dataset: test #Solvated
+  - override element_refs: all_salt_all_concentration_first_50ps_293K # will be overwritten by ckpt
+  - _self_
+
+batch_size: 1
+# max_atoms: 3000 # this is useless
+job:
+  run_name: first50ps_all_salts_all_concentration_293K_micro_full_n_elements
+  # graph_parallel_group_size: 1
+
+
+# eval_ckpt: /global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/model_checkpoints/ablation_ckpt/trained_on_all_systems/202602-1315-1942-821a-first100ps_all_salts_293K/final/inference_ckpt.pt
+# eval_ckpt: /global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/model_checkpoints/ablation_ckpt/trained_on_all_systems/202601-1919-1500-55dc-353k/checkpoints/final/inference_ckpt.pt
+eval_ckpt: /global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/model_checkpoints/ablation_ckpt/trained_on_all_systems/Ishan_all_salt_wo_hessian-first50ps_all_salts_293k/final/inference_ckpt.pt
+
+
+dataset:
+  val_dataset:
+    splits:
+      val:
+        src: /global/homes/y/yuejian/project/MLFF-distill/yuejian/relabeled_datasets/outlier_testset_20ns_400frames
+
+
+
+runner:
+  eval_unit:
+    tasks:
+      checkpoint_location: ${eval_ckpt}
+    model:
+      checkpoint_location: ${eval_ckpt}
