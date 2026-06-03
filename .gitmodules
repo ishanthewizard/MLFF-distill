@@ -4,3 +4,6 @@
 [submodule "strain_relief"]
 	path = strain_relief
 	url = https://github.com/ftyuejian/strain_relief.git
+[submodule "submodule/byteff2"]
+	path = submodule/byteff2
+	url = https://github.com/ftyuejian/byteff2.git
