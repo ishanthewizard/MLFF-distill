@@ -39,6 +39,7 @@ import random
 import sys
 import yaml
 from pathlib import Path
+from tqdm import tqdm
 
 # data_augmentation/ must be first so `utils` resolves to utils.py here, not create_dataset/utils/
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "utils"))  # create_dataset/utils/
@@ -71,7 +72,11 @@ def main():
     args = parser.parse_args()
 
     input_dir, output_dir = Path(args.input_dir), Path(args.output_dir)
-
+    output_dir = output_dir / Path(str("stretch_")+str(args.max_stretch_min) + "_" + str(args.max_stretch_max))
+    
+    # make directory
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
     for split in ("train", "val"):
         src = input_dir / split
         if not src.exists():
@@ -83,7 +88,7 @@ def main():
         if split == "train":
             for aug in args.augmentations:
                 augmented = []
-                for f in frames:
+                for f in tqdm(frames, desc=f"Distorting [{aug}]", unit="frame"):
                     if random.random() < args.augment_probability:
                         # try:
                         max_stretch = random.uniform(args.max_stretch_min, args.max_stretch_max)
@@ -97,7 +102,10 @@ def main():
                         augmented.append(f)
                 new_frames += augmented
         relabel(new_frames, args.calculator_path)
-        save_frames(new_frames, output_dir / split, args.num_workers)
+        if split == "train":
+            save_frames(new_frames, output_dir / split, original_frames=frames, num_workers=args.num_workers)
+        else:
+            save_frames(new_frames, output_dir / split, num_workers=args.num_workers)
 
     force_rms, linref_coeff = compute_normalizer_and_linear_reference(
         str(output_dir / "train"), args.num_workers

@@ -118,6 +118,8 @@ from rmsd.compute import compute_rmsd
 from rmsd.plot import plot_rmsd_timeseries
 from cell_size.compute import extract_cell_timeseries
 from cell_size.plot import plot_cell_timeseries
+from pressure.compute import extract_pressure
+from pressure.plot import plot_pressure_timeseries, plot_pressure_comparison
 
 import pandas as pd
 
@@ -215,8 +217,11 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
     from density.plot import plot_density_bars, plot_density_timeseries
     from energy.compute import extract_energies
     from energy.plot import plot_energy_timeseries
-    from mean_square_displacement.compute import run_msd_analysis, save_msd_pickle, save_diffusivity_csv
-    from mean_square_displacement.plot import plot_msd, plot_convergence
+    from mean_square_displacement.compute import (
+        run_msd_analysis, save_msd_pickle, save_diffusivity_csv,
+        save_yeh_hummer_csv, save_diffusivity_with_exp_csv,
+    )
+    from mean_square_displacement.plot import plot_msd, plot_msd_loglog, plot_convergence
     from force_mae.compute import compute_force_mae
     from force_mae.plot import plot_force_mae_timeseries, plot_force_mae_comparison
     from energy_mae.compute import compute_energy_mae
@@ -227,6 +232,8 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
     from rmsd.plot import plot_rmsd_timeseries
     from cell_size.compute import extract_cell_timeseries
     from cell_size.plot import plot_cell_timeseries
+    from pressure.compute import extract_pressure
+    from pressure.plot import plot_pressure_timeseries, plot_pressure_comparison
     from gromacs_io import ensure_element_gro, n_frames_gromacs
     import pandas as pd
 
@@ -262,7 +269,7 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
                 if not xtc.exists():
                     continue
                 # print("here5")
-                elem_gro = _topo_cache / f"{xtc.stem}.element.gro"
+                elem_gro = _topo_cache / f"{xtc.parent.name}_{xtc.stem}.element.gro"
                 if not elem_gro.exists():
                     elem_gro = ensure_element_gro(tpr, xtc, _topo_cache)
                 topology_for[model] = elem_gro
@@ -426,8 +433,13 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
             n_conv_points   = sys_cfg.get("n_conv_points",   200)
             slide_window_ns = sys_cfg.get("slide_window_ns", 10.0)
             slide_step_ns   = sys_cfg.get("slide_step_ns",   0.1)
+            yh_T            = sys_cfg.get("yh_T",            None)
+            yh_eta          = sys_cfg.get("yh_eta",          None)
+            concentration_M = sys_cfg.get("concentration_M", None)
+            temperature_K   = sys_cfg.get("temperature_K",   None)
 
             d_rows = []
+            yh_rows = []
             for model, traj_path in traj_paths.items():
                 p = _main_traj_path(traj_path)
                 if not p.exists():
@@ -446,6 +458,8 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
                         slide_window_ns=slide_window_ns,
                         slide_step_ns=slide_step_ns,
                         max_traj_ns=analysis_ns.get(model, max_traj_ns),
+                        yh_T=yh_T,
+                        yh_eta=yh_eta,
                     )
                     slug = f"{_safe(name)}_{_safe(model)}"
 
@@ -454,9 +468,10 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
                     log_lines.append(f"  [MSD] {model}: saved pkl {pkl.name}")
 
                     # plots
-                    p_msd  = plot_msd(result, name, model, sys_out)
-                    p_conv = plot_convergence(result, name, model, sys_out)
-                    log_lines.append(f"  [MSD] {model}: {p_msd.name}, {p_conv.name}")
+                    p_msd    = plot_msd(result, name, model, sys_out)
+                    p_loglog = plot_msd_loglog(result, name, model, sys_out)
+                    p_conv   = plot_convergence(result, name, model, sys_out)
+                    log_lines.append(f"  [MSD] {model}: {p_msd.name}, {p_loglog.name}, {p_conv.name}")
 
                     # collect D row for CSV
                     conv = result["convergence"]
@@ -473,13 +488,36 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
                         "D_cat_1e-10_m2s": conv["D_cat_final"],
                         "D_ani_1e-10_m2s": conv["D_ani_final"],
                         "D_sol_1e-10_m2s": conv["D_sol_final"],
+                        "L_A":             result.get("L_A"),
+                        "concentration_M": concentration_M,
+                        "temperature_K":   temperature_K,
                     })
+
+                    # collect Yeh-Hummer row if correction was computed
+                    if result.get("yh_correction") is not None:
+                        yh = result["yh_correction"]
+                        yh_rows.append({
+                            "system":          name,
+                            "model":           model,
+                            "cat_symbol":      cat_sym,
+                            "anion_symbol":    ani_sym,
+                            "solvent_symbol":  sol_sym,
+                            **yh,
+                        })
+
                 except Exception:
                     log_lines.append(f"  [MSD] ERROR {model}:\n{traceback.format_exc()}")
 
             if d_rows:
                 csv = save_diffusivity_csv(d_rows, sys_out)
                 log_lines.append(f"  [MSD] saved diffusivity CSV: {csv.name}")
+
+                exp_csv = save_diffusivity_with_exp_csv(d_rows, sys_out)
+                log_lines.append(f"  [MSD] saved diffusivity-vs-exp CSV: {exp_csv.name}")
+
+            if yh_rows:
+                yh_csv = save_yeh_hummer_csv(yh_rows, sys_out)
+                log_lines.append(f"  [MSD] saved Yeh-Hummer CSV: {yh_csv.name}")
 
     # ── Force MAE ─────────────────────────────────────────────────────────────
     if "force_mae" in analyses:
@@ -715,6 +753,125 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
             )
             log_lines.append(f"  [CellSize] saved: {out.name}")
 
+    # ── Pressure ──────────────────────────────────────────────────────────────
+    if "pressure" in analyses:
+        pres_data = {}
+        pres_n          = sys_cfg.get("pressure_n_frames", n_frames * 2)
+        pres_analyze_dt = sys_cfg.get("pressure_analyze_dt_ps")   # ps; overrides n_frames
+        for model, traj_path in traj_paths.items():
+            p = _main_traj_path(traj_path)
+            if not p.exists():
+                log_lines.append(f"  [Pressure] SKIP {model}: missing {p}")
+                continue
+            if _traj_fmt(traj_path) == "gromacs":
+                log_lines.append(f"  [Pressure] SKIP {model}: only ASE .traj supported")
+                continue
+            try:
+                dt  = _dt_fs(sys_cfg, model)
+                res = extract_pressure(
+                    p,
+                    n_sample=pres_n,
+                    dt_fs=dt,
+                    max_ns=analysis_ns.get(model, max_traj_ns),
+                    analyze_dt_ps=pres_analyze_dt,
+                )
+                pres_data[model] = res
+                mean_p = float(res["pressure"].mean())
+                std_p  = float(res["pressure"].std())
+                log_lines.append(
+                    f"  [Pressure] {model}: stride={res['stride']} "
+                    f"({res['stride']*dt*1e-3:.1f} ps/frame), "
+                    f"n_eval={len(res['times_ns'])}, "
+                    f"mean={mean_p:.3f} GPa, std={std_p:.3f} GPa"
+                )
+                out = plot_pressure_timeseries(res, name, model, sys_out,
+                                               color=colors.get(model, "#1f77b4"))
+                log_lines.append(f"  [Pressure] {model}: saved {out.name}")
+                import numpy as np
+                npz = sys_out / f"pressure_{model}.npz".replace(" ", "_")
+                np.savez_compressed(npz, **res)
+            except Exception:
+                log_lines.append(f"  [Pressure] ERROR {model}:\n{traceback.format_exc()}")
+
+        if len(pres_data) > 1:
+            out = plot_pressure_comparison(pres_data, name, model_order, colors, sys_out)
+            log_lines.append(f"  [Pressure] comparison saved: {out.name}")
+
+    # ── Conductivity (Nernst-Einstein) ────────────────────────────────────────
+    if "conductivity" in analyses:
+        cat_sym  = sys_cfg.get("cat_symbol")
+        ani_sym  = sys_cfg.get("anion_symbol")
+        sol_sym  = sys_cfg.get("solvent_symbol")
+        if not all([cat_sym, ani_sym, sol_sym]):
+            log_lines.append("  [Conductivity] SKIP: cat_symbol / anion_symbol / solvent_symbol not set")
+        else:
+            from conductivity.compute import run_conductivity_analysis
+
+            cond_T_K      = sys_cfg.get("conductivity_T_K", 298.0)
+            cond_z_cat    = sys_cfg.get("conductivity_z_cat",  1.0)
+            cond_z_anion  = sys_cfg.get("conductivity_z_anion", -1.0)
+            cond_eq_cut   = sys_cfg.get("conductivity_eq_cut_ns", 2.0)
+            cond_tau_min  = sys_cfg.get("conductivity_tau_min_ns", 1.0)
+            cond_fit_pct  = sys_cfg.get("fit_pct", 0.8)
+            cond_n_sample = sys_cfg.get("n_frames", 2000)
+            cond_exp      = sys_cfg.get("conductivity_exp_mS_cm")   # None if not provided
+
+            cond_rows = []
+            for model, traj_path in traj_paths.items():
+                p = _main_traj_path(traj_path)
+                if not p.exists():
+                    log_lines.append(f"  [Conductivity] SKIP {model}: missing {p}")
+                    continue
+                if _traj_fmt(traj_path) == "gromacs":
+                    log_lines.append(f"  [Conductivity] SKIP {model}: only ASE .traj supported")
+                    continue
+                try:
+                    dt = _dt_fs(sys_cfg, model)
+                    result = run_conductivity_analysis(
+                        p, cat_sym, ani_sym, sol_sym, dt, cond_T_K,
+                        z_cat=cond_z_cat,
+                        z_anion=cond_z_anion,
+                        eq_cut_ns=cond_eq_cut,
+                        fit_pct=cond_fit_pct,
+                        tau_min_fit_ns=cond_tau_min,
+                        n_sample=cond_n_sample,
+                        max_traj_ns=analysis_ns.get(model, max_traj_ns),
+                    )
+                    sigma = result["sigma_NE_mS_cm"]
+                    log_lines.append(
+                        f"  [Conductivity] {model}: sigma_NE={sigma:.4f} mS/cm "
+                        f"D_cat={result['D_cat_1e10_m2s']:.3f} "
+                        f"D_anion={result['D_anion_1e10_m2s']:.3f} (1e-10 m2/s)"
+                    )
+                    row = {"system": name, "model": model,
+                           "cat_symbol": cat_sym, "anion_symbol": ani_sym,
+                           "solvent_symbol": sol_sym,
+                           "T_K": cond_T_K,
+                           "N_cat": result["N_cat"],
+                           "N_anion": result["N_anion"],
+                           "V_angstrom3": result["V_angstrom3"],
+                           "D_cat_1e-10_m2s": result["D_cat_1e10_m2s"],
+                           "D_anion_1e-10_m2s": result["D_anion_1e10_m2s"],
+                           "sigma_NE_mS_cm": sigma,
+                           "tau_min_fit_ns": result["tau_min_fit_ns"],
+                           "tau_max_fit_ns": result["tau_max_fit_ns"],
+                           "eq_cut_ns": result["eq_cut_ns"]}
+                    if cond_exp is not None:
+                        row["exp_sigma_mS_cm"] = cond_exp
+                    cond_rows.append(row)
+                except Exception:
+                    log_lines.append(f"  [Conductivity] ERROR {model}:\n{traceback.format_exc()}")
+
+            if cond_rows:
+                import pandas as _pd_cond
+                csv_c = sys_out / "conductivity.csv"
+                _pd_cond.DataFrame(cond_rows).to_csv(csv_c, index=False)
+                log_lines.append(f"  [Conductivity] saved CSV: {csv_c.name}")
+
+                # log experimental value if provided
+                if cond_exp is not None:
+                    log_lines.append(f"  [Conductivity] exp={cond_exp:.4f} mS/cm provided")
+
     return "\n".join(log_lines)
 
 
@@ -796,6 +953,36 @@ def main():
                 except Exception:
                     print(f"[FATAL] {name}:")
                     traceback.print_exc()
+
+    # ── aggregate per-system diffusivity-vs-exp tables into parity plots ──────
+    if "msd" in analyses:
+        exp_csvs = sorted(run_dir.glob("*/diffusivity_with_exp.csv"))
+        if exp_csvs:
+            group_eval_dir = str(_HERE / "group_eval")
+            if group_eval_dir not in sys.path:
+                sys.path.insert(0, group_eval_dir)
+            from group_eval.parity_plot import plot_group_parity
+            combined = pd.concat([pd.read_csv(p) for p in exp_csvs], ignore_index=True)
+            combined_csv = run_dir / "diffusivity_with_exp_all.csv"
+            combined.to_csv(combined_csv, index=False)
+            print(f"\n[MSD] combined diffusivity table: {combined_csv}")
+
+            for key, sim_col, exp_col, label in [
+                ("cation",   "D_cat_corrected_1e-10_m2s", "exp_D_cation_1e-10_m2s",  "Cation"),
+                ("anion",    "D_ani_corrected_1e-10_m2s", "exp_D_anion_1e-10_m2s",   "Anion"),
+                ("solvent",  "D_sol_corrected_1e-10_m2s", "exp_D_solvent_1e-10_m2s", "Solvent"),
+            ]:
+                if combined[exp_col].notna().sum() < 2:
+                    continue
+                out = plot_group_parity(
+                    [combined_csv], exp_col=exp_col, sim_col=sim_col,
+                    labels=["all systems"],
+                    output=run_dir / f"diffusivity_parity_{key}.png",
+                    xlabel=f"Experimental {label} D (×10⁻¹⁰ m²/s)",
+                    ylabel=f"MD {label} D, finite-size corrected (×10⁻¹⁰ m²/s)",
+                    title=f"{label} diffusivity: MD vs experiment",
+                )
+                print(f"[MSD] saved parity plot: {out}")
 
     print("\nAll done.")
 

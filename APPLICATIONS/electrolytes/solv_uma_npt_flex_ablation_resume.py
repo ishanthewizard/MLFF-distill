@@ -81,6 +81,8 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 from ase.io import read, Trajectory
 from ase.md.npt import NPT
+from ase.md.nose_hoover_chain import IsotropicMTKNPT
+from ase.md.nvtberendsen import NVTBerendsen
 from ase import units
 from fairchem.core import pretrained_mlip, FAIRChemCalculator
 import torch
@@ -95,7 +97,7 @@ electrolytes_dir = os.path.dirname(os.path.abspath(__file__))
 if electrolytes_dir not in sys.path:
     sys.path.insert(0, electrolytes_dir)
 
-from get_calc import get_uma_calc, get_customized_uma_calc
+from get_calc import get_uma_calc, get_customized_uma_calc, get_customized_uma_calc_frozen
 
 
 def get_execution_mode():
@@ -215,6 +217,9 @@ def worker_single_node(
     temperatures,
     initial_temperatures,
     timestep_fs_list,
+    freeze_graph=False,
+    pfactor_list=[0.1],
+    dynamics_type_list=["npt"],
 ):
     """Worker function for single-node execution (spawned by mp.spawn)"""
     try:
@@ -230,7 +235,9 @@ def worker_single_node(
             temperature = temperatures[rank] if rank < len(temperatures) else temperatures[0]
             initial_temperature = initial_temperatures[rank] if rank < len(initial_temperatures) else initial_temperatures[0]
             timestep_fs = timestep_fs_list[rank] if rank < len(timestep_fs_list) else timestep_fs_list[0]
-            print(f"Rank {rank}: Assigned trajectory: {traj_path}, model: {model_checkpoint}, temperature: {temperature} K, initial_temperature: {initial_temperature} K, timestep: {timestep_fs} fs")
+            pfactor = pfactor_list[rank] if rank < len(pfactor_list) else pfactor_list[0]
+            dynamics_type = dynamics_type_list[rank] if rank < len(dynamics_type_list) else dynamics_type_list[0]
+            print(f"Rank {rank}: Assigned trajectory: {traj_path}, model: {model_checkpoint}, temperature: {temperature} K, initial_temperature: {initial_temperature} K, timestep: {timestep_fs} fs, dynamics: {dynamics_type}")
         else:
             print(f"Rank {rank}: No trajectory-model pair assigned")
             return
@@ -252,6 +259,9 @@ def worker_single_node(
                 temperature=temperature,
                 initial_temperature=initial_temperature,
                 timestep_fs=timestep_fs,
+                freeze_graph=freeze_graph,
+                pfactor=pfactor,
+                dynamics_type=dynamics_type,
             )
             print(f"Rank {rank}: Completed simulation for {traj_path}")
         except Exception as sim_error:
@@ -282,6 +292,9 @@ def worker_multinode(
     temperatures,
     initial_temperatures,
     timestep_fs_list,
+    freeze_graph=False,
+    pfactor_list=[0.1],
+    dynamics_type_list=["npt"],
 ):
     """Worker function for multi-node execution (called directly, no mp.spawn)"""
     global_rank, local_rank, world_size = setup_distributed_multinode()
@@ -295,9 +308,11 @@ def worker_multinode(
             temperature = temperatures[global_rank] if global_rank < len(temperatures) else temperatures[0]
             initial_temperature = initial_temperatures[global_rank] if global_rank < len(initial_temperatures) else initial_temperatures[0]
             timestep_fs = timestep_fs_list[global_rank] if global_rank < len(timestep_fs_list) else timestep_fs_list[0]
-            
+            pfactor = pfactor_list[global_rank] if global_rank < len(pfactor_list) else pfactor_list[0]
+            dynamics_type = dynamics_type_list[global_rank] if global_rank < len(dynamics_type_list) else dynamics_type_list[0]
+
             print(f"Global rank {global_rank} (local rank {local_rank}): Assigned trajectory: {traj_path}")
-            print(f"Global rank {global_rank}: Model: {model_checkpoint}, Temperature: {temperature} K, Initial: {initial_temperature} K, Timestep: {timestep_fs} fs")
+            print(f"Global rank {global_rank}: Model: {model_checkpoint}, Temperature: {temperature} K, Initial: {initial_temperature} K, Timestep: {timestep_fs} fs, Dynamics: {dynamics_type}")
         else:
             print(f"Global rank {global_rank}: No trajectory-model pair assigned")
             return
@@ -316,6 +331,9 @@ def worker_multinode(
             temperature=temperature,
             initial_temperature=initial_temperature,
             timestep_fs=timestep_fs,
+            freeze_graph=freeze_graph,
+            pfactor=pfactor,
+            dynamics_type=dynamics_type,
         )
         print(f"Global rank {global_rank}: Completed simulation")
         
@@ -338,6 +356,9 @@ def run_parallel_simulations_single_node(
     temperatures=[323],
     initial_temperatures=[300],
     timestep_fs_list=[1.0],
+    freeze_graph=False,
+    pfactor_list=[0.1],
+    dynamics_type_list=["npt"],
 ):
     """Main function to run parallel simulations across multiple GPUs"""
     # Pick a per-job free local port to avoid collisions with other jobs on the same node.
@@ -366,6 +387,9 @@ def run_parallel_simulations_single_node(
             temperatures,
             initial_temperatures,
             timestep_fs_list,
+            freeze_graph,
+            pfactor_list,
+            dynamics_type_list,
         ),
         nprocs=world_size,
         join=True
@@ -380,6 +404,9 @@ def run_parallel_simulations_multinode(
     temperatures=[323],
     initial_temperatures=[300],
     timestep_fs_list=[1.0],
+    freeze_graph=False,
+    pfactor_list=[0.1],
+    dynamics_type_list=["npt"],
 ):
     """Main function to run multi-node parallel simulations (no mp.spawn needed)"""
     world_size = int(os.environ.get('WORLD_SIZE', '1'))
@@ -398,6 +425,9 @@ def run_parallel_simulations_multinode(
         temperatures=temperatures,
         initial_temperatures=initial_temperatures,
         timestep_fs_list=timestep_fs_list,
+        freeze_graph=freeze_graph,
+        pfactor_list=pfactor_list,
+        dynamics_type_list=dynamics_type_list,
     )
     print("Multi-node parallel simulations completed successfully!")
 
@@ -413,6 +443,9 @@ def simulate(
     temperature=323,
     initial_temperature=300,
     timestep_fs=1.0,
+    freeze_graph=False,
+    pfactor=0.1,
+    dynamics_type="npt",
 ):
     """
     Run MD simulation on a specific GPU rank.
@@ -537,21 +570,54 @@ def simulate(
     
     # print(f"Rank {rank if rank is not None else 'N/A'}: Configured threading - PyTorch={cores_per_process}, OMP={os.environ.get('OMP_NUM_THREADS')}, MKL={os.environ.get('MKL_NUM_THREADS')}")
     print(f"Loading UMA model from: {uma_path}")
-    structure.calc = get_customized_uma_calc(uma_path= uma_path)
-    # structure.calc = get_uma_calc(uma_path= uma_path, small_model=False)
+    structure.calc = get_customized_uma_calc(uma_path=uma_path)
     print("UMA model loaded successfully")
 
-
-    # === Set up NPT dynamics ===
-    dyn = NPT(
+    if dynamics_type == "npt":
+        # === Set up NPT dynamics ===
+        dyn = NPT(
+            atoms=structure,
+            timestep=timestep_fs * units.fs,
+            temperature_K= temperature, # 298.2,
+            externalstress=1.0 * units.bar,
+            ttime=100 * units.fs,
+            pfactor=pfactor,
+            mask=([[1,0,0],[0,1,0],[0,0,1]]),
+        )
+    elif dynamics_type == "nvt_berendsen":
+        # === Set up NVT dynamics (Berendsen thermostat) ===
+        dyn = NVTBerendsen(
         atoms=structure,
-        timestep=timestep_fs * units.fs,
-        temperature_K= temperature, # 298.2,
-        externalstress=1.0 * units.bar,
-        ttime=100 * units.fs,
-        pfactor=0.1, ### larger value mean it will relax slower, typical 10^-3 
-        mask=([[1,0,0],[0,1,0],[0,0,1]]),
-    )
+        timestep=1.0 * units.fs,
+        temperature_K=temperature,
+        taut=100 * units.fs
+        )
+    elif dynamics_type == "nvt_noose_hoover":
+        dyn = NPT(
+            atoms=structure,
+            timestep=timestep_fs * units.fs,
+            temperature_K= temperature, # 298.2,
+            externalstress=1.0 * units.bar,
+            ttime=100 * units.fs,
+            pfactor=None,
+            mask=([[1,0,0],[0,1,0],[0,0,1]]),
+        )
+    elif dynamics_type == "isotropic_MTK_nose_hoover_npt":
+        dyn = IsotropicMTKNPT(
+            atoms = structure,
+            timestep      = timestep_fs * units.fs,
+            temperature_K = temperature,
+            pressure_au   = 1.0 * units.bar,
+            tdamp  = 100  * timestep_fs * units.fs,   # 100 fs — 100x timestep
+            pdamp  = 1000 * timestep_fs * units.fs,   # 1000 fs — 1000x timestep
+            tchain = 3,                 # Nose-Hoover chain length
+            pchain = 3,                 # barostat chain length
+            tloop  = 1,                 # thermostat sub-steps
+            ploop  = 1                 # barostat sub-steps
+        )
+
+    else:
+        raise ValueError(f"Invalid dynamics type: {dynamics_type}")
 
     # # === Output files ===
     traj = Trajectory(output_traj, "a", structure)
@@ -642,10 +708,32 @@ def parse_arguments():
         dest='timestep_fs_list',
         help='MD timestep(s) in femtoseconds (default: 1.0). Can specify multiple values, one per trajectory.',
     )
+    # --- FREEZE_GRAPH CHANGE: add --freeze_graph flag; remove this block to revert ---
+    parser.add_argument(
+        '--freeze_graph',
+        action='store_true',
+        default=False,
+        help='Freeze graph after step 0 (skip OTF graph regen). Speed benchmark only — physics will be wrong.',
+    )
+    # --- END FREEZE_GRAPH CHANGE ---
+    parser.add_argument(
+        '--pfactor',
+        type=float,
+        nargs='+',
+        default=[0.1],
+        help='Pressure relaxation factor(s) for NPT barostat (default: 0.1). Can specify multiple values, one per trajectory. Larger value = slower pressure relaxation, typical 10^-3.',
+    )
+    parser.add_argument(
+        '--dynamics_type',
+        type=str,
+        nargs='+',
+        default=["npt"],
+        help='Dynamics type per trajectory: npt | nvt_berendsen | nvt_noose_hoover | isotropic_MTK_nose_hoover_npt (default: npt). Can specify multiple values, one per trajectory.',
+    )
     return parser.parse_args()
 
 
-def validate_inputs(trajectory_paths, model_checkpoints, temperatures, initial_temperatures, timestep_fs_list, execution_mode):
+def validate_inputs(trajectory_paths, model_checkpoints, temperatures, initial_temperatures, timestep_fs_list, execution_mode, dynamics_type_list=None):
     """Validate input arguments"""
     # Basic validation
     if len(timestep_fs_list) != len(trajectory_paths):
@@ -654,35 +742,6 @@ def validate_inputs(trajectory_paths, model_checkpoints, temperatures, initial_t
     for timestep_fs in timestep_fs_list:
         if timestep_fs <= 0:
             raise ValueError(f"timestep must be > 0 fs, got {timestep_fs}")
-    
-    # === Configuration ===
-    total_target_steps = args.steps
-    interval = args.interval
-    model_checkpoints = args.models
-    trajectory_paths = args.trajectories
-    temperatures = args.temperature
-    initial_temperatures = args.initial_temperature
-    timestep_fs_list = args.timestep_fs_list
-    world_size = torch.cuda.device_count()  # Number of available GPUs
-
-    if world_size == 0:
-        raise RuntimeError("No CUDA devices available")
-
-    if len(timestep_fs_list) != len(trajectory_paths):
-        raise ValueError(f"Number of timesteps ({len(timestep_fs_list)}) must equal number of trajectories ({len(trajectory_paths)})")
-
-    for timestep_fs in timestep_fs_list:
-        if timestep_fs <= 0:
-            raise ValueError(f"timestep must be > 0 fs, got {timestep_fs}")
-
-    print(f"Found {world_size} CUDA devices")
-    print(f"Model checkpoints: {model_checkpoints}")
-    print(f"Target steps: {total_target_steps}")
-    print(f"Interval: {interval}")
-    print(f"Trajectory paths: {trajectory_paths}")
-    print(f"Temperatures: {temperatures}")
-    print(f"Initial temperatures: {initial_temperatures}")
-    print(f"Timesteps: {timestep_fs_list} fs")
     
     # === Validation ===
     # Check that trajectory and model lists have the same length
@@ -695,7 +754,15 @@ def validate_inputs(trajectory_paths, model_checkpoints, temperatures, initial_t
     
     if len(initial_temperatures) != len(trajectory_paths):
         raise ValueError(f"Number of initial temperatures ({len(initial_temperatures)}) must equal number of trajectories ({len(trajectory_paths)})")
-    
+
+    valid_dynamics = {"npt", "nvt_berendsen", "nvt_noose_hoover", "isotropic_MTK_nose_hoover_npt"}
+    if dynamics_type_list is not None:
+        if len(dynamics_type_list) != len(trajectory_paths):
+            raise ValueError(f"Number of dynamics types ({len(dynamics_type_list)}) must equal number of trajectories ({len(trajectory_paths)})")
+        for dt in dynamics_type_list:
+            if dt not in valid_dynamics:
+                raise ValueError(f"Invalid dynamics type '{dt}'. Must be one of {valid_dynamics}")
+
     # Mode-specific validation
     if execution_mode == 'single_node_single_gpu' or execution_mode == 'single_node_multi_gpu':
         world_size = torch.cuda.device_count()
@@ -734,7 +801,10 @@ def main():
     temperatures = args.temperature
     initial_temperatures = args.initial_temperature
     timestep_fs_list = args.timestep_fs_list
-    
+    freeze_graph = args.freeze_graph  # --- FREEZE_GRAPH CHANGE ---
+    pfactor_list = args.pfactor
+    dynamics_type_list = args.dynamics_type
+
     print(f"Target steps: {total_target_steps}")
     print(f"Interval: {interval}")
     print(f"Model checkpoints: {model_checkpoints}")
@@ -742,9 +812,11 @@ def main():
     print(f"Temperatures: {temperatures}")
     print(f"Initial temperatures: {initial_temperatures}")
     print(f"Timesteps: {timestep_fs_list} fs")
-    
+    print(f"Pfactor list: {pfactor_list}")
+    print(f"Dynamics types: {dynamics_type_list}")
+
     # Validate inputs
-    validate_inputs(trajectory_paths, model_checkpoints, temperatures, initial_temperatures, timestep_fs_list, execution_mode)
+    validate_inputs(trajectory_paths, model_checkpoints, temperatures, initial_temperatures, timestep_fs_list, execution_mode, dynamics_type_list)
     
     # Create trajectory-model pairs
     trajectory_model_pairs = list(zip(trajectory_paths, model_checkpoints))
@@ -760,8 +832,11 @@ def main():
             temperatures=temperatures,
             initial_temperatures=initial_temperatures,
             timestep_fs_list=timestep_fs_list,
+            freeze_graph=freeze_graph,
+            pfactor_list=pfactor_list,
+            dynamics_type_list=dynamics_type_list,
         )
-        
+
     elif execution_mode == 'single_node_multi_gpu':
         world_size = torch.cuda.device_count()
         print(f"Running in single-node multi-GPU mode with {world_size} GPUs")
@@ -773,19 +848,24 @@ def main():
             temperatures=temperatures,
             initial_temperatures=initial_temperatures,
             timestep_fs_list=timestep_fs_list,
+            freeze_graph=freeze_graph,
+            pfactor_list=pfactor_list,
+            dynamics_type_list=dynamics_type_list,
         )
-        
+
     elif execution_mode == 'single_node_single_gpu':
         # Single trajectory-model pair - run on single GPU
         if len(trajectory_model_pairs) > 1:
             raise ValueError(f"Single GPU mode can only handle 1 trajectory-model pair, got {len(trajectory_model_pairs)}")
-            
+
         traj_path, model_checkpoint = trajectory_model_pairs[0]
         temperature = temperatures[0]
         initial_temperature = initial_temperatures[0]
         timestep_fs = timestep_fs_list[0]
+        pfactor = pfactor_list[0]
+        dynamics_type = dynamics_type_list[0]
         print(f"Running single trajectory-model pair on single GPU: {traj_path} + {model_checkpoint}")
-        print(f"Temperature: {temperature} K, Initial temperature: {initial_temperature} K, Timestep: {timestep_fs} fs")
+        print(f"Temperature: {temperature} K, Initial temperature: {initial_temperature} K, Timestep: {timestep_fs} fs, Dynamics: {dynamics_type}")
         simulate(
             root_path=traj_path,
             rank=None,
@@ -796,6 +876,9 @@ def main():
             temperature=temperature,
             initial_temperature=initial_temperature,
             timestep_fs=timestep_fs,
+            freeze_graph=freeze_graph,
+            pfactor=pfactor,
+            dynamics_type=dynamics_type,
         )
     
     else:

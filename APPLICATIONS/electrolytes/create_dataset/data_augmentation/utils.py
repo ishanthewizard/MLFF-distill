@@ -88,7 +88,8 @@ def load_frames(src_dir):
 def _relabel_worker(rank, chunk, calculator_path, result_queue):
     """Worker that relabels a chunk of frames on a single GPU and puts results in the queue."""
     try:
-        calc = _build_calc_on_device(calculator_path, device=f"cuda:{rank}")
+        torch.cuda.set_device(rank)
+        calc = _build_calc_on_device(calculator_path, device="cuda")
         labeled = []
         with torch.no_grad():
             for frame in tqdm(chunk, desc=f"GPU {rank}", position=rank):
@@ -112,11 +113,11 @@ def _relabel_worker(rank, chunk, calculator_path, result_queue):
         result_queue.put((rank, e))
 
 
-def _build_calc_on_device(uma_path, device="cuda:0"):
+def _build_calc_on_device(uma_path, device="cuda"):
     inference_settings = InferenceSettings(
         tf32=True,
         activation_checkpointing=True,
-        merge_mole=True,
+        merge_mole=False,
         compile=False,
         wigner_cuda=False,
         external_graph_gen=False,
@@ -185,9 +186,28 @@ def relabel(frames, calculator_path):
             frames[rank + i * n_gpus] = frame
 
 
-def save_frames(frames, output_dir, num_workers=8):
+def _sanity_check_before_save(frames, original_frames):
+    assert len(frames) == len(original_frames), (
+        f"Frame count mismatch: {len(frames)} to save vs {len(original_frames)} original"
+    )
+    for i, (frame, orig) in enumerate(zip(frames, original_frames)):
+        assert np.array_equal(frame.get_atomic_numbers(), orig.get_atomic_numbers()), (
+            f"Frame {i}: atomic_numbers mismatch — "
+            f"got {frame.get_atomic_numbers().tolist()}, "
+            f"expected {orig.get_atomic_numbers().tolist()}"
+        )
+
+
+def save_frames(frames, output_dir, original_frames=None, num_workers=8):
+    if original_frames is not None:
+        _sanity_check_before_save(frames, original_frames)
+        print("Sanity check passed")
+    else:
+        print("No original frames provided, skipping sanity check")
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    for existing in output_dir.glob("data.*.aselmdb"):
+        existing.unlink()
     natoms = []
     n = min(num_workers, len(frames))
     chunks = [frames[j::n] for j in range(n)]

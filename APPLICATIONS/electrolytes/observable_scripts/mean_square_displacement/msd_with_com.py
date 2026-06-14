@@ -119,7 +119,20 @@ def direct_groups_from_species(symbols, species_list):
     
     return unique_groups
 
-def _mass_weighted_com(positions, masses):
+def _mass_weighted_com(positions, masses, cell=None, pbc=None):
+    """Mass-weighted COM, with MIC unwrap of intra-molecular bonds (relative
+    to the first atom) if `cell`/`pbc` are given.
+
+    The MIC step only changes anything when an atom is more than L/2 from the
+    first atom (i.e. the molecule is split across a periodic boundary in a
+    wrapped trajectory). For already-unwrapped positions (e.g. eSEN dumps),
+    intra-molecular distances are always << L/2, so find_mic is a no-op and
+    this is identical to the plain mass-weighted average.
+    """
+    if cell is not None and pbc is not None and len(positions) > 1:
+        ref = positions[0]
+        mic_disps, _ = find_mic(positions[1:] - ref, cell, pbc=pbc)
+        positions = np.vstack([ref[None, :], ref + mic_disps])
     msum = masses.sum()
     return (positions * masses[:, None]).sum(axis=0) / msum if msum > 0 else positions.mean(axis=0)
 
@@ -208,17 +221,18 @@ def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbo
         # cation positions
         pos_cat[0] = f_prev.get_positions()[cat_idx] - com_prev
         # anion COMs
+        cell0, pbc0 = f_prev.get_cell(), f_prev.get_pbc()
         if pos_anion is not None:
             P0 = f_prev.get_positions() - com_prev
             M0 = f_prev.get_masses()
             for j, g in enumerate(anion_groups):
-                pos_anion[0, j] = _mass_weighted_com(P0[g], M0[g])
+                pos_anion[0, j] = _mass_weighted_com(P0[g], M0[g], cell0, pbc0)
         # solvent COMs
         if pos_solvent is not None:
             P0 = f_prev.get_positions() - com_prev
             M0 = f_prev.get_masses()
             for j, g in enumerate(solvent_groups):
-                pos_solvent[0, j] = _mass_weighted_com(P0[g], M0[g])
+                pos_solvent[0, j] = _mass_weighted_com(P0[g], M0[g], cell0, pbc0)
 
         # Stream/unwrap
         for k in tqdm(range(1, T), desc=f"{traj_path.name}: unwrap", unit="frame", leave=False):
@@ -234,6 +248,8 @@ def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbo
                 continue
             com_c = f.get_center_of_mass()
             com_p = f_p.get_center_of_mass()
+            cell_c, pbc_c = f.get_cell(), f.get_pbc()
+            cell_p, pbc_p = f_p.get_cell(), f_p.get_pbc()
 
             # --- cations ---
             curr_cat = f.get_positions()[cat_idx] - com_c
@@ -250,8 +266,8 @@ def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbo
                 curr_com = np.empty_like(pos_anion[0])
                 prev_com = np.empty_like(pos_anion[0])
                 for j, g in enumerate(anion_groups):
-                    curr_com[j] = _mass_weighted_com(posC[g], mC[g])
-                    prev_com[j] = _mass_weighted_com(posP[g], mP[g])
+                    curr_com[j] = _mass_weighted_com(posC[g], mC[g], cell_c, pbc_c)
+                    prev_com[j] = _mass_weighted_com(posP[g], mP[g], cell_p, pbc_p)
                 disp_an, _ = find_mic(curr_com - prev_com, f.get_cell(), pbc=f.get_pbc())
                 pos_anion[k] = pos_anion[k - 1] + disp_an
 
@@ -264,8 +280,8 @@ def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbo
                 curr_com = np.empty_like(pos_solvent[0])
                 prev_com = np.empty_like(pos_solvent[0])
                 for j, g in enumerate(solvent_groups):
-                    curr_com[j] = _mass_weighted_com(posC[g], mC[g])
-                    prev_com[j] = _mass_weighted_com(posP[g], mP[g])
+                    curr_com[j] = _mass_weighted_com(posC[g], mC[g], cell_c, pbc_c)
+                    prev_com[j] = _mass_weighted_com(posP[g], mP[g], cell_p, pbc_p)
                 disp_sv, _ = find_mic(curr_com - prev_com, f.get_cell(), pbc=f.get_pbc())
                 pos_solvent[k] = pos_solvent[k - 1] + disp_sv
 

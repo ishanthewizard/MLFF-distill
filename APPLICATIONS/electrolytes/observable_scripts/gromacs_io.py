@@ -52,12 +52,13 @@ def ensure_element_gro(tpr: Path, xtc: Path, cache_dir: Path) -> Path:
 
     cache_dir = Path(cache_dir)
     cache_dir.mkdir(parents=True, exist_ok=True)
-    out = cache_dir / f"{xtc.stem}.element.gro"
+    out = cache_dir / f"{xtc.parent.name}_{xtc.stem}.element.gro"
     if out.exists():
         return out
 
-    # TPR already contains starting coordinates — no need to open the XTC
-    u = mda.Universe(str(tpr))
+    # Some TPR files have a topology-only parser (no coordinate reader), so
+    # load the first frame's positions/box from the XTC instead.
+    u = mda.Universe(str(tpr), str(xtc))
     ts = u.trajectory[0]
     atoms = u.atoms
     pos_nm = atoms.positions / 10.0

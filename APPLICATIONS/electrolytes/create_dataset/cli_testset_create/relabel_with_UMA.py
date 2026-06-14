@@ -23,7 +23,7 @@ from ase_db_backends.aselmdb import LMDBDatabase
 from fairchem.core.units.mlip_unit import InferenceSettings, load_predict_unit
 from tqdm import tqdm
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from get_calc import UMACalculatorWrapper
 
 

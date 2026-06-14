@@ -7,3 +7,6 @@
 [submodule "submodule/byteff2"]
 	path = submodule/byteff2
 	url = https://github.com/ftyuejian/byteff2.git
+[submodule "submodule/electrolytes"]
+	path = submodule/electrolytes
+	url = https://github.com/ishanthewizard/electrolytes.git
