@@ -13,19 +13,38 @@ from ase.io import Trajectory
 from vis import save_gif_3d
 
 # ── Input trajectories ────────────────────────────────────────────────────────
+_NVT_BASE = (
+    "/global/homes/y/yuejian/project/MLFF-distill"
+    "/yuejian/electrolyte_application/exp_density_nvt/simulations"
+)
+_NVT_SYSTEMS = [
+    "li_pf6_dme_323K_0.5M",
+    "na_otf_dme_298K_0.1M",
+    "na_pf6_dme_298K_0.1M",
+    "na_pf6_dme_323K_0.5M",
+]
+_NVT_THERMOSTATS = ["berendsen", "nose_hover"]
+_NVT_ROLES       = ["student", "teacher"]
+
 TRAJ_PATHS = [
-    # Add / remove paths here
-    "/global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/results/diffusivity_main_results_20ns_final/original_100ps/20ns_solute_solvent_1M/298K/napf6_dme/napf6_dme.traj",
+    f"{_NVT_BASE}/{thermo}/{sys}_{role}/{sys}_{role}.traj"
+    for thermo in _NVT_THERMOSTATS
+    for sys    in _NVT_SYSTEMS
+    for role   in _NVT_ROLES
 ]
 
 # ── Output directory ──────────────────────────────────────────────────────────
-OUTPUT_DIR = "/global/homes/y/yuejian/project/MLFF-distill/yuejian/electrolyte_application/gif"
+OUTPUT_DIR = (
+    "/global/homes/y/yuejian/project/MLFF-distill"
+    "/yuejian/electrolyte_application/exp_density_nvt/gif"
+)
 
 # ── GIF parameters (shared across all trajectories) ──────────────────────────
+# dt = 100 fs/frame; 3 ns = 30 000 frames; stride 300 → ~100 frames per GIF
 GIF_PARAMS = dict(
     start       = 0,
-    end         = 200000,
-    stride      = 2000,
+    end         = 30000,
+    stride      = 300,
     hide_H      = True,
     fps         = 5,
     size        = 400,
@@ -34,9 +53,6 @@ GIF_PARAMS = dict(
     spin        = False,
     n_workers   = 4,
     atom_scale  = 0.5,
-    # Interval between saved frames in fs (not the MD integration timestep).
-    # 20 ns / 200 000 frames = 100 fs per frame. Displayed as ns on each frame.
-    # Set to 0 to disable the time stamp.
     timestep_fs = 100,
 )
 
@@ -81,10 +97,13 @@ def main():
         traj = Trajectory(traj_path)
         print(f"  Opened: {len(traj)} frames")
 
-        temperature, concentration, model, cation, anion, solvent = parse_traj_name(traj_path)
-        gif_name = f"{model}_{cation}{anion}_{solvent}_{concentration}_{temperature}_3d.gif"
+        # Use folder name + thermostat directly for exp_density_nvt paths
+        parts = traj_path.replace('\\', '/').split('/')
+        folder = os.path.basename(os.path.dirname(traj_path))
+        thermostat = parts[-3] if len(parts) >= 3 else "unknown"
+        gif_name = f"{thermostat}_{folder}_3d.gif"
         out_path = os.path.join(OUTPUT_DIR, gif_name)
-        print(f"  Parsed: {model} | {cation.upper()}/{anion.upper()} in {solvent} | {concentration} | {temperature}")
+        print(f"  Parsed: {thermostat} | {folder}")
         print(f"  Output: {gif_name}")
 
         save_gif_3d(traj, output_path=out_path,
