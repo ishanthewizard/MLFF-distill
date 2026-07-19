@@ -107,7 +107,7 @@ from RDF.utils.plot import plot_rdf_comparison, plot_rdf_sliding
 from density.compute import compute_density
 from density.plot import plot_density_bars
 from energy.compute import extract_energies
-from energy.plot import plot_energy_timeseries
+from energy.plot import plot_energy_timeseries, plot_energy_comparison
 from force_mae.compute import compute_force_mae
 from force_mae.plot import plot_force_mae_timeseries, plot_force_mae_comparison
 from energy_mae.compute import compute_energy_mae
@@ -201,7 +201,54 @@ def _model_colors(sys_cfg: dict) -> dict[str, str]:
 
 # ── per-system worker (runs in subprocess) ────────────────────────────────────
 
+class _Tee:
+    """Write to several streams at once, flushing each write (live logging)."""
+    def __init__(self, *streams):
+        self._streams = [s for s in streams if s is not None]
+    def write(self, data):
+        for s in self._streams:
+            try:
+                s.write(data); s.flush()
+            except Exception:
+                pass
+        return len(data)
+    def flush(self):
+        for s in self._streams:
+            try:
+                s.flush()
+            except Exception:
+                pass
+    def isatty(self):
+        return False
+
+
 def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
+    """Wrapper that tees this worker's stdout/stderr live to <sys_out>/run.log.
+
+    Captures loading/compute progress (the `print()` / tqdm output from the
+    compute modules) as it happens, so the per-system log file updates in real
+    time instead of only when the whole system finishes. The original streams
+    are restored in a finally block because ProcessPoolExecutor reuses workers
+    across systems.
+    """
+    sys_out = _sys_out(output_dir, sys_cfg["name"])
+    log_fh = open(sys_out / "run.log", "a", buffering=1)  # line-buffered -> live
+    orig_out, orig_err = sys.stdout, sys.stderr
+    sys.stdout = _Tee(orig_out, log_fh)
+    sys.stderr = _Tee(orig_err, log_fh)
+    try:
+        log_fh.write(f"\n===== {sys_cfg['name']} | run started "
+                     f"{datetime.now():%Y-%m-%d %H:%M:%S} =====\n")
+        return _run_system_impl(sys_cfg, analyses, output_dir)
+    finally:
+        sys.stdout, sys.stderr = orig_out, orig_err
+        try:
+            log_fh.close()
+        except Exception:
+            pass
+
+
+def _run_system_impl(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
     """Process one system: run requested analyses and save outputs.
 
     This function is called in a separate process; it must only use
@@ -216,7 +263,7 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
     from density.compute import compute_density, extract_density_timeseries
     from density.plot import plot_density_bars, plot_density_timeseries
     from energy.compute import extract_energies
-    from energy.plot import plot_energy_timeseries
+    from energy.plot import plot_energy_timeseries, plot_energy_comparison
     from mean_square_displacement.compute import (
         run_msd_analysis, save_msd_pickle, save_diffusivity_csv,
         save_yeh_hummer_csv, save_diffusivity_with_exp_csv,
@@ -290,7 +337,6 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
             analysis_ns[model] = min(max_traj_ns, n * dt * 1e-6)
         except Exception:
             analysis_ns[model] = max_traj_ns
-
     log_lines = [f"=== {name} (max_traj_ns={max_traj_ns}) ==="]
     for m, ans in analysis_ns.items():
         log_lines.append(f"  [setup] {m}: analysis_ns={ans:.2f}")
@@ -394,6 +440,7 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
 
     # ── Energy ────────────────────────────────────────────────────────────────
     if "energy" in analyses:
+        energy_ts = {}   # {model: (times, pe, ke, etot, temp)} for comparison plot
         for model, traj_path in traj_paths.items():
             p = _main_traj_path(traj_path)
             if not p.exists():
@@ -412,12 +459,17 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
                 out = plot_energy_timeseries(times, pe, ke, etot, temp,
                                              name, model, sys_out,
                                              color=colors.get(model, "#1f77b4"))
+                energy_ts[model] = (times, pe, ke, etot, temp)
                 log_lines.append(f"  [Energy] {model}: saved {out.name}")
                 import numpy as np
                 npz = sys_out / f"energy_{model}.npz".replace(" ", "_")
                 np.savez_compressed(npz, times=times, pe=pe, ke=ke, etot=etot, temp=temp)
             except Exception:
                 log_lines.append(f"  [Energy] ERROR {model}:\n{traceback.format_exc()}")
+
+        if len(energy_ts) > 1:
+            out = plot_energy_comparison(energy_ts, name, model_order, colors, sys_out)
+            log_lines.append(f"  [Energy] comparison saved: {out.name}")
 
     # ── MSD / Diffusivity ─────────────────────────────────────────────────────
     if "msd" in analyses:
@@ -812,9 +864,14 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
             cond_z_anion  = sys_cfg.get("conductivity_z_anion", -1.0)
             cond_eq_cut   = sys_cfg.get("conductivity_eq_cut_ns", 2.0)
             cond_tau_min  = sys_cfg.get("conductivity_tau_min_ns", 1.0)
+            cond_tau_max  = sys_cfg.get("conductivity_tau_max_ns", None)  # None -> byteff2/mdcraft defaults
             cond_fit_pct  = sys_cfg.get("fit_pct", 0.8)
             cond_n_sample = sys_cfg.get("n_frames", 2000)
+            cond_load_dt  = sys_cfg.get("conductivity_load_dt_ps", 10.0)  # effective subsample/lag dt (ps)
             cond_exp      = sys_cfg.get("conductivity_exp_mS_cm")   # None if not provided
+            # Optional explicit Onsager fit upper bound (lag, ns) -> frame indices.
+            cond_nt_start = int(round(cond_tau_min * 1000.0 / cond_load_dt))
+            cond_nt_end   = int(round(cond_tau_max * 1000.0 / cond_load_dt)) if cond_tau_max is not None else None
 
             cond_rows = []
             for model, traj_path in traj_paths.items():
@@ -835,14 +892,22 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
                         fit_pct=cond_fit_pct,
                         tau_min_fit_ns=cond_tau_min,
                         n_sample=cond_n_sample,
+                        load_dt_ps=cond_load_dt,
                         max_traj_ns=analysis_ns.get(model, max_traj_ns),
+                        **({"nt_end": cond_nt_end} if cond_nt_end is not None else {}),
                     )
                     sigma = result["sigma_NE_mS_cm"]
                     log_lines.append(
                         f"  [Conductivity] {model}: sigma_NE={sigma:.4f} mS/cm "
+                        f"sigma_onsager={result['sigma_onsager_mS_cm']:.4f} mS/cm "
                         f"D_cat={result['D_cat_1e10_m2s']:.3f} "
-                        f"D_anion={result['D_anion_1e10_m2s']:.3f} (1e-10 m2/s)"
+                        f"D_anion={result['D_anion_1e10_m2s']:.3f} (1e-10 m2/s) "
+                        f"D_solvent={result['D_solvent_1e10_m2s']:.3f} (1e-10 m2/s)"
                     )
+                    log_lines.append(f"  [Conductivity] Lambda_onsager={result['Lambda_onsager']}")
+                    log_lines.append(f"  [Conductivity] Lambda_onsager_raw={result['Lambda_onsager_raw']}")
+                    log_lines.append(f"  [Conductivity] Lambda_onsager_unit={result['Lambda_onsager_unit']}")
+                    log_lines.append(f"  [Conductivity] species_order={result['species_order']}")
                     row = {"system": name, "model": model,
                            "cat_symbol": cat_sym, "anion_symbol": ani_sym,
                            "solvent_symbol": sol_sym,
@@ -853,11 +918,42 @@ def _run_system(sys_cfg: dict, analyses: list[str], output_dir: Path) -> str:
                            "D_cat_1e-10_m2s": result["D_cat_1e10_m2s"],
                            "D_anion_1e-10_m2s": result["D_anion_1e10_m2s"],
                            "sigma_NE_mS_cm": sigma,
+                           "sigma_onsager_mS_cm": result.get("sigma_onsager_mS_cm"),
                            "tau_min_fit_ns": result["tau_min_fit_ns"],
                            "tau_max_fit_ns": result["tau_max_fit_ns"],
                            "eq_cut_ns": result["eq_cut_ns"]}
                     if cond_exp is not None:
                         row["exp_sigma_mS_cm"] = cond_exp
+
+                    # collective (mdcraft Onsager) conductivity + diagnostic plots
+                    try:
+                        from conductivity.compute import run_onsager_conductivity_mdcraft
+                        mdc = run_onsager_conductivity_mdcraft(
+                            p, cat_sym, ani_sym, sol_sym, dt, cond_T_K,
+                            z_cat=cond_z_cat,
+                            z_anion=cond_z_anion,
+                            eq_cut_ns=cond_eq_cut,
+                            load_dt_ps=cond_load_dt,
+                            max_traj_ns=analysis_ns.get(model, max_traj_ns),
+                            out_dir=sys_out,
+                            system_name=name,
+                            model_name=model,
+                            **({"nt_start": cond_nt_start, "nt_end": cond_nt_end,
+                                "fit_start_ns": cond_tau_min, "fit_stop_ns": cond_tau_max}
+                               if cond_tau_max is not None else {}),
+                        )
+                        row["conductivity by md craft (mS/cm)"] = mdc["sigma_mdcraft_mS_cm"]
+                        log_lines.append(
+                            f"  [Conductivity] {model}: sigma_mdcraft="
+                            f"{mdc['sigma_mdcraft_mS_cm']:.4f} mS/cm "
+                            f"(plots: {mdc['vacf_plot']}, {mdc['cross_plot']})"
+                        )
+                    except Exception:
+                        row["conductivity by md craft (mS/cm)"] = None
+                        log_lines.append(
+                            f"  [Conductivity] mdcraft ERROR {model}:\n{traceback.format_exc()}"
+                        )
+
                     cond_rows.append(row)
                 except Exception:
                     log_lines.append(f"  [Conductivity] ERROR {model}:\n{traceback.format_exc()}")
@@ -931,14 +1027,25 @@ def main():
             if not _main_traj_path(tp).exists():
                 print(f"  WARNING missing: {sys_cfg['name']} / {model}: {_main_traj_path(tp)}")
 
+    # durable, live top-level log: one block per system as it completes
+    # (per-system detail/progress is in <run_dir>/<system>/run.log)
+    _run_log = open(run_dir / "run.log", "a", buffering=1)
+    def _emit(text):
+        print(text)
+        _run_log.write(str(text) + "\n")
+        _run_log.flush()
+
+    _emit(f"# run started {datetime.now():%Y-%m-%d %H:%M:%S} | "
+          f"{len(systems)} systems | workers={n_workers} | analyses={analyses}")
+    n_done = 0
     if n_workers == 1:
         for sys_cfg in systems:
             try:
                 log = _run_system(sys_cfg, analyses, run_dir)
-                print(log)
+                n_done += 1
+                _emit(f"[{datetime.now():%H:%M:%S} | {n_done}/{len(systems)} done]\n{log}")
             except Exception:
-                print(f"[FATAL] {sys_cfg['name']}:")
-                traceback.print_exc()
+                _emit(f"[FATAL] {sys_cfg['name']}:\n{traceback.format_exc()}")
     else:
         with ProcessPoolExecutor(max_workers=n_workers, mp_context=_mp.get_context("spawn")) as exe:
             futures = {
@@ -949,10 +1056,11 @@ def main():
                 name = futures[fut]
                 try:
                     log = fut.result()
-                    print(log)
+                    n_done += 1
+                    _emit(f"[{datetime.now():%H:%M:%S} | {n_done}/{len(systems)} done]\n{log}")
                 except Exception:
-                    print(f"[FATAL] {name}:")
-                    traceback.print_exc()
+                    _emit(f"[FATAL] {name}:\n{traceback.format_exc()}")
+    _run_log.close()
 
     # ── aggregate per-system diffusivity-vs-exp tables into parity plots ──────
     if "msd" in analyses:

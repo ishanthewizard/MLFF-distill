@@ -41,6 +41,83 @@ def _stats(exp_vals, sim_vals):
     return log_mae, float(rho), int(mask.sum())
 
 
+def _safe(s):
+    """Filesystem-safe version of a name: replace / and spaces with _."""
+    return str(s).replace("/", "_").replace(" ", "_")
+
+
+def plot_collective_vacf(times, acf_pp, acf_pm, acf_mm, system, model, out_dir,
+                         dim=1):
+    """Collective velocity ACF (++, +-, --) for one Cartesian component.
+
+    Diagnostic figure produced by the mdcraft conductivity backend
+    (``compute.run_onsager_conductivity_mdcraft``).  Saves a PNG into
+    ``out_dir`` and returns its path.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(6.4, 4.7))
+    ax.plot(times, acf_pp[:, dim], label="+ +")
+    ax.plot(times, acf_pm[:, dim], label="+ -")
+    ax.plot(times, acf_mm[:, dim], label="- -")
+    ax.axhline(0, color="grey", lw=0.6)
+    if len(times) > 1:
+        ax.set_xlim(0, times[min(50, len(times) - 1)])
+    ax.legend()
+    ax.set_xlabel("Time (ps)")
+    ax.set_ylabel("Correlation function")
+    ax.set_title(f"{system} / {model}: collective velocity ACF "
+                 f"({'xyz'[dim]}-component)")
+    fig.tight_layout()
+
+    out = out_dir / f"conductivity_mdcraft_vacf_{_safe(model)}.png"
+    fig.savefig(out, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[plot] saved {out}")
+    return out
+
+
+def plot_cross_displacement(t, cross, pairs, s, e, kappa_uScm,
+                            fit_start_ns, fit_stop_ns, system, model, out_dir):
+    """Collective cross-displacement <dR_i . dR_j> vs lag, with linear fits.
+
+    Diagnostic figure produced by the mdcraft conductivity backend.  ``cross``
+    is the (3, nt) raw collective displacement (++, +-, --); ``pairs`` are the
+    mdcraft ``results.pairs``; ``s``/``e`` bound the diffusive fit window.
+    Saves a PNG into ``out_dir`` and returns its path.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    pair_lbl = {(0, 0): "++  (cation-cation)", (0, 1): "+-  (cation-anion)",
+                (1, 1): "--  (anion-anion)"}
+    colors = ["tab:blue", "tab:green", "tab:red"]
+
+    fig, ax = plt.subplots(figsize=(6.4, 4.7))
+    for k, pr in enumerate(pairs):
+        y = cross[k]
+        ax.plot(t, y, lw=1.5, color=colors[k % 3],
+                label=pair_lbl.get(tuple(pr), str(pr)))
+        coef = np.polyfit(t[s:e], y[s:e], 1)          # linear fit over window
+        ax.plot(t[s:e], np.polyval(coef, t[s:e]), "--", lw=1.2, color="k")
+    ax.axvspan(t[s], t[e - 1], color="grey", alpha=0.12)
+    ax.axhline(0, color="grey", lw=0.6)
+    ax.set_xlabel("t (ps)")
+    ax.set_ylabel(r"collective $\langle \Delta R_i \cdot \Delta R_j \rangle$  ($\AA^2$)")
+    ax.set_title(rf"{system} / {model}: cross-displacement "
+                 rf"($\kappa$={kappa_uScm:.0f} $\mu$S/cm)")
+    ax.legend(fontsize=8,
+              title=f"fit {fit_start_ns}-{fit_stop_ns} ns (dashed = linear fit)")
+    fig.tight_layout()
+
+    out = out_dir / f"conductivity_mdcraft_cross_displacement_{_safe(model)}.png"
+    fig.savefig(out, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[plot] saved {out}")
+    return out
+
+
 def plot_parity(csv_paths, labels=None, output=None, sim_col="sim_conductivity_onsager_uS_cm"):
     csv_paths = [Path(p) for p in csv_paths]
     if labels is None:

@@ -1,0 +1,2 @@
+mkdir: cannot create directory ‘/global/homes/y/yuejian/project/MLFF-distill/m5250/distillation_proj/simulation_results/PAINN/electrolytes_data/analysis/fp32_simulation/In_distribution/multi_replicas/nvt/conductivity_2ns_a2a’: Disk quota exceeded
+mkdir: cannot create directory ‘/global/homes/y/yuejian/project/MLFF-distill/m5250/distillation_proj/simulation_results/MLP/foam_all_systems/analysis/conductivity_2ns_a2a’: Disk quota exceeded

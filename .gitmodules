@@ -10,3 +10,18 @@
 [submodule "submodule/electrolytes"]
 	path = submodule/electrolytes
 	url = https://github.com/ishanthewizard/electrolytes.git
+[submodule "submodule/mdcraft"]
+	path = submodule/mdcraft
+	url = https://github.com/ftyuejian/mdcraft.git
+[submodule "submodule/transport-coefficients"]
+	path = submodule/transport-coefficients
+	url = https://github.com/ftyuejian/transport-coefficients.git
+[submodule "submodule/mace-foundations"]
+	path = submodule/mace-foundations
+	url = https://github.com/ftyuejian/mace-foundations.git
+[submodule "submodule/orb-models"]
+	path = submodule/orb-models
+	url = https://github.com/ftyuejian/orb-models.git
+[submodule "submodule/SevenNet"]
+	path = submodule/SevenNet
+	url = https://github.com/ftyuejian/SevenNet.git

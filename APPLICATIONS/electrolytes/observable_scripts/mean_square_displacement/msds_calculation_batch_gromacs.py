@@ -24,6 +24,8 @@ from pathlib import Path
 from typing import Sequence, Tuple, Optional
 
 import argparse
+import glob
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -36,6 +38,7 @@ from msd_with_com import (
     a2ps_to_m2s,
     direct_groups_from_species,
     _mass_weighted_com,
+    _mic_disp,
     msd_time_origin,
     msd_time_origin_parallel,
     fit_diffusion,
@@ -53,6 +56,110 @@ def _cell_from_ts(ts) -> np.ndarray:
     # Fallback: orthorhombic with lengths in the first three dims entries
     lengths = np.asarray(ts.dimensions[:3], dtype=float)
     return np.diag(lengths)
+
+
+def _detect_wrapped_gromacs(u, idxs, margin=0.5, n_sample=6):
+    """Return True if the GROMACS trajectory stores WRAPPED coordinates.
+
+    MDAnalysis analogue of ``msd_with_com._detect_wrapped``: samples frames and
+    flags "unwrapped" only when a meaningful fraction of atoms sit more than
+    `margin` boxes outside [0, box) (so atom-wrapped and molecule-whole runs are
+    both treated as wrapped -> MIC on; only a genuine no-jump/unwrapped run turns
+    MIC off). Assumes an orthorhombic box (true for these electrolyte cells)."""
+    sample = idxs[:: max(1, len(idxs) // n_sample)][:n_sample] or [idxs[0]]
+    n_out = n_tot = 0
+    for i in sample:
+        ts = u.trajectory[int(i)]
+        box = np.asarray(ts.dimensions[:3], dtype=float)
+        if np.any(box <= 0):
+            return False
+        frac = u.atoms.positions / box
+        n_out += int(((frac < -margin) | (frac > 1.0 + margin)).any(axis=1).sum())
+        n_tot += len(u.atoms)
+    return (n_out / max(1, n_tot)) < 0.01
+
+
+def _parse_top_molecules(top_path):
+    """[(molname, nmol), ...] from the .top [ molecules ] section, in file order."""
+    molecules = []
+    in_section = False
+    with open(top_path) as f:
+        for line in f:
+            line = line.split(';')[0].strip()
+            if not line:
+                continue
+            if line.startswith('['):
+                in_section = line.lower().replace(' ', '') == '[molecules]'
+                continue
+            if in_section:
+                parts = line.split()
+                molecules.append((parts[0], int(parts[1])))
+    return molecules
+
+
+def _parse_itp_charges(itp_path):
+    """(moleculetype_name, [per-atom charges]) from an .itp [ atoms ] section."""
+    name, charges, section = None, [], None
+    with open(itp_path) as f:
+        for raw in f:
+            line = raw.split(';')[0].strip()
+            if not line:
+                continue
+            if line.startswith('['):
+                section = line.lower().replace(' ', '')
+                continue
+            if section == '[moleculetype]' and name is None:
+                name = line.split()[0]
+            elif section == '[atoms]':
+                charges.append(float(line.split()[6]))
+    return name, charges
+
+
+def _topology_groups_gromacs(sys_dir, n_atoms):
+    """Build cation/anion/solvent atom-index groups from the GROMACS topology
+    (``.top`` [ molecules ] + per-moleculetype ``.itp``), classifying species by
+    net formal charge (+ -> cation, - -> anion, 0 -> solvent).
+
+    This is robust to arbitrary force-field atom-type/name labels (e.g. OPLS
+    ``opls_786``), unlike element-pattern matching on ``atoms.types`` which
+    silently fails for such labels and mis-groups the ions. Assumes the
+    trajectory atom order follows the ``.top`` [ molecules ] order (GROMACS
+    default). Returns ``(cat_idx, anion_groups, solvent_groups)`` or ``None`` if
+    the topology is missing / inconsistent with the trajectory (the caller then
+    falls back to pattern matching)."""
+    sys_dir = Path(sys_dir)
+    tops = glob.glob(str(sys_dir / '*.top'))
+    if not tops:
+        return None
+    try:
+        molecules = _parse_top_molecules(tops[0])
+        itp_info = {}
+        for itp in glob.glob(str(sys_dir / '*.itp')):
+            if 'forcefield' in os.path.basename(itp):
+                continue
+            name, charges = _parse_itp_charges(itp)
+            if name is not None and charges:
+                itp_info[name] = (len(charges), int(round(sum(charges))))
+    except Exception:
+        return None
+    cat_idx, anion_groups, solvent_groups = [], [], []
+    offset = 0
+    for molname, nmol in molecules:
+        if molname not in itp_info:
+            return None
+        m, q = itp_info[molname]
+        for _ in range(nmol):
+            idxs = np.arange(offset, offset + m, dtype=int)
+            if q > 0:
+                cat_idx.extend(idxs.tolist())      # cations are monatomic here
+            elif q < 0:
+                anion_groups.append(idxs)
+            else:
+                solvent_groups.append(idxs)
+            offset += m
+    if offset != n_atoms:
+        return None
+    return cat_idx, anion_groups, solvent_groups
 
 
 def stream_subsample_unwrap_gromacs(
@@ -98,41 +205,46 @@ def stream_subsample_unwrap_gromacs(
     # Prime first frame
     ts0 = u.trajectory[i_start]
     atoms = u.atoms
-    # Normalize types like "NA" -> "Na" for dictionary lookups
-    symbols0 = [s.capitalize() for s in atoms.types]
     masses0 = atoms.masses
+    total_atoms = len(atoms)
 
-    cat_symbol_list = cation_dict[cat_symbol]
-    anion_symbol_list = anion_dict[anion_symbol]
-    solvent_symbol_list = solvent_dict[solvent_symbol]
-
-    cat_groups = direct_groups_from_species(symbols0, cat_symbol_list)
-    anion_groups = direct_groups_from_species(symbols0, anion_symbol_list)
-    solvent_groups = direct_groups_from_species(symbols0, solvent_symbol_list)
-
-    total_atoms = len(symbols0)
-    assigned = set()
-    for g in cat_groups + anion_groups + solvent_groups:
-        assigned.update(g.tolist())
-    missing = sorted(set(range(total_atoms)) - assigned)
-    if missing:
-        print(
-            f"⚠️ {len(missing)} atoms were not matched by species patterns in {traj_path.name}; "
-            "treating them as individual solvent groups."
-        )
-        for idx in missing:
-            solvent_groups.append(np.array([idx], dtype=int))
-    total_atoms_in_groups = sum(len(g) for g in cat_groups + anion_groups + solvent_groups)
-    if total_atoms_in_groups != total_atoms:
-        print(
-            f"⚠️ After adding leftovers, grouped atoms {total_atoms_in_groups} still differ from total {total_atoms}; proceeding anyway."
-        )
+    # --- species grouping ---------------------------------------------------
+    # Preferred: build cation/anion/solvent groups from the GROMACS topology
+    # (.top [molecules] + per-moleculetype .itp), classifying by net formal
+    # charge. Robust to force-field atom-type labels (e.g. OPLS 'opls_786'),
+    # unlike element-pattern matching on atoms.types, which silently fails for
+    # such labels and mis-groups the ions (anion D came out ~10x high / NaN).
+    # NOTE: `topology_path` is eval.py's generated element-GRO in a cache dir
+    # (no .top/.itp); the real system dir with the topology is the TRAJECTORY's
+    # directory. Try both so this works whether called via eval.py or directly.
+    _grp = (_topology_groups_gromacs(Path(traj_path).parent, total_atoms)
+            or _topology_groups_gromacs(Path(topology_path).parent, total_atoms))
+    if _grp is not None:
+        cat_idx, anion_groups, solvent_groups = _grp
+        print(f"{traj_path.name}: species from topology "
+              f"(cation atoms={len(cat_idx)}, anion mols={len(anion_groups)}, "
+              f"solvent mols={len(solvent_groups)}).")
     else:
-        print(f"Total atoms in groups ({total_atoms_in_groups}) match total atoms in system ({total_atoms}) in {traj_path.name}.")
-
-    cat_idx = [i for i, s in enumerate(symbols0) if s == cat_symbol]
+        # Fallback: element-pattern matching on atom types (legacy path for
+        # datasets without a usable .top/.itp alongside the trajectory).
+        print(f"{traj_path.name}: no usable .top/.itp topology; "
+              f"falling back to element-pattern matching.")
+        symbols0 = [s.capitalize() for s in atoms.types]
+        cat_groups = direct_groups_from_species(symbols0, cation_dict[cat_symbol])
+        anion_groups = direct_groups_from_species(symbols0, anion_dict[anion_symbol])
+        solvent_groups = direct_groups_from_species(symbols0, solvent_dict[solvent_symbol])
+        assigned = set()
+        for g in cat_groups + anion_groups + solvent_groups:
+            assigned.update(g.tolist())
+        missing = sorted(set(range(total_atoms)) - assigned)
+        if missing:
+            print(f"⚠️ {len(missing)} atoms were not matched by species patterns in "
+                  f"{traj_path.name}; treating them as individual solvent groups.")
+            for idx in missing:
+                solvent_groups.append(np.array([idx], dtype=int))
+        cat_idx = [i for i, s in enumerate(symbols0) if s == cat_symbol]
     if not cat_idx:
-        raise RuntimeError(f"No {cat_symbol} atoms found in {traj_path.name}.")
+        raise RuntimeError(f"No cation atoms found in {traj_path.name}.")
 
     idxs = list(range(i_start, n_total, stride))
     T = len(idxs)
@@ -141,46 +253,55 @@ def stream_subsample_unwrap_gromacs(
     pos_anion = np.zeros((T, len(anion_groups), 3)) if anion_groups else None
     pos_solvent = np.zeros((T, len(solvent_groups), 3)) if solvent_groups else None
 
-    com_prev = atoms.center_of_mass()
+    wrapped = _detect_wrapped_gromacs(u, idxs)
+    print(f"{traj_path.name}: coordinates detected as "
+          f"{'WRAPPED (MIC on)' if wrapped else 'UNWRAPPED (MIC off)'}")
+    pbc = [True, True, True]
+
+    # t0: store raw positions / molecular COMs (NO system-COM subtraction here).
+    # COM drift is removed incrementally in the loop below using a COM taken from
+    # the (MIC-unwrapped) per-step displacement — correct for both wrapped and
+    # unwrapped input. (The old code subtracted atoms.center_of_mass(), which is
+    # wrong on wrapped coordinates.)
+    ts0 = u.trajectory[idxs[0]]
+    cell0 = _cell_from_ts(ts0)
     prev_positions = atoms.positions.copy()
-    pos_cat[0] = prev_positions[cat_idx] - com_prev
+    pos_cat[0] = prev_positions[cat_idx]
     if pos_anion is not None:
         for j, g in enumerate(anion_groups):
-            pos_anion[0, j] = _mass_weighted_com(prev_positions[g] - com_prev, masses0[g])
+            pos_anion[0, j] = _mass_weighted_com(prev_positions[g], masses0[g], cell0, pbc)
     if pos_solvent is not None:
         for j, g in enumerate(solvent_groups):
-            pos_solvent[0, j] = _mass_weighted_com(prev_positions[g] - com_prev, masses0[g])
+            pos_solvent[0, j] = _mass_weighted_com(prev_positions[g], masses0[g], cell0, pbc)
 
     for k in tqdm(range(1, T), desc=f"{traj_path.name}: unwrap", unit="frame", leave=False):
         ts_curr = u.trajectory[idxs[k]]
         cell_curr = _cell_from_ts(ts_curr)
         curr_positions = atoms.positions.copy()
-        com_curr = atoms.center_of_mass()
 
-        curr_cat = curr_positions[cat_idx] - com_curr
-        prev_cat = prev_positions[cat_idx] - com_prev
-        disp_cat, _ = find_mic(curr_cat - prev_cat, cell_curr, pbc=[True, True, True])
-        pos_cat[k] = pos_cat[k - 1] + disp_cat
+        # true system COM increment (MIC-corrected all-atom displacement, mass-
+        # averaged); replaces atoms.center_of_mass(), which is wrong on wrapped
+        # coordinates.
+        d_all = _mic_disp(curr_positions - prev_positions, cell_curr, pbc, wrapped)
+        com_step = (d_all * masses0[:, None]).sum(axis=0) / masses0.sum()
 
+        # --- cations (single atoms): their MIC step is already in d_all ---
+        pos_cat[k] = pos_cat[k - 1] + (d_all[cat_idx] - com_step)
+
+        # --- anions (per-molecule COM), referenced to the system COM ---
         if pos_anion is not None:
-            curr_com = np.empty_like(pos_anion[0])
-            prev_com = np.empty_like(pos_anion[0])
             for j, g in enumerate(anion_groups):
-                curr_com[j] = _mass_weighted_com(curr_positions[g] - com_curr, masses0[g])
-                prev_com[j] = _mass_weighted_com(prev_positions[g] - com_prev, masses0[g])
-            disp_an, _ = find_mic(curr_com - prev_com, cell_curr, pbc=[True, True, True])
-            pos_anion[k] = pos_anion[k - 1] + disp_an
+                cc = _mass_weighted_com(curr_positions[g], masses0[g], cell_curr, pbc)
+                pp = _mass_weighted_com(prev_positions[g], masses0[g], cell_curr, pbc)
+                pos_anion[k, j] = pos_anion[k - 1, j] + (_mic_disp(cc - pp, cell_curr, pbc, wrapped) - com_step)
 
+        # --- solvent (per-molecule COM), referenced to the system COM ---
         if pos_solvent is not None:
-            curr_com = np.empty_like(pos_solvent[0])
-            prev_com = np.empty_like(pos_solvent[0])
             for j, g in enumerate(solvent_groups):
-                curr_com[j] = _mass_weighted_com(curr_positions[g] - com_curr, masses0[g])
-                prev_com[j] = _mass_weighted_com(prev_positions[g] - com_prev, masses0[g])
-            disp_sv, _ = find_mic(curr_com - prev_com, cell_curr, pbc=[True, True, True])
-            pos_solvent[k] = pos_solvent[k - 1] + disp_sv
+                cc = _mass_weighted_com(curr_positions[g], masses0[g], cell_curr, pbc)
+                pp = _mass_weighted_com(prev_positions[g], masses0[g], cell_curr, pbc)
+                pos_solvent[k, j] = pos_solvent[k - 1, j] + (_mic_disp(cc - pp, cell_curr, pbc, wrapped) - com_step)
 
-        com_prev = com_curr
         prev_positions = curr_positions
 
     tau_ps = np.arange(T, dtype=float) * stride * dt_ps

@@ -12,7 +12,11 @@ anion_dict = {
     "OTf": ["C", "S", "F", "F", "F", "O", "O", "O"],
     "TFSI": ["S", "S", "O", "C", "O", "O", "O", "F", "F", "F", "C", "F", "F", "F", "N"],
 }
-
+anion_central_dict = {
+    "PF6": "P",
+    "OTf": "S",
+    "TFSI": "N",
+}
 solvent_dict = {
     "Diglyme": ["H", "C", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "H", "H", "H"],
     "DME":["H", "C", "O", "H", "H", "C", "C", "H", "H", "O", "H", "H", "C", "H", "H", "H"],

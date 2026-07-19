@@ -136,6 +136,41 @@ def _mass_weighted_com(positions, masses, cell=None, pbc=None):
     msum = masses.sum()
     return (positions * masses[:, None]).sum(axis=0) / msum if msum > 0 else positions.mean(axis=0)
 
+def _detect_wrapped(trj, idxs, margin=0.5, n_sample=6):
+    """Return True if the trajectory stores WRAPPED coordinates (every atom inside
+    the primary cell), False if it is already UNWRAPPED.
+
+    Samples frames across the analysis window and checks fractional coordinates.
+    An atom-wrapped run keeps all atoms in [0, 1); a molecule-whole run lets a few
+    atoms poke slightly outside; a genuinely unwrapped run has atoms that drift
+    many box lengths out. We therefore flag "unwrapped" only when a meaningful
+    fraction of atoms sit MORE than `margin` boxes outside [0, 1) (default half a
+    box) — so molecule-whole trajectories are still (correctly) treated as wrapped
+    and get the MIC correction. If the cell is undefined / non-periodic there is no
+    wrapping -> treated as unwrapped (MIC off).
+    """
+    sample = idxs[:: max(1, len(idxs) // n_sample)][:n_sample] or [idxs[0]]
+    n_out = n_tot = 0
+    for i in sample:
+        a = trj[i]
+        if not np.any(a.get_pbc()) or a.get_cell().rank < 3:
+            return False
+        frac = a.get_scaled_positions(wrap=False)
+        n_out += int(((frac < -margin) | (frac > 1.0 + margin)).any(axis=1).sum())
+        n_tot += len(a)
+    return (n_out / max(1, n_tot)) < 0.01
+
+
+def _mic_disp(delta, cell, pbc, wrapped):
+    """Per-step displacement, minimum-image-corrected only when the trajectory is
+    wrapped. On unwrapped input the raw difference is already the true
+    displacement (and applying MIC could wrongly fold a genuine >L/2 step)."""
+    if wrapped:
+        d, _ = find_mic(delta, cell, pbc=pbc)
+        return d
+    return np.asarray(delta)
+
+
 def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbol, anion_symbol, solvent_symbol, TAU_MAX_FIT_PS):
     """
     Streams frames, subsamples, removes system COM drift, and unwraps via MIC.
@@ -215,24 +250,28 @@ def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbo
         pos_anion   = np.zeros((T, len(anion_groups), 3))   if anion_groups   else None
         pos_solvent = np.zeros((T, len(solvent_groups), 3)) if solvent_groups else None
 
-        # First time point (t0)
+        # Detect wrap state so MIC is applied only when the coordinates are
+        # wrapped (on unwrapped input it would wrongly fold genuine >L/2 steps).
+        wrapped = _detect_wrapped(trj, idxs)
+        print(f"{traj_path.name}: coordinates detected as "
+              f"{'WRAPPED (MIC on)' if wrapped else 'UNWRAPPED (MIC off)'}")
+
+        # First time point (t0). The absolute origin is irrelevant (MSD uses
+        # differences), so store raw positions / molecular COMs — NO system-COM
+        # subtraction here. COM drift is removed incrementally in the loop below
+        # using a COM computed from the (unwrapped) per-step displacement, which
+        # is correct for both wrapped and unwrapped trajectories. (The old code
+        # subtracted f.get_center_of_mass(), which is wrong on wrapped coords.)
         f_prev = trj[idxs[0]]
-        com_prev = f_prev.get_center_of_mass()
-        # cation positions
-        pos_cat[0] = f_prev.get_positions()[cat_idx] - com_prev
-        # anion COMs
         cell0, pbc0 = f_prev.get_cell(), f_prev.get_pbc()
+        P_prev = f_prev.get_positions()
+        pos_cat[0] = P_prev[cat_idx]
         if pos_anion is not None:
-            P0 = f_prev.get_positions() - com_prev
-            M0 = f_prev.get_masses()
             for j, g in enumerate(anion_groups):
-                pos_anion[0, j] = _mass_weighted_com(P0[g], M0[g], cell0, pbc0)
-        # solvent COMs
+                pos_anion[0, j] = _mass_weighted_com(P_prev[g], masses0[g], cell0, pbc0)
         if pos_solvent is not None:
-            P0 = f_prev.get_positions() - com_prev
-            M0 = f_prev.get_masses()
             for j, g in enumerate(solvent_groups):
-                pos_solvent[0, j] = _mass_weighted_com(P0[g], M0[g], cell0, pbc0)
+                pos_solvent[0, j] = _mass_weighted_com(P_prev[g], masses0[g], cell0, pbc0)
 
         # Stream/unwrap
         for k in tqdm(range(1, T), desc=f"{traj_path.name}: unwrap", unit="frame", leave=False):
@@ -246,44 +285,31 @@ def stream_subsample_unwrap(traj_path, start_ps, dt_ps, target_frames, cat_symbo
             except Exception as e:
                 print(f"Error reading frame {k - 1} of {traj_path.name}: {e}")
                 continue
-            com_c = f.get_center_of_mass()
-            com_p = f_p.get_center_of_mass()
             cell_c, pbc_c = f.get_cell(), f.get_pbc()
-            cell_p, pbc_p = f_p.get_cell(), f_p.get_pbc()
+            P, Pp = f.get_positions(), f_p.get_positions()
 
-            # --- cations ---
-            curr_cat = f.get_positions()[cat_idx] - com_c
-            prev_cat = f_p.get_positions()[cat_idx] - com_p
-            disp_cat, _ = find_mic(curr_cat - prev_cat, f.get_cell(), pbc=f.get_pbc())
-            pos_cat[k] = pos_cat[k - 1] + disp_cat
+            # True system COM increment this step: MIC-correct every atom's raw
+            # displacement (a no-op on unwrapped input) then mass-average. This
+            # replaces get_center_of_mass(), which is wrong on wrapped coords.
+            d_all = _mic_disp(P - Pp, cell_c, pbc_c, wrapped)
+            com_step = (d_all * masses0[:, None]).sum(axis=0) / masses0.sum()
 
-            # --- anions (COM per molecule) ---
+            # --- cations (single atoms): their MIC step is already in d_all ---
+            pos_cat[k] = pos_cat[k - 1] + (d_all[cat_idx] - com_step)
+
+            # --- anions (per-molecule COM), referenced to the system COM ---
             if pos_anion is not None:
-                posC = f.get_positions() - com_c
-                posP = f_p.get_positions() - com_p
-                mC = f.get_masses()
-                mP = f_p.get_masses()
-                curr_com = np.empty_like(pos_anion[0])
-                prev_com = np.empty_like(pos_anion[0])
                 for j, g in enumerate(anion_groups):
-                    curr_com[j] = _mass_weighted_com(posC[g], mC[g], cell_c, pbc_c)
-                    prev_com[j] = _mass_weighted_com(posP[g], mP[g], cell_p, pbc_p)
-                disp_an, _ = find_mic(curr_com - prev_com, f.get_cell(), pbc=f.get_pbc())
-                pos_anion[k] = pos_anion[k - 1] + disp_an
+                    cc = _mass_weighted_com(P[g],  masses0[g], cell_c, pbc_c)
+                    pp = _mass_weighted_com(Pp[g], masses0[g], cell_c, pbc_c)
+                    pos_anion[k, j] = pos_anion[k - 1, j] + (_mic_disp(cc - pp, cell_c, pbc_c, wrapped) - com_step)
 
-            # --- solvent (COM per molecule) ---
+            # --- solvent (per-molecule COM), referenced to the system COM ---
             if pos_solvent is not None:
-                posC = f.get_positions() - com_c
-                posP = f_p.get_positions() - com_p
-                mC = f.get_masses()
-                mP = f_p.get_masses()
-                curr_com = np.empty_like(pos_solvent[0])
-                prev_com = np.empty_like(pos_solvent[0])
                 for j, g in enumerate(solvent_groups):
-                    curr_com[j] = _mass_weighted_com(posC[g], mC[g], cell_c, pbc_c)
-                    prev_com[j] = _mass_weighted_com(posP[g], mP[g], cell_p, pbc_p)
-                disp_sv, _ = find_mic(curr_com - prev_com, f.get_cell(), pbc=f.get_pbc())
-                pos_solvent[k] = pos_solvent[k - 1] + disp_sv
+                    cc = _mass_weighted_com(P[g],  masses0[g], cell_c, pbc_c)
+                    pp = _mass_weighted_com(Pp[g], masses0[g], cell_c, pbc_c)
+                    pos_solvent[k, j] = pos_solvent[k - 1, j] + (_mic_disp(cc - pp, cell_c, pbc_c, wrapped) - com_step)
 
         tau_ps = np.arange(T, dtype=float) * stride * dt_ps
         return tau_ps, pos_cat, pos_anion, pos_solvent, stride, T, dt_ps

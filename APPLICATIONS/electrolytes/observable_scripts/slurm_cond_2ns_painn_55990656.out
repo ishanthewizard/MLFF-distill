@@ -1,0 +1,1069 @@
+host=nid004318  start=Thu Jul 16 01:09:29 PM PDT 2026  job=55990656
+=== PAINN conductivity ===
+Systems   : 18
+Analyses  : ['conductivity']
+Root      : /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn
+Run dir   : /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity
+Workers   : 6
+
+# run started 2026-07-16 13:09:34 | 18 systems | workers=6 | analyses=['conductivity']
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_298K_20ns_100fs.traj ...
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_323K_20ns_100fs.traj ...
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_273K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_323K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_273K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_323K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_273K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 23.24 A  max 24.32 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2033 uS/cm (2.033 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 16.68 A  max 16.79 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=9314 uS/cm (9.314 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_323K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 20.05 A  max 21.85 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=14110 uS/cm (14.110 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_273K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 16.08 A  max 18.21 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2080 uS/cm (2.080 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 15.62 A  max 17.11 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2638 uS/cm (2.638 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 17.17 A  max 17.29 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=3169 uS/cm (3.169 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_323K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_323K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_273K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_273K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 10.59 A  max 16.09 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2448 uS/cm (2.448 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_273K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 14.95 A  max 16.94 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=209 uS/cm (0.209 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_323K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 16.82 A  max 23.14 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=4963 uS/cm (4.963 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 18.56 A  max 21.55 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2138 uS/cm (2.138 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 19.58 A  max 20.73 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=223 uS/cm (0.223 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_323K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_323K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_273K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_273K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 10.36 A  max 12.70 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=6313 uS/cm (6.313 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 17.43 A  max 19.00 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=5116 uS/cm (5.116 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_323K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 11.84 A  max 13.16 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=21154 uS/cm (21.154 mS/cm)
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_273K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 16.97 A  max 17.42 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=3358 uS/cm (3.358 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 8.95 A  max 16.10 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=-30 uS/cm (-0.030 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 20.01 A  max 20.11 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=4643 uS/cm (4.643 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_273K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_273K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_323K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_323K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_5M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_5M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 16.21 A  max 18.36 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=263 uS/cm (0.263 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 9.03 A  max 15.48 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=977 uS/cm (0.977 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 23.59 A  max 26.08 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=15776 uS/cm (15.776 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 8.01 A  max 13.16 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=556 uS/cm (0.556 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 17.86 A  max 19.11 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=3592 uS/cm (3.592 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 12.80 A  max 14.55 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=738 uS/cm (0.738 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 11.55 A  max 17.25 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=3113 uS/cm (3.113 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 11.48 A  max 17.24 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=55 uS/cm (0.055 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 9.88 A  max 15.15 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=333 uS/cm (0.333 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 7.99 A  max 13.89 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=666 uS/cm (0.666 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 9.53 A  max 11.81 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=-18 uS/cm (-0.018 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 22.13 A  max 22.17 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=726 uS/cm (0.726 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 22.65 A  max 24.36 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=586 uS/cm (0.586 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 17.09 A  max 18.46 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=1805 uS/cm (1.805 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 11.56 A  max 13.82 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=1058 uS/cm (1.058 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 14.94 A  max 17.40 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=259 uS/cm (0.259 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 22.25 A  max 22.38 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=749 uS/cm (0.749 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 16.78 A  max 17.62 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=19 uS/cm (0.019 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 12.89 A  max 15.87 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=-364 uS/cm (-0.364 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 22.56 A  max 27.10 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=681 uS/cm (0.681 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 13.26 A  max 16.24 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=398 uS/cm (0.398 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 13.99 A  max 19.10 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=933 uS/cm (0.933 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 18.26 A  max 18.75 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=1888 uS/cm (1.888 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 9.42 A  max 13.38 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=4633 uS/cm (4.633 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 12.96 A  max 14.18 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=-18 uS/cm (-0.018 mS/cm)
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 5.23 A  max 15.70 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=-806 uS/cm (-0.806 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 8.39 A  max 11.13 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=132 uS/cm (0.132 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 12.66 A  max 16.69 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=589 uS/cm (0.589 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 4.53 A  max 8.22 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=-492 uS/cm (-0.492 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 18.91 A  max 24.60 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2144 uS/cm (2.144 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 9.65 A  max 10.22 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=1410 uS/cm (1.410 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 16.74 A  max 17.17 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=-558 uS/cm (-0.558 mS/cm)
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 19.46 A  max 25.25 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=124 uS/cm (0.124 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 17.37 A  max 17.51 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=3441 uS/cm (3.441 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png
+  [mdcraft] system-COM drift: net 13.76 A  max 16.31 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2110 uS/cm (2.110 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 9.93 A  max 10.71 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=1775 uS/cm (1.775 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 23.51 A  max 27.94 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=849 uS/cm (0.849 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 11.57 A  max 13.49 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=1345 uS/cm (1.345 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 9.27 A  max 10.65 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=14653 uS/cm (14.653 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 14.16 A  max 14.16 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=896 uS/cm (0.896 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 11.78 A  max 14.87 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=11341 uS/cm (11.341 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 15.72 A  max 16.29 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2370 uS/cm (2.370 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 20.32 A  max 20.66 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2381 uS/cm (2.381 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 15.80 A  max 16.56 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=8375 uS/cm (8.375 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 7.22 A  max 10.14 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=609 uS/cm (0.609 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 17.71 A  max 17.86 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=3788 uS/cm (3.788 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 9.17 A  max 13.28 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=1031 uS/cm (1.031 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 14.96 A  max 14.96 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=7259 uS/cm (7.259 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+  Running onsager_calc for nvt_0_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_0_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png
+  [mdcraft] system-COM drift: net 7.50 A  max 11.63 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=428 uS/cm (0.428 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 11.84 A  max 14.89 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=918 uS/cm (0.918 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png
+  [mdcraft] system-COM drift: net 3.96 A  max 7.32 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=3964 uS/cm (3.964 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png
+  Loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+  Running onsager_calc for nvt_1M_298K_20ns_100fs.traj ...
+  [mdcraft] loading 4000 frames @ 0.5 ps/frame from nvt_1M_298K_20ns_100fs.traj ...
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png
+  [mdcraft] system-COM drift: net 6.59 A  max 10.55 A
+  [mdcraft] fit 0.3-2.4 ns (lag 600-4000/4000)  kappa=2415 uS/cm (2.415 mS/cm)
+[plot] saved /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png
+[13:37:30 | 1/18 done]
+=== lipf6_dme__nvt_0_5M_273K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=12.3774 mS/cm sigma_onsager=10.8839 mS/cm D_cat=5.818 D_anion=6.568 (1e-10 m2/s) D_solvent=8.483 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.03537390815791319, 0.0011593476976805336, -0.004588877433663116], [0.0011593476976805336, 0.07752352677497107, -0.12478840281314874], [-0.004588877433663116, -0.12478840281314874, 0.2010795967521904]]
+  [Conductivity] Lambda_onsager_raw=[[0.035373908157911596, 0.0011593476976800032, -0.004588877433663221], [0.0011593476976800032, 0.07752352677497161, -0.12478840281314778], [-0.004588877433663221, -0.12478840281314778, 0.20107959675219178]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_0: sigma_mdcraft=14.1096 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=8.4120 mS/cm sigma_onsager=4.7985 mS/cm D_cat=5.258 D_anion=5.848 (1e-10 m2/s) D_solvent=8.299 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.03333262859881274, 0.019487743064141194, -0.03391350785423884], [0.019487743064141194, 0.05439524541758129, -0.08899721641567351], [-0.03391350785423884, -0.08899721641567351, 0.1457664979844028]]
+  [Conductivity] Lambda_onsager_raw=[[0.033332628598813065, 0.019487743064141586, -0.03391350785423811], [0.019487743064141586, 0.054395245417581756, -0.08899721641567272], [-0.03391350785423811, -0.08899721641567272, 0.14576649798440394]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_1: sigma_mdcraft=2.4479 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=10.7050 mS/cm sigma_onsager=8.5842 mS/cm D_cat=5.550 D_anion=6.297 (1e-10 m2/s) D_solvent=8.338 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.03102906659300953, -0.0020419608208872863, 0.0008951139103606219], [-0.0020419608208872863, 0.05210084452117011, -0.08364866565402879], [0.0008951139103606219, -0.08364866565402879, 0.13448268142888134]]
+  [Conductivity] Lambda_onsager_raw=[[0.031029066593009094, -0.0020419608208875634, 0.0008951139103604989], [-0.0020419608208875634, 0.05210084452116998, -0.08364866565402876], [0.0008951139103604989, -0.08364866565402876, 0.1344826814288815]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_2: sigma_mdcraft=21.1543 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=8.1896 mS/cm sigma_onsager=4.0692 mS/cm D_cat=5.434 D_anion=5.600 (1e-10 m2/s) D_solvent=8.518 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.04200845015271909, 0.028121105164478247, -0.048468649412667535], [0.028121105164478247, 0.055575948928211744, -0.09156124351638557], [-0.048468649412667535, -0.09156124351638557, 0.15101166310579917]]
+  [Conductivity] Lambda_onsager_raw=[[0.04200845015271931, 0.028121105164478473, -0.04846864941266775], [0.028121105164478473, 0.05557594892821198, -0.09156124351638578], [-0.04846864941266775, -0.09156124351638578, 0.15101166310579855]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_3: sigma_mdcraft=0.9772 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_273K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[13:39:03 | 2/18 done]
+=== lipf6_dme__nvt_0_5M_323K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=20.8615 mS/cm sigma_onsager=24.4879 mS/cm D_cat=8.092 D_anion=10.035 (1e-10 m2/s) D_solvent=14.790 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.10179370850951087, -0.01482721022111013, 0.0160112519563059], [-0.01482721022111013, 0.1771783769275996, -0.28385541220825095], [0.0160112519563059, -0.28385541220825095, 0.45535772905391797]]
+  [Conductivity] Lambda_onsager_raw=[[0.10179370850951278, -0.014827210221109213, 0.016011251956307593], [-0.014827210221109213, 0.17717837692759955, -0.2838554122082502], [0.016011251956307593, -0.2838554122082502, 0.4553577290539195]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_0: sigma_mdcraft=9.3144 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=19.1114 mS/cm sigma_onsager=6.5842 mS/cm D_cat=7.897 D_anion=9.528 (1e-10 m2/s) D_solvent=14.493 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.0935130236691193, 0.0643029376204972, -0.11063450734304478], [0.0643029376204972, 0.11807478927127509, -0.19487891422416762], [-0.11063450734304478, -0.19487891422416762, 0.3219887005499139]]
+  [Conductivity] Lambda_onsager_raw=[[0.09351302366911746, 0.06430293762049676, -0.11063450734304688], [0.06430293762049676, 0.11807478927127604, -0.1948789142241683], [-0.11063450734304688, -0.1948789142241683, 0.3219887005499116]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_1: sigma_mdcraft=0.2088 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=16.9194 mS/cm sigma_onsager=9.8746 mS/cm D_cat=7.936 D_anion=8.612 (1e-10 m2/s) D_solvent=14.742 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.10122720775890294, 0.04670335763675665, -0.082919052068179], [0.04670335763675665, 0.11663141407669878, -0.19120191207141923], [-0.082919052068179, -0.19120191207141923, 0.31393984605125963]]
+  [Conductivity] Lambda_onsager_raw=[[0.10122720775890333, 0.046703357636756926, -0.08291905206817884], [0.046703357636756926, 0.11663141407669891, -0.1912019120714192], [-0.08291905206817884, -0.1912019120714192, 0.3139398460512596]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_2: sigma_mdcraft=5.1159 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=19.2689 mS/cm sigma_onsager=13.2738 mS/cm D_cat=8.050 D_anion=9.439 (1e-10 m2/s) D_solvent=14.340 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.09585308301088767, 0.018813996850810703, -0.03764426045203587], [0.018813996850810703, 0.10906737422825953, -0.17688723856935223], [-0.03764426045203587, -0.17688723856935223, 0.28742776271997506]]
+  [Conductivity] Lambda_onsager_raw=[[0.09585308301088796, 0.01881399685081111, -0.03764426045203625], [0.01881399685081111, 0.10906737422826004, -0.17688723856935248], [-0.03764426045203625, -0.17688723856935248, 0.287427762719974]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_3: sigma_mdcraft=15.7760 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_323K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[13:39:38 | 3/18 done]
+=== naotf_dme__nvt_0_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=3.7826 mS/cm sigma_onsager=2.3310 mS/cm D_cat=7.474 D_anion=7.679 (1e-10 m2/s) D_solvent=13.617 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.03372126036998435, 0.018190520556438293, -0.03868956938544495], [0.018190520556438293, 0.03127481395612745, -0.056369366138649186], [-0.03868956938544495, -0.056369366138649186, 0.10310537834492726]]
+  [Conductivity] Lambda_onsager_raw=[[0.0337212603699846, 0.018190520556438505, -0.03868956938544489], [0.018190520556438505, 0.03127481395612763, -0.056369366138649166], [-0.03868956938544489, -0.056369366138649166, 0.10310537834492714]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'DME']
+  [Conductivity] replica_0: sigma_mdcraft=2.6384 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=4.3405 mS/cm sigma_onsager=3.1451 mS/cm D_cat=7.450 D_anion=8.586 (1e-10 m2/s) D_solvent=14.127 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.025906882114133032, 0.008021441049500134, -0.019876334192909385], [0.008021441049500134, 0.028743569753511337, -0.04958855594250541], [-0.019876334192909385, -0.04958855594250541, 0.08709062870266798]]
+  [Conductivity] Lambda_onsager_raw=[[0.025906882114133393, 0.008021441049500406, -0.019876334192909323], [0.008021441049500406, 0.028743569753511517, -0.04958855594250544], [-0.019876334192909323, -0.04958855594250544, 0.08709062870266773]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'DME']
+  [Conductivity] replica_1: sigma_mdcraft=4.9634 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=5.0781 mS/cm sigma_onsager=2.9334 mS/cm D_cat=7.655 D_anion=9.549 (1e-10 m2/s) D_solvent=13.853 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.024169203636469853, 0.009478349075913987, -0.021842808073462814], [0.009478349075913987, 0.030797178260999196, -0.053356908337586426], [-0.021842808073462814, -0.053356908337586426, 0.09382518278830086]]
+  [Conductivity] Lambda_onsager_raw=[[0.02416920363646946, 0.00947834907591362, -0.02184280807346256], [0.00947834907591362, 0.03079717826099886, -0.053356908337586155], [-0.02184280807346256, -0.053356908337586155, 0.09382518278830175]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'DME']
+  [Conductivity] replica_2: sigma_mdcraft=3.3583 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=4.2116 mS/cm sigma_onsager=3.3090 mS/cm D_cat=7.571 D_anion=8.261 (1e-10 m2/s) D_solvent=14.092 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.02267785119659973, 0.0077210727482822025, -0.018555807142906264], [0.0077210727482822025, 0.03338456173034339, -0.057188207096887905], [-0.018555807142906264, -0.057188207096887905, 0.0993237103016279]]
+  [Conductivity] Lambda_onsager_raw=[[0.022677851196599673, 0.007721072748282201, -0.018555807142906305], [0.007721072748282201, 0.03338456173034343, -0.0571882070968879], [-0.018555807142906305, -0.0571882070968879, 0.09932371030162788]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'DME']
+  [Conductivity] replica_3: sigma_mdcraft=0.5562 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[13:40:07 | 4/18 done]
+=== lipf6_dme__nvt_0_5M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=15.3462 mS/cm sigma_onsager=9.8769 mS/cm D_cat=6.894 D_anion=7.721 (1e-10 m2/s) D_solvent=11.163 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.05094751404676699, 0.015512042101408104, -0.028874927609023528], [0.015512042101408104, 0.09182794170522836, -0.1489027754842777], [-0.028874927609023528, -0.1489027754842777, 0.24173854209558324]]
+  [Conductivity] Lambda_onsager_raw=[[0.050947514046766035, 0.015512042101407879, -0.02887492760902434], [0.015512042101407879, 0.09182794170522886, -0.14890277548427777], [-0.02887492760902434, -0.14890277548427777, 0.24173854209558254]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_0: sigma_mdcraft=2.0330 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=15.2047 mS/cm sigma_onsager=9.4722 mS/cm D_cat=6.628 D_anion=7.937 (1e-10 m2/s) D_solvent=11.020 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.051516147005720464, 0.01238878475717821, -0.023894854706198176], [0.01238878475717821, 0.08043404927019115, -0.13033481548624432], [-0.023894854706198176, -0.13033481548624432, 0.21148787278669479]]
+  [Conductivity] Lambda_onsager_raw=[[0.05151614700572032, 0.01238878475717798, -0.023894854706197895], [0.01238878475717798, 0.08043404927019086, -0.13033481548624412], [-0.023894854706197895, -0.13033481548624412, 0.21148787278669548]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_1: sigma_mdcraft=0.2231 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=13.4679 mS/cm sigma_onsager=6.9702 mS/cm D_cat=6.718 D_anion=7.222 (1e-10 m2/s) D_solvent=10.851 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.04719433608993758, 0.02454651030101233, -0.04311814489324878], [0.02454651030101233, 0.08076204376627788, -0.13179863196572827], [-0.04311814489324878, -0.13179863196572827, 0.21532279201780033]]
+  [Conductivity] Lambda_onsager_raw=[[0.04719433608993777, 0.02454651030101308, -0.0431181448932498], [0.02454651030101308, 0.0807620437662792, -0.13179863196572875], [-0.0431181448932498, -0.13179863196572875, 0.21532279201779808]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_2: sigma_mdcraft=4.6429 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=15.8547 mS/cm sigma_onsager=8.5945 mS/cm D_cat=7.043 D_anion=7.755 (1e-10 m2/s) D_solvent=11.024 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.08387469018511302, 0.05665413588019374, -0.09758894339517524], [0.05665413588019374, 0.12667565977991807, -0.20812468623198319], [-0.09758894339517524, -0.20812468623198319, 0.3422903613731269]]
+  [Conductivity] Lambda_onsager_raw=[[0.08387469018511293, 0.05665413588019365, -0.0975889433951753], [0.05665413588019365, 0.12667565977991796, -0.20812468623198327], [-0.0975889433951753, -0.20812468623198327, 0.34229036137312685]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Li', 'PF6', 'DME']
+  [Conductivity] replica_3: sigma_mdcraft=3.5916 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/lipf6_dme__nvt_0_5M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[13:40:17 | 5/18 done]
+=== naotf_diglyme__nvt_0_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=1.9824 mS/cm sigma_onsager=1.5760 mS/cm D_cat=6.036 D_anion=6.271 (1e-10 m2/s) D_solvent=7.495 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.01697986551119802, 0.004449716454235804, -0.007852820618537534], [0.004449716454235804, 0.018277038386772304, -0.021067501073450613], [-0.007852820618537534, -0.021067501073450613, 0.024750690219034137]]
+  [Conductivity] Lambda_onsager_raw=[[0.01697986551119801, 0.004449716454235919, -0.007852820618537678], [0.004449716454235919, 0.01827703838677255, -0.021067501073450626], [-0.007852820618537678, -0.021067501073450626, 0.024750690219033863]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'Diglyme']
+  [Conductivity] replica_0: sigma_mdcraft=2.0801 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=2.4889 mS/cm sigma_onsager=2.5526 mS/cm D_cat=6.251 D_anion=6.887 (1e-10 m2/s) D_solvent=7.549 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.01514293791154597, 0.0012032281289171103, -0.003931356030941946], [0.0012032281289171103, 0.02995445592148537, -0.0334843992936717], [-0.003931356030941946, -0.0334843992936717, 0.037873471172981545]]
+  [Conductivity] Lambda_onsager_raw=[[0.015142937911545792, 0.001203228128917029, -0.003931356030941995], [0.001203228128917029, 0.029954455921485382, -0.033484399293671654], [-0.003931356030941995, -0.033484399293671654, 0.03787347117298163]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'Diglyme']
+  [Conductivity] replica_1: sigma_mdcraft=2.1376 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=2.3515 mS/cm sigma_onsager=1.2092 mS/cm D_cat=6.107 D_anion=6.805 (1e-10 m2/s) D_solvent=7.572 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.015303967719084363, 0.007595883347231047, -0.01106093860683902], [0.007595883347231047, 0.020110133736511295, -0.023643068258975403], [-0.01106093860683902, -0.023643068258975403, 0.028161729557979135]]
+  [Conductivity] Lambda_onsager_raw=[[0.015303967719084523, 0.0075958833472312545, -0.011060938606839115], [0.0075958833472312545, 0.02011013373651155, -0.023643068258975452], [-0.011060938606839115, -0.023643068258975452, 0.028161729557978785]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'Diglyme']
+  [Conductivity] replica_2: sigma_mdcraft=-0.0298 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=2.0209 mS/cm sigma_onsager=1.7895 mS/cm D_cat=5.867 D_anion=6.504 (1e-10 m2/s) D_solvent=7.566 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.015371944522798393, 0.0011144147930344246, -0.003871926243456872], [0.0011144147930344246, 0.016785074790899718, -0.018838511338315607], [-0.003871926243456872, -0.018838511338315607, 0.021592276154950567]]
+  [Conductivity] Lambda_onsager_raw=[[0.015371944522798468, 0.0011144147930346137, -0.0038719262434570097], [0.0011144147930346137, 0.01678507479090002, -0.01883851133831563], [-0.0038719262434570097, -0.01883851133831563, 0.021592276154950216]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'Diglyme']
+  [Conductivity] replica_3: sigma_mdcraft=0.7375 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[13:42:31 | 6/18 done]
+=== naotf_diglyme__nvt_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=7.2138 mS/cm sigma_onsager=5.0271 mS/cm D_cat=4.994 D_anion=5.315 (1e-10 m2/s) D_solvent=5.975 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.04349290433194771, 0.015738253167937477, -0.02493673459937971], [0.015738253167937477, 0.05859626358592035, -0.06779478981465861], [-0.02493673459937971, -0.06779478981465861, 0.07959007811769339]]
+  [Conductivity] Lambda_onsager_raw=[[0.04349290433194752, 0.015738253167937585, -0.02493673459938014], [0.015738253167937585, 0.058596263585920766, -0.06779478981465874], [-0.02493673459938014, -0.06779478981465874, 0.07959007811769273]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'Diglyme']
+  [Conductivity] replica_0: sigma_mdcraft=3.1695 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=8.5701 mS/cm sigma_onsager=5.1586 mS/cm D_cat=5.133 D_anion=5.463 (1e-10 m2/s) D_solvent=5.890 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.03983262713559243, 0.010216627483224088, -0.018175265067758104], [0.010216627483224088, 0.05306039367710399, -0.060698568935479695], [-0.018175265067758104, -0.060698568935479695, 0.07054793104097276]]
+  [Conductivity] Lambda_onsager_raw=[[0.03983262713559299, 0.010216627483224388, -0.018175265067757875], [0.010216627483224388, 0.05306039367710402, -0.06069856893547973], [-0.018175265067757875, -0.06069856893547973, 0.07054793104097266]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'Diglyme']
+  [Conductivity] replica_1: sigma_mdcraft=6.3131 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=7.8429 mS/cm sigma_onsager=5.6516 mS/cm D_cat=5.075 D_anion=5.367 (1e-10 m2/s) D_solvent=5.987 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.0227284966313001, 0.0037075475221802923, -0.00801327987049771], [0.0037075475221802923, 0.06407126611575763, -0.07181594354662349], [-0.00801327987049771, -0.07181594354662349, 0.08115773052311791]]
+  [Conductivity] Lambda_onsager_raw=[[0.022728496631299555, 0.0037075475221799467, -0.008013279870497696], [0.0037075475221799467, 0.06407126611575749, -0.07181594354662328], [-0.008013279870497696, -0.07181594354662328, 0.08115773052311846]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'Diglyme']
+  [Conductivity] replica_2: sigma_mdcraft=0.2632 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=6.6703 mS/cm sigma_onsager=4.8917 mS/cm D_cat=4.987 D_anion=5.207 (1e-10 m2/s) D_solvent=5.746 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.02187725957096466, 0.0032675105825068786, -0.0073785635512047445], [0.0032675105825068786, 0.05336908027515558, -0.05985083441552125], [-0.0073785635512047445, -0.05985083441552125, 0.06775620601626464]]
+  [Conductivity] Lambda_onsager_raw=[[0.02187725957096506, 0.0032675105825071223, -0.007378563551204628], [0.0032675105825071223, 0.05336908027515566, -0.059850834415521297], [-0.007378563551204628, -0.059850834415521297, 0.06775620601626448]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'Diglyme']
+  [Conductivity] replica_3: sigma_mdcraft=3.1134 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:02:40 | 7/18 done]
+=== naotf_tgdme__nvt_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_1: sigma_NE=1.5993 mS/cm sigma_onsager=0.8842 mS/cm D_cat=4.519 D_anion=4.566 (1e-10 m2/s) D_solvent=4.637 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.014509463279046862, 0.004557237381078888, -0.0045567801278057225], [0.004557237381078888, 0.011402783448384185, -0.00811812675788479], [-0.0045567801278057225, -0.00811812675788479, 0.005915365475982109]]
+  [Conductivity] Lambda_onsager_raw=[[0.014509463279046573, 0.004557237381078651, -0.00455678012780587], [0.004557237381078651, 0.011402783448384003, -0.008118126757884883], [-0.00455678012780587, -0.008118126757884883, 0.005915365475982106]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'TGDME']
+  [Conductivity] replica_1: sigma_mdcraft=0.6656 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=1.9061 mS/cm sigma_onsager=0.7876 mS/cm D_cat=4.548 D_anion=4.602 (1e-10 m2/s) D_solvent=4.642 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.012300207495029535, 0.009267507287901364, -0.007487024589164754], [0.009267507287901364, 0.021197095641040983, -0.015173428959058271], [-0.007487024589164754, -0.015173428959058271, 0.010949766230533186]]
+  [Conductivity] Lambda_onsager_raw=[[0.012300207495029504, 0.009267507287901287, -0.007487024589164704], [0.009267507287901287, 0.02119709564104086, -0.015173428959058266], [-0.007487024589164704, -0.015173428959058266, 0.010949766230533318]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'TGDME']
+  [Conductivity] replica_2: sigma_mdcraft=0.2591 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=1.9859 mS/cm sigma_onsager=0.9724 mS/cm D_cat=4.522 D_anion=4.645 (1e-10 m2/s) D_solvent=4.627 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.009672205093556234, 0.00839821848677237, -0.006632268008322084], [0.00839821848677237, 0.025598543098896857, -0.018035163140070386], [-0.006632268008322084, -0.018035163140070386, 0.012780460824951536]]
+  [Conductivity] Lambda_onsager_raw=[[0.009672205093556598, 0.008398218486772625, -0.00663226800832192], [0.008398218486772625, 0.025598543098897003, -0.01803516314007033], [-0.00663226800832192, -0.01803516314007033, 0.012780460824951502]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'TGDME']
+  [Conductivity] replica_3: sigma_mdcraft=0.3976 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:07:38 | 8/18 done]
+=== naotf_pc__nvt_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_1: sigma_NE=3.0537 mS/cm sigma_onsager=2.6139 mS/cm D_cat=4.567 D_anion=4.730 (1e-10 m2/s) D_solvent=4.914 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.00874052262304207, -0.0013041121006969222, -6.41348551463173e-05], [-0.0013041121006969222, 0.013834736021728463, -0.01990683538404378], [-6.41348551463173e-05, -0.01990683538404378, 0.029081009889776334]]
+  [Conductivity] Lambda_onsager_raw=[[0.008740522623042242, -0.0013041121006967353, -6.413485514635387e-05], [-0.0013041121006967353, 0.013834736021728663, -0.0199068353840438], [-6.413485514635387e-05, -0.0199068353840438, 0.029081009889776088]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'PC']
+  [Conductivity] replica_1: sigma_mdcraft=0.5862 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=3.1614 mS/cm sigma_onsager=1.8259 mS/cm D_cat=4.586 D_anion=4.736 (1e-10 m2/s) D_solvent=4.863 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.008965089615813136, 0.001712492617888793, -0.004519340846621977], [0.001712492617888793, 0.012051703406712336, -0.017982695489161638], [-0.004519340846621977, -0.017982695489161638, 0.027274798540874296]]
+  [Conductivity] Lambda_onsager_raw=[[0.008965089615813403, 0.001712492617888928, -0.004519340846621856], [0.001712492617888928, 0.01205170340671234, -0.017982695489161652], [-0.004519340846621856, -0.017982695489161652, 0.02727479854087427]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'PC']
+  [Conductivity] replica_2: sigma_mdcraft=-0.3637 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=3.0871 mS/cm sigma_onsager=2.1013 mS/cm D_cat=4.614 D_anion=4.691 (1e-10 m2/s) D_solvent=4.861 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.010225108246781626, -9.219968566084242e-05, -0.0021680033930986968], [-9.219968566084242e-05, 0.0098358472958527, -0.014340852750663378], [-0.0021680033930986968, -0.014340852750663378, 0.02142772909548172]]
+  [Conductivity] Lambda_onsager_raw=[[0.010225108246781408, -9.219968566097781e-05, -0.0021680033930988004], [-9.219968566097781e-05, 0.009835847295852648, -0.014340852750663397], [-0.0021680033930988004, -0.014340852750663397, 0.021427729095481733]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'PC']
+  [Conductivity] replica_3: sigma_mdcraft=4.6330 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:11:26 | 9/18 done]
+=== naotf_pc__nvt_0_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=0.8063 mS/cm sigma_onsager=0.5083 mS/cm D_cat=4.974 D_anion=5.305 (1e-10 m2/s) D_solvent=5.527 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.002667120998548285, 0.0006100486078686679, -0.0014913683142323692], [0.0006100486078686679, 0.003832396866744806, -0.005733176480688949], [-0.0014913683142323692, -0.005733176480688949, 0.008707029163122857]]
+  [Conductivity] Lambda_onsager_raw=[[0.0026671209985482075, 0.0006100486078686184, -0.0014913683142323871], [0.0006100486078686184, 0.003832396866744786, -0.005733176480688939], [-0.0014913683142323871, -0.005733176480688939, 0.0087070291631229]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'PC']
+  [Conductivity] replica_0: sigma_mdcraft=0.0548 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=0.9439 mS/cm sigma_onsager=0.7779 mS/cm D_cat=5.001 D_anion=5.518 (1e-10 m2/s) D_solvent=5.587 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.0026605986546735616, -4.855102183653022e-05, -0.0005282584615257263], [-4.855102183653022e-05, 0.005322974176472545, -0.007761300805980415], [-0.0005282584615257263, -0.007761300805980415, 0.011451468308041878]]
+  [Conductivity] Lambda_onsager_raw=[[0.0026605986546734328, -4.8551021836589506e-05, -0.000528258461525749], [-4.8551021836589506e-05, 0.0053229741764725565, -0.007761300805980367], [-0.000528258461525749, -0.007761300805980367, 0.01145146830804196]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'PC']
+  [Conductivity] replica_1: sigma_mdcraft=1.0581 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=0.7180 mS/cm sigma_onsager=0.7340 mS/cm D_cat=4.850 D_anion=5.274 (1e-10 m2/s) D_solvent=5.525 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.002342451079605874, -0.0005601651313584512, 0.0002904093727462515], [-0.0005601651313584512, 0.004161939139480257, -0.005950826618932327], [0.0002904093727462515, -0.005950826618932327, 0.008623582074997709]]
+  [Conductivity] Lambda_onsager_raw=[[0.0023424510796058447, -0.0005601651313584724, 0.000290409372746253], [-0.0005601651313584724, 0.004161939139480244, -0.005950826618932317], [0.000290409372746253, -0.005950826618932317, 0.008623582074997742]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'PC']
+  [Conductivity] replica_2: sigma_mdcraft=0.9325 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=0.7757 mS/cm sigma_onsager=0.5034 mS/cm D_cat=4.929 D_anion=5.295 (1e-10 m2/s) D_solvent=5.554 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.0022261721949479144, 0.0007919256793739401, -0.0016576337174782788], [0.0007919256793739401, 0.004586657549052183, -0.00687545263196214], [-0.0016576337174782788, -0.00687545263196214, 0.01041234268849184]]
+  [Conductivity] Lambda_onsager_raw=[[0.0022261721949479707, 0.000791925679373878, -0.0016576337174781391], [0.000791925679373878, 0.004586657549052003, -0.00687545263196212], [-0.0016576337174781391, -0.00687545263196212, 0.010412342688492062]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'PC']
+  [Conductivity] replica_3: sigma_mdcraft=0.1316 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:13:26 | 10/18 done]
+=== naotf_tgdme__nvt_0_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=0.7757 mS/cm sigma_onsager=0.6367 mS/cm D_cat=4.963 D_anion=5.329 (1e-10 m2/s) D_solvent=5.111 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.0064235698638551424, -0.000677364752000605, -0.00021012243599794874], [-0.000677364752000605, 0.008384522331205799, -0.005552662392893815], [-0.00021012243599794874, -0.005552662392893815, 0.0037453868923469254]]
+  [Conductivity] Lambda_onsager_raw=[[0.006423569863854911, -0.0006773647520005491, -0.00021012243599812379], [-0.0006773647520005491, 0.00838452233120614, -0.005552662392893702], [-0.00021012243599812379, -0.005552662392893702, 0.0037453868923468074]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'TGDME']
+  [Conductivity] replica_0: sigma_mdcraft=0.3333 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=0.7715 mS/cm sigma_onsager=0.7550 mS/cm D_cat=5.022 D_anion=5.263 (1e-10 m2/s) D_solvent=5.147 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.008172488074920058, -0.0003599011364184746, -0.0006039004538970367], [-0.0003599011364184746, 0.010271958081300872, -0.006851224329768662], [-0.0006039004538970367, -0.006851224329768662, 0.0046569388280042825]]
+  [Conductivity] Lambda_onsager_raw=[[0.008172488074920105, -0.00035990113641835955, -0.0006039004538970715], [-0.00035990113641835955, 0.010271958081301054, -0.006851224329768631], [-0.0006039004538970715, -0.006851224329768631, 0.004656938828004164]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'TGDME']
+  [Conductivity] replica_1: sigma_mdcraft=1.8051 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=0.6023 mS/cm sigma_onsager=0.4008 mS/cm D_cat=4.868 D_anion=5.134 (1e-10 m2/s) D_solvent=5.147 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.005044266782559906, 0.0016668397063538927, -0.0016395058770233787], [0.0016668397063538927, 0.008462401601612166, -0.005847341891556105], [-0.0016395058770233787, -0.005847341891556105, 0.004090837323841464]]
+  [Conductivity] Lambda_onsager_raw=[[0.005044266782559936, 0.0016668397063538947, -0.0016395058770233737], [0.0016668397063538947, 0.00846240160161214, -0.005847341891556127], [-0.0016395058770233737, -0.005847341891556127, 0.004090837323841445]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'TGDME']
+  [Conductivity] replica_2: sigma_mdcraft=0.6812 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=0.7640 mS/cm sigma_onsager=0.4842 mS/cm D_cat=4.905 D_anion=5.368 (1e-10 m2/s) D_solvent=5.094 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.006007006258112614, 0.0018166280039538488, -0.001839527843830474], [0.0018166280039538488, 0.009917350097831682, -0.00683853273058572], [-0.001839527843830474, -0.00683853273058572, 0.004776224498407334]]
+  [Conductivity] Lambda_onsager_raw=[[0.006007006258112563, 0.0018166280039538735, -0.0018395278438304746], [0.0018166280039538735, 0.009917350097831781, -0.006838532730585644], [-0.0018395278438304746, -0.006838532730585644, 0.004776224498407386]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'TGDME']
+  [Conductivity] replica_3: sigma_mdcraft=0.5895 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_tgdme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:13:41 | 11/18 done]
+=== naotf_dme__nvt_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=13.6762 mS/cm sigma_onsager=3.0360 mS/cm D_cat=5.724 D_anion=5.954 (1e-10 m2/s) D_solvent=10.531 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.0960372862617787, 0.08992383877233201, -0.17323418333382298], [0.08992383877233201, 0.11738343617208713, -0.21709327403748602], [-0.17323418333382298, -0.21709327403748602, 0.4032670612365069]]
+  [Conductivity] Lambda_onsager_raw=[[0.09603728626177906, 0.08992383877233295, -0.17323418333382432], [0.08992383877233295, 0.11738343617208866, -0.21709327403748677], [-0.17323418333382432, -0.21709327403748677, 0.4032670612365039]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'DME']
+  [Conductivity] replica_0: sigma_mdcraft=0.7262 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=9.8798 mS/cm sigma_onsager=1.7155 mS/cm D_cat=5.352 D_anion=5.540 (1e-10 m2/s) D_solvent=11.118 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.142131995021861, 0.1446230714079055, -0.2754661565775051], [0.1446230714079055, 0.1660839727598917, -0.3115982897461864], [-0.2754661565775051, -0.3115982897461864, 0.5856588238722522]]
+  [Conductivity] Lambda_onsager_raw=[[0.14213199502185994, 0.1446230714079052, -0.27546615657750484], [0.1446230714079052, 0.16608397275989215, -0.3115982897461854], [-0.27546615657750484, -0.3115982897461854, 0.5856588238722538]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'DME']
+  [Conductivity] replica_1: sigma_mdcraft=0.0192 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=11.3792 mS/cm sigma_onsager=2.4100 mS/cm D_cat=5.558 D_anion=5.644 (1e-10 m2/s) D_solvent=10.356 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.08972789728081879, 0.0929672209079642, -0.17665848496792758], [0.0929672209079642, 0.12285640976228619, -0.2269220135454049], [-0.17665848496792758, -0.2269220135454049, 0.42039747734794375]]
+  [Conductivity] Lambda_onsager_raw=[[0.089727897280819, 0.09296722090796425, -0.17665848496792758], [0.09296722090796425, 0.1228564097622861, -0.22692201354540503], [-0.17665848496792758, -0.22692201354540503, 0.42039747734794364]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'DME']
+  [Conductivity] replica_2: sigma_mdcraft=1.8879 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=12.9722 mS/cm sigma_onsager=1.9666 mS/cm D_cat=5.728 D_anion=5.804 (1e-10 m2/s) D_solvent=11.010 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.1545858837792025, 0.145182821920522, -0.27956893100654345], [0.145182821920522, 0.15752669495928415, -0.2975872074543141], [-0.27956893100654345, -0.2975872074543141, 0.5635308744558]]
+  [Conductivity] Lambda_onsager_raw=[[0.15458588377920454, 0.14518282192052334, -0.2795689310065451], [0.14518282192052334, 0.15752669495928476, -0.2975872074543165], [-0.2795689310065451, -0.2975872074543165, 0.5635308744557946]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'OTf', 'DME']
+  [Conductivity] replica_3: sigma_mdcraft=-0.4923 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/naotf_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:15:10 | 12/18 done]
+=== napf6_diglyme__nvt_0_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=2.0199 mS/cm sigma_onsager=1.6957 mS/cm D_cat=5.870 D_anion=6.500 (1e-10 m2/s) D_solvent=7.618 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.011757165221270866, 0.0040526451481910095, -0.006393015841384215], [0.0040526451481910095, 0.02479731033324607, -0.027485680341325435], [-0.006393015841384215, -0.027485680341325435, 0.03079122860775252]]
+  [Conductivity] Lambda_onsager_raw=[[0.011757165221270993, 0.00405264514819109, -0.006393015841384274], [0.00405264514819109, 0.024797310333246107, -0.02748568034132554], [-0.006393015841384274, -0.02748568034132554, 0.030791228607752272]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'Diglyme']
+  [Conductivity] replica_0: sigma_mdcraft=-0.0176 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=2.4895 mS/cm sigma_onsager=2.5390 mS/cm D_cat=6.531 D_anion=6.611 (1e-10 m2/s) D_solvent=7.838 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.01942700912479655, -0.0021935371108677197, -0.0009587340925070037], [-0.0021935371108677197, 0.018784025248243824, -0.01991862808614275], [-0.0009587340925070037, -0.01991862808614275, 0.021684581198143028]]
+  [Conductivity] Lambda_onsager_raw=[[0.019427009124796644, -0.00219353711086756, -0.0009587340925070841], [-0.00219353711086756, 0.01878402524824405, -0.019918628086142764], [-0.0009587340925070841, -0.019918628086142764, 0.021684581198142774]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'Diglyme']
+  [Conductivity] replica_1: sigma_mdcraft=0.7486 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=2.4999 mS/cm sigma_onsager=1.7217 mS/cm D_cat=6.048 D_anion=7.111 (1e-10 m2/s) D_solvent=7.782 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.013556376736375492, 0.005078637919119794, -0.007809789900211588], [0.005078637919119794, 0.02548629647134853, -0.028405864043955894], [-0.007809789900211588, -0.028405864043955894, 0.032028157883203366]]
+  [Conductivity] Lambda_onsager_raw=[[0.0135563767363753, 0.005078637919119854, -0.007809789900211834], [0.005078637919119854, 0.025486296471348844, -0.028405864043955887], [-0.007809789900211834, -0.028405864043955887, 0.03202815788320306]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'Diglyme']
+  [Conductivity] replica_2: sigma_mdcraft=-0.0179 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=2.6200 mS/cm sigma_onsager=1.3259 mS/cm D_cat=6.418 D_anion=6.938 (1e-10 m2/s) D_solvent=7.719 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.014324083319230956, 0.007308550174331438, -0.010350552344330723], [0.007308550174331438, 0.02253803192628721, -0.025602602729900115], [-0.010350552344330723, -0.025602602729900115, 0.029434821284968125]]
+  [Conductivity] Lambda_onsager_raw=[[0.014324083319230962, 0.007308550174331527, -0.01035055234433082], [0.007308550174331527, 0.022538031926287377, -0.025602602729900132], [-0.01035055234433082, -0.025602602729900132, 0.029434821284967924]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'Diglyme']
+  [Conductivity] replica_3: sigma_mdcraft=1.4096 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:32:18 | 13/18 done]
+=== napf6_diglyme__nvt_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=7.7020 mS/cm sigma_onsager=4.3230 mS/cm D_cat=5.089 D_anion=5.344 (1e-10 m2/s) D_solvent=5.774 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.019629006833073434, 0.0017547559839162718, -0.0052591250404997875], [0.0017547559839162718, 0.04365537778940018, -0.04746642460705192], [-0.0052591250404997875, -0.04746642460705192, 0.05218436697086712]]
+  [Conductivity] Lambda_onsager_raw=[[0.01962900683307342, 0.0017547559839162672, -0.005259125040499762], [0.0017547559839162672, 0.04365537778940018, -0.047466424607051895], [-0.005259125040499762, -0.047466424607051895, 0.052184366970867174]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'Diglyme']
+  [Conductivity] replica_0: sigma_mdcraft=-0.8057 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=6.9353 mS/cm sigma_onsager=4.6649 mS/cm D_cat=5.010 D_anion=5.263 (1e-10 m2/s) D_solvent=5.768 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.02677739051721793, 0.00036415255830351325, -0.004981517475506495], [0.00036415255830351325, 0.03845285952520822, -0.04160729696705876], [-0.004981517475506495, -0.04160729696705876, 0.045806533742359344]]
+  [Conductivity] Lambda_onsager_raw=[[0.026777390517217853, 0.0003641525583034466, -0.004981517475506558], [0.0003641525583034466, 0.03845285952520817, -0.04160729696705882], [-0.004981517475506558, -0.04160729696705882, 0.04580653374235929]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'Diglyme']
+  [Conductivity] replica_1: sigma_mdcraft=-0.5578 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=8.0333 mS/cm sigma_onsager=7.0861 mS/cm D_cat=5.100 D_anion=5.402 (1e-10 m2/s) D_solvent=5.918 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.034146614599748784, -0.0006908646359278834, -0.0051043202178404036], [-0.0006908646359278834, 0.06245210243545267, -0.06735558085486087], [-0.0051043202178404036, -0.06735558085486087, 0.07364631083977671]]
+  [Conductivity] Lambda_onsager_raw=[[0.03414661459974839, -0.0006908646359281849, -0.005104320217840376], [-0.0006908646359281849, 0.06245210243545247, -0.06735558085486075], [-0.005104320217840376, -0.06735558085486075, 0.07364631083977717]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'Diglyme']
+  [Conductivity] replica_2: sigma_mdcraft=1.3446 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=7.3706 mS/cm sigma_onsager=5.0394 mS/cm D_cat=5.101 D_anion=5.263 (1e-10 m2/s) D_solvent=5.773 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.027816035279582953, 0.0064248287777764045, -0.011707503447313907], [0.0064248287777764045, 0.054713616717679395, -0.06021404857073044], [-0.011707503447313907, -0.06021404857073044, 0.06706191941422449]]
+  [Conductivity] Lambda_onsager_raw=[[0.02781603527958304, 0.006424828777776268, -0.011707503447313599], [0.006424828777776268, 0.05471361671767904, -0.06021404857073035], [-0.011707503447313599, -0.06021404857073035, 0.06706191941422503]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'Diglyme']
+  [Conductivity] replica_3: sigma_mdcraft=2.3810 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_diglyme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:36:12 | 14/18 done]
+=== napf6_dme__nvt_0_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=6.7545 mS/cm sigma_onsager=4.2251 mS/cm D_cat=8.581 D_anion=11.248 (1e-10 m2/s) D_solvent=13.558 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.028475780832902683, 0.013244377235155626, -0.02856807360963798], [0.013244377235155626, 0.04967316233083049, -0.08327949302800923], [-0.02856807360963798, -0.08327949302800923, 0.1412453886948969]]
+  [Conductivity] Lambda_onsager_raw=[[0.02847578083290253, 0.013244377235155569, -0.02856807360963791], [0.013244377235155569, 0.04967316233083053, -0.08327949302800908], [-0.02856807360963791, -0.08327949302800908, 0.14124538869489717]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'DME']
+  [Conductivity] replica_0: sigma_mdcraft=2.1437 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=5.5938 mS/cm sigma_onsager=3.3140 mS/cm D_cat=8.065 D_anion=9.933 (1e-10 m2/s) D_solvent=13.815 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.021823078750014206, 0.012164177827935413, -0.025133459327524615], [0.012164177827935413, 0.04302551030962753, -0.07231097295726598], [-0.025133459327524615, -0.07231097295726598, 0.12272600920392138]]
+  [Conductivity] Lambda_onsager_raw=[[0.021823078750013967, 0.01216417782793522, -0.02513345932752466], [0.01216417782793522, 0.04302551030962738, -0.07231097295726598], [-0.02513345932752466, -0.07231097295726598, 0.12272600920392152]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'DME']
+  [Conductivity] replica_1: sigma_mdcraft=1.7750 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=7.4679 mS/cm sigma_onsager=5.2642 mS/cm D_cat=8.632 D_anion=12.322 (1e-10 m2/s) D_solvent=13.955 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.021895804723013813, 0.006474585278205069, -0.016000115962764773], [0.006474585278205069, 0.05541770290616475, -0.09079282678028767], [-0.016000115962764773, -0.09079282678028767, 0.15012479469094617]]
+  [Conductivity] Lambda_onsager_raw=[[0.021895804723013963, 0.006474585278205273, -0.0160001159627651], [0.006474585278205273, 0.055417702906165, -0.09079282678028794], [-0.0160001159627651, -0.09079282678028794, 0.15012479469094533]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'DME']
+  [Conductivity] replica_2: sigma_mdcraft=11.3411 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=5.8438 mS/cm sigma_onsager=5.1728 mS/cm D_cat=7.861 D_anion=10.531 (1e-10 m2/s) D_solvent=13.640 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.024055572422804098, 0.0026055693453478626, -0.010327625729823153], [0.0026055693453478626, 0.04440326144720928, -0.07208876707630187], [-0.010327625729823153, -0.07208876707630187, 0.11859167361492821]]
+  [Conductivity] Lambda_onsager_raw=[[0.024055572422803817, 0.002605569345347607, -0.010327625729823058], [0.002605569345347607, 0.044403261447209054, -0.07208876707630175], [-0.010327625729823058, -0.07208876707630175, 0.11859167361492867]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'DME']
+  [Conductivity] replica_3: sigma_mdcraft=3.7881 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:38:22 | 15/18 done]
+=== napf6_tgdme__nvt_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_1: sigma_NE=2.9533 mS/cm sigma_onsager=1.5065 mS/cm D_cat=4.623 D_anion=4.752 (1e-10 m2/s) D_solvent=4.747 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.013184978724418423, 0.005037940485007001, -0.004649252680395356], [0.005037940485007001, 0.02550847060618771, -0.01715682239495527], [-0.004649252680395356, -0.01715682239495527, 0.011669958084955962]]
+  [Conductivity] Lambda_onsager_raw=[[0.013184978724418095, 0.005037940485006896, -0.004649252680395577], [0.005037940485006896, 0.025508470606187824, -0.01715682239495527], [-0.004649252680395577, -0.01715682239495527, 0.011669958084955849]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'TGDME']
+  [Conductivity] replica_1: sigma_mdcraft=0.8489 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=2.9108 mS/cm sigma_onsager=2.3402 mS/cm D_cat=4.607 D_anion=4.760 (1e-10 m2/s) D_solvent=4.701 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.02151964853180116, -0.002291677390901368, -0.000731149395133035], [-0.002291677390901368, 0.018352686780609896, -0.011731983720512148], [-0.000731149395133035, -0.011731983720512148, 0.007726824907082156]]
+  [Conductivity] Lambda_onsager_raw=[[0.021519648531800897, -0.002291677390901475, -0.0007311493951331076], [-0.002291677390901475, 0.018352686780609945, -0.011731983720512063], [-0.0007311493951331076, -0.011731983720512063, 0.007726824907082276]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'TGDME']
+  [Conductivity] replica_2: sigma_mdcraft=2.3702 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=2.4000 mS/cm sigma_onsager=1.8823 mS/cm D_cat=4.579 D_anion=4.678 (1e-10 m2/s) D_solvent=4.701 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.017000289741180983, 0.005084067658330947, -0.005073939936204253], [0.005084067658330947, 0.028924592545219896, -0.019389472833266252], [-0.005073939936204253, -0.019389472833266252, 0.013169941458355677]]
+  [Conductivity] Lambda_onsager_raw=[[0.01700028974118131, 0.005084067658331283, -0.005073939936204276], [0.005084067658331283, 0.028924592545220243, -0.019389472833266263], [-0.005073939936204276, -0.019389472833266263, 0.013169941458355308]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'TGDME']
+  [Conductivity] replica_3: sigma_mdcraft=1.0313 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_tgdme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:41:17 | 16/18 done]
+=== napf6_dme__nvt_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=17.7432 mS/cm sigma_onsager=8.5183 mS/cm D_cat=5.931 D_anion=6.569 (1e-10 m2/s) D_solvent=8.920 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.0718675813071311, 0.027693764875776832, -0.06287946401901301], [0.027693764875776832, 0.0749554925047686, -0.12763292920258276], [-0.06287946401901301, -0.12763292920258276, 0.2213420409851909]]
+  [Conductivity] Lambda_onsager_raw=[[0.07186758130713142, 0.027693764875777297, -0.06287946401901316], [0.027693764875777297, 0.07495549250476922, -0.12763292920258276], [-0.06287946401901316, -0.12763292920258276, 0.22134204098519028]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'DME']
+  [Conductivity] replica_0: sigma_mdcraft=0.1244 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=19.1345 mS/cm sigma_onsager=13.3796 mS/cm D_cat=6.101 D_anion=6.678 (1e-10 m2/s) D_solvent=8.802 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.06904804990316663, 0.0166723754902682, -0.04443194774171449], [0.0166723754902682, 0.10791345535281086, -0.1778353757948244], [-0.04443194774171449, -0.1778353757948244, 0.29738842710879615]]
+  [Conductivity] Lambda_onsager_raw=[[0.06904804990316522, 0.016672375490267618, -0.044431947741715314], [0.016672375490267618, 0.10791345535281109, -0.17783537579482436], [-0.044431947741715314, -0.17783537579482436, 0.29738842710879587]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'DME']
+  [Conductivity] replica_1: sigma_mdcraft=14.6535 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=16.4539 mS/cm sigma_onsager=9.5320 mS/cm D_cat=5.825 D_anion=6.416 (1e-10 m2/s) D_solvent=8.790 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.040989309020924444, 0.025051521267805233, -0.050752402522446304], [0.025051521267805233, 0.11143058467887464, -0.18563028048323088], [-0.050752402522446304, -0.18563028048323088, 0.3115391091963499]]
+  [Conductivity] Lambda_onsager_raw=[[0.04098930902092509, 0.025051521267805826, -0.05075240252244649], [0.025051521267805826, 0.11143058467887519, -0.1856302804832311], [-0.05075240252244649, -0.1856302804832311, 0.3115391091963489]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'DME']
+  [Conductivity] replica_2: sigma_mdcraft=8.3751 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=16.3899 mS/cm sigma_onsager=10.7264 mS/cm D_cat=5.805 D_anion=6.423 (1e-10 m2/s) D_solvent=8.588 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.053290051969408454, 0.004377468550655036, -0.020635384732804588], [0.004377468550655036, 0.07060248981756805, -0.11468308629724311], [-0.020635384732804588, -0.11468308629724311, 0.18973549644804807]]
+  [Conductivity] Lambda_onsager_raw=[[0.05329005196940948, 0.004377468550655896, -0.02063538473280473], [0.004377468550655896, 0.07060248981756874, -0.11468308629724341], [-0.02063538473280473, -0.11468308629724341, 0.18973549644804677]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'DME']
+  [Conductivity] replica_3: sigma_mdcraft=7.2592 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_dme__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[14:49:01 | 17/18 done]
+=== napf6_pc__nvt_0_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=0.9223 mS/cm sigma_onsager=0.9977 mS/cm D_cat=4.981 D_anion=5.501 (1e-10 m2/s) D_solvent=5.639 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.002782174821060658, 3.640141413171618e-05, -0.0006782166386073156], [3.640141413171618e-05, 0.007640965067921608, -0.010858203166353239], [-0.0006782166386073156, -0.010858203166353239, 0.01557114452022105]]
+  [Conductivity] Lambda_onsager_raw=[[0.002782174821060689, 3.6401414131717864e-05, -0.000678216638607281], [3.6401414131717864e-05, 0.00764096506792158, -0.010858203166353235], [-0.000678216638607281, -0.010858203166353235, 0.015571144520221087]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'PC']
+  [Conductivity] replica_0: sigma_mdcraft=2.1104 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=0.9687 mS/cm sigma_onsager=0.8629 mS/cm D_cat=4.803 D_anion=5.760 (1e-10 m2/s) D_solvent=5.497 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.0020442594112227053, -0.0004059951867418235, 0.0001161506872801965], [-0.0004059951867418235, 0.006095810915216609, -0.00856449275668242], [0.0001161506872801965, -0.00856449275668242, 0.012135238864569797]]
+  [Conductivity] Lambda_onsager_raw=[[0.002044259411222808, -0.0004059951867417876, 0.00011615068728024067], [-0.0004059951867417876, 0.006095810915216577, -0.008564492756682442], [0.00011615068728024067, -0.008564492756682442, 0.012135238864569783]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'PC']
+  [Conductivity] replica_1: sigma_mdcraft=0.8956 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=0.8423 mS/cm sigma_onsager=0.9408 mS/cm D_cat=4.864 D_anion=5.479 (1e-10 m2/s) D_solvent=5.589 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.0021216640970987094, -0.0007275089997347848, 0.000555262351646732], [-0.0007275089997347848, 0.006183071422877219, -0.008615998008409141], [0.000555262351646732, -0.008615998008409141, 0.012109490162756514]]
+  [Conductivity] Lambda_onsager_raw=[[0.002121664097098811, -0.0007275089997347397, 0.0005552623516467906], [-0.0007275089997347397, 0.006183071422877209, -0.00861599800840914], [0.0005552623516467906, -0.00861599800840914, 0.01210949016275653]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'PC']
+  [Conductivity] replica_2: sigma_mdcraft=0.6094 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=0.9878 mS/cm sigma_onsager=0.8714 mS/cm D_cat=5.066 D_anion=5.530 (1e-10 m2/s) D_solvent=5.627 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.004169842376940966, 0.00043817880863505275, -0.0015612254630240226], [0.00043817880863505275, 0.005746857955593377, -0.008259089484977899], [-0.0015612254630240226, -0.008259089484977899, 0.012079306839975887]]
+  [Conductivity] Lambda_onsager_raw=[[0.004169842376940986, 0.0004381788086350275, -0.0015612254630239495], [0.0004381788086350275, 0.005746857955593305, -0.008259089484977871], [-0.0015612254630239495, -0.008259089484977871, 0.012079306839976012]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'PC']
+  [Conductivity] replica_3: sigma_mdcraft=0.9184 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_0_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+[15:00:03 | 18/18 done]
+=== napf6_pc__nvt_1M_298K_20ns_100fs (max_traj_ns=2.1) ===
+  [setup] replica_0: analysis_ns=2.10
+  [setup] replica_1: analysis_ns=2.10
+  [setup] replica_2: analysis_ns=2.10
+  [setup] replica_3: analysis_ns=2.10
+  [Conductivity] replica_0: sigma_NE=3.8863 mS/cm sigma_onsager=2.3297 mS/cm D_cat=4.644 D_anion=4.855 (1e-10 m2/s) D_solvent=5.040 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.02306502177179697, 0.013854234703177726, -0.024866805588919714], [0.013854234703177726, 0.026911892994398744, -0.04133419061626415], [-0.024866805588919714, -0.04133419061626415, 0.0642935008885627]]
+  [Conductivity] Lambda_onsager_raw=[[0.023065021771797003, 0.013854234703177558, -0.024866805588919374], [0.013854234703177558, 0.026911892994398372, -0.041334190616264005], [-0.024866805588919374, -0.041334190616264005, 0.06429350088856334]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'PC']
+  [Conductivity] replica_0: sigma_mdcraft=3.4412 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_0.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_0.png)
+  [Conductivity] replica_1: sigma_NE=4.3986 mS/cm sigma_onsager=2.9267 mS/cm D_cat=4.727 D_anion=4.887 (1e-10 m2/s) D_solvent=4.996 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.013010928496004373, 0.008542850520234159, -0.015060638982729366], [0.008542850520234159, 0.03204972240222791, -0.047433709028405026], [-0.015060638982729366, -0.047433709028405026, 0.07074640162386693]]
+  [Conductivity] Lambda_onsager_raw=[[0.01301092849600465, 0.008542850520234475, -0.015060638982729822], [0.008542850520234475, 0.032049722402228274, -0.04743370902840544], [-0.015060638982729822, -0.04743370902840544, 0.07074640162386575]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'PC']
+  [Conductivity] replica_1: sigma_mdcraft=0.4277 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_1.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_1.png)
+  [Conductivity] replica_2: sigma_NE=3.4061 mS/cm sigma_onsager=2.4519 mS/cm D_cat=4.640 D_anion=4.753 (1e-10 m2/s) D_solvent=4.992 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.017944609617447156, 0.007011115794087747, -0.013996641104747892], [0.007011115794087747, 0.019514214929880015, -0.029288621880918887], [-0.013996641104747892, -0.029288621880918887, 0.044741163421879705]]
+  [Conductivity] Lambda_onsager_raw=[[0.01794460961744695, 0.007011115794087627, -0.013996641104747897], [0.007011115794087627, 0.019514214929879977, -0.02928862188091881], [-0.013996641104747897, -0.02928862188091881, 0.044741163421879906]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'PC']
+  [Conductivity] replica_2: sigma_mdcraft=3.9637 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_2.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_2.png)
+  [Conductivity] replica_3: sigma_NE=3.6306 mS/cm sigma_onsager=2.9330 mS/cm D_cat=4.672 D_anion=4.771 (1e-10 m2/s) D_solvent=5.069 (1e-10 m2/s)
+  [Conductivity] Lambda_onsager=[[0.018558239808670506, 0.00815666959345638, -0.015761488295031722], [0.00815666959345638, 0.025790108890198556, -0.038458227278122446], [-0.015761488295031722, -0.038458227278122446, 0.058159237514071864]]
+  [Conductivity] Lambda_onsager_raw=[[0.018558239808670923, 0.008156669593456099, -0.01576148829503081], [0.008156669593456099, 0.02579010889019757, -0.03845822727812224], [-0.01576148829503081, -0.03845822727812224, 0.058159237514073266]]
+  [Conductivity] Lambda_onsager_unit=10^-10 m^2/s
+  [Conductivity] species_order=['Na', 'PF6', 'PC']
+  [Conductivity] replica_3: sigma_mdcraft=2.4152 mS/cm (plots: /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_vacf_replica_3.png, /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity/napf6_pc__nvt_1M_298K_20ns_100fs/conductivity_mdcraft_cross_displacement_replica_3.png)
+  [Conductivity] saved CSV: conductivity.csv
+
+All done.
+PAINN eval done=Thu Jul 16 03:00:05 PM PDT 2026
+=== merge + verify PAINN ===
+merge_and_verify_exp report
+  msd_dir  = None
+  cond_dir = /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/20260716_130934_conductivity
+  exp_diff = /global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/experiment_data/cleaned_version/diffusivity.csv
+  exp_cond = /global/homes/y/yuejian/project/MLFF-distill/m5024/distillation_project/experiment_data/cleaned_version/conductivity.csv
+  out_dir  = /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/merged
+
+DIFFUSIVITY: no per-system diffusivity_with_exp.csv found.
+
+==============================================================================
+CONDUCTIVITY experiment-reference matching
+==============================================================================
+systems: 18 | replicas(rows): 69
+systems with NO exp conductivity match: 0
+    [T?   ] lipf6_dme__nvt_0_5M_273K_20ns_100fs: sim 0.5 M / 273 K -> exp 5676.0 uS/cm @ conc=0.5 T=298.15 (dconc=0.0, dT=25.149999999999977)
+    [OK   ] lipf6_dme__nvt_0_5M_298K_20ns_100fs: sim 0.5 M / 298 K -> exp 5676.0 uS/cm @ conc=0.5 T=298.15 (dconc=0.0, dT=0.14999999999997726)
+    [OK   ] lipf6_dme__nvt_0_5M_323K_20ns_100fs: sim 0.5 M / 323 K -> exp 6610.65 uS/cm @ conc=0.5 T=323.15 (dconc=0.0, dT=0.14999999999997726)
+    [OK   ] naotf_diglyme__nvt_0_1M_298K_20ns_100fs: sim 0.1 M / 298 K -> exp 114.2 uS/cm @ conc=0.1 T=298.04999999999995 (dconc=0.0, dT=0.049999999999954525)
+    [OK   ] naotf_diglyme__nvt_1M_298K_20ns_100fs: sim 1.0 M / 298 K -> exp 2778.3 uS/cm @ conc=1.0 T=298.54999999999995 (dconc=0.0, dT=0.5499999999999545)
+    [OK   ] naotf_dme__nvt_0_1M_298K_20ns_100fs: sim 0.1 M / 298 K -> exp 46.0 uS/cm @ conc=0.1 T=298.45 (dconc=0.0, dT=0.44999999999998863)
+    [OK   ] naotf_dme__nvt_1M_298K_20ns_100fs: sim 1.0 M / 298 K -> exp 1232.6 uS/cm @ conc=1.0 T=298.65 (dconc=0.0, dT=0.6499999999999773)
+    [OK   ] naotf_pc__nvt_0_1M_298K_20ns_100fs: sim 0.1 M / 298 K -> exp 1516.5 uS/cm @ conc=0.1 T=297.54999999999995 (dconc=0.0, dT=0.4500000000000455)
+    [OK   ] naotf_pc__nvt_1M_298K_20ns_100fs: sim 1.0 M / 298 K -> exp 3305.8 uS/cm @ conc=1.0 T=297.75 (dconc=0.0, dT=0.25)
+    [OK   ] naotf_tgdme__nvt_0_1M_298K_20ns_100fs: sim 0.1 M / 298 K -> exp 91.3 uS/cm @ conc=0.1 T=298.54999999999995 (dconc=0.0, dT=0.5499999999999545)
+    [OK   ] naotf_tgdme__nvt_1M_298K_20ns_100fs: sim 1.0 M / 298 K -> exp 1215.0 uS/cm @ conc=1.0 T=298.85 (dconc=0.0, dT=0.8500000000000227)
+    [OK   ] napf6_diglyme__nvt_0_1M_298K_20ns_100fs: sim 0.1 M / 298 K -> exp 517.3 uS/cm @ conc=0.1 T=297.95 (dconc=0.0, dT=0.05000000000001137)
+    [OK   ] napf6_diglyme__nvt_1M_298K_20ns_100fs: sim 1.0 M / 298 K -> exp 6686.3 uS/cm @ conc=1.0 T=297.95 (dconc=0.0, dT=0.05000000000001137)
+    [OK   ] napf6_dme__nvt_0_1M_298K_20ns_100fs: sim 0.1 M / 298 K -> exp 612.2 uS/cm @ conc=0.1 T=298.75 (dconc=0.0, dT=0.75)
+    [OK   ] napf6_dme__nvt_1M_298K_20ns_100fs: sim 1.0 M / 298 K -> exp 12959.5 uS/cm @ conc=1.0 T=298.04999999999995 (dconc=0.0, dT=0.049999999999954525)
+    [OK   ] napf6_pc__nvt_0_1M_298K_20ns_100fs: sim 0.1 M / 298 K -> exp 1951.5 uS/cm @ conc=0.1 T=297.85 (dconc=0.0, dT=0.14999999999997726)
+    [OK   ] napf6_pc__nvt_1M_298K_20ns_100fs: sim 1.0 M / 298 K -> exp 6505.2 uS/cm @ conc=1.0 T=297.75 (dconc=0.0, dT=0.25)
+    [OK   ] napf6_tgdme__nvt_1M_298K_20ns_100fs: sim 1.0 M / 298 K -> exp 1860.0 uS/cm @ conc=1.0 T=300.25 (dconc=0.0, dT=2.25)
+
+
+[written] /global/homes/y/yuejian/project/MLFF-distill/yuejian/eleyte_temp/painn/merged/diffusivity_merged.csv, conductivity_merged.csv, *_by_system.csv, verification_report.txt
+end=Thu Jul 16 03:00:07 PM PDT 2026

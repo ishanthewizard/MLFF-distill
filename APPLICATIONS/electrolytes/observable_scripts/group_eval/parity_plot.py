@@ -133,16 +133,26 @@ def plot_group_parity(
     if use_meta:
         df = dfs[0]
         c_cat, c_an, c_sol, c_conc, c_temp = meta_cols
-        sys_keys = df[c_cat] + "-" + df[c_an] + "-" + df[c_sol]
+        # color by (cation, anion, solvent, temperature) so multiple
+        # temperatures of the same salt/solvent (e.g. Li-PF6-DME at
+        # 273/298/323 K) each get a distinct color
+        sys_keys = (df[c_cat] + "-" + df[c_an] + "-" + df[c_sol]
+                    + "-" + df[c_temp].astype(int).astype(str) + "K")
         uniq_sys = sorted(sys_keys.unique())
         sys_cmap = plt.get_cmap("tab10" if len(uniq_sys) <= 10 else "tab20")
         sys_color = {s: sys_cmap(i % sys_cmap.N) for i, s in enumerate(uniq_sys)}
+        seen_labels = set()
         for _, row in df.iterrows():
-            sys_name = f"{row[c_cat]}-{row[c_an]}-{row[c_sol]}"
-            point_label = f"{sys_name}, {row[c_conc]:g}M, {row[c_temp]:.0f}K"
+            sys_name = f"{row[c_cat]}-{row[c_an]}-{row[c_sol]}-{int(row[c_temp])}K"
+            point_label = f"{row[c_cat]}-{row[c_an]}-{row[c_sol]}, {row[c_conc]:g}M, {row[c_temp]:.0f}K"
+            # de-duplicate the legend: with multiple replicas per system every
+            # replica is a separate point (same color), but should appear once
+            # in the legend — only label the first point of each system.
+            legend_label = point_label if point_label not in seen_labels else "_nolegend_"
+            seen_labels.add(point_label)
             ax.scatter(row[exp_col], row[sim_col],
                        color=sys_color[sys_name], s=60, alpha=0.8,
-                       edgecolors="gray", linewidths=0.5, label=point_label, zorder=3)
+                       edgecolors="gray", linewidths=0.5, label=legend_label, zorder=3)
         log_mae, rho, n = _stats(df[exp_col], df[sim_col])
         text_lines.append(f"{labels[0]} (n={n}): logMAE={log_mae:.2f}, Spearman={rho:.2f}")
         all_exp += list(df[exp_col])
